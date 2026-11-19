@@ -14,7 +14,6 @@ const won = (value) => numberFormat.format(value) + '원';
 const attr = (value) => String(value).replace(/[&"<]/g, (char) => ({
   '&': '&amp;', '"': '&quot;', '<': '&lt;',
 })[char]);
-const star = '<span class="tourism-star" aria-label="디지털 관광주민증 혜택">★</span>';
 const icons = {
   focus: '<path d="M4 9V4h5m6 0h5v5m0 6v5h-5m-6 0H4v-5"/><circle cx="12" cy="12" r="2"/>',
   bag: '<rect x="3.5" y="7" width="17" height="13" rx="2"/><path d="M8 7V5a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2M4 12h16m-10 0v2h4v-2"/>',
@@ -47,31 +46,55 @@ function visiblePlaces() {
 
 function renderRegionPane() {
   const pane = $('region-pane');
-  if (state.region) {
-    pane.innerHTML = regionDetail(regionById.get(state.region));
-    return;
-  }
-
+  const scrollTop = pane.scrollTop;
   const matching = visibleRegions();
-  const filters = [['all', '전체'], ...Object.entries(statuses)].map(([key, label]) =>
-    chip((key === 'all' ? '' : '<span class="status-dot"></span>') + label, 'filter', key, state.filter === key, key),
-  ).join('');
-
-  const groups = Object.keys(regionGroups).map((province) => {
-    const regionRows = matching.filter((region) => region.province === province);
-    if (!regionRows.length) return '';
-    return `<section class="province"><h3>${province}</h3>${regionRows.map((region) => `
-      <button type="button" class="region-row ${region.status}" data-action="region" data-value="${region.id}">
-        <span class="status-dot" aria-hidden="true"></span><span class="region-name">${region.name}</span>
-        ${region.star ? star : ''}${region.newRegion ? '<span class="new-region">하반기 신규</span>' : ''}
-        ${statusBadge(region)}
-      </button>`).join('')}</section>`;
+  pane.innerHTML = Object.entries(statuses).map(([status, label]) => {
+    const group = matching.filter((region) => region.status === status);
+    if (!group.length) return '';
+    return `<section class="region-card-group ${status}" aria-label="${label} 지역">
+      <h3>${label}<span>${group.length}</span></h3>
+      <div class="region-cards">${group.map((region) => `
+        <button type="button" class="region-card ${status}" data-action="region" data-value="${region.id}"
+          aria-pressed="${state.region === region.id}" aria-label="${region.province} ${region.name}, ${label}">
+          <span class="region-card-province">${region.province}</span><strong>${region.name}</strong>
+          <span class="region-card-status">${label}</span>
+        </button>`).join('')}</div>
+    </section>`;
   }).join('');
+  pane.scrollTop = scrollTop;
+}
 
-  pane.innerHTML = `<div class="region-top"><div class="section-heading"><h2>지역별 진행 현황</h2>
-    <span class="count-label"><b>${matching.length}</b>곳</span></div>
-    <div class="filter-group" aria-label="신청 상태 필터">${filters}</div></div>
-    <div class="region-list">${groups}</div>`;
+function renderSelectedRegion() {
+  const region = regionById.get(state.region);
+  $('selected-region').innerHTML = `<div>
+    <span class="panel-eyebrow">${region ? region.province + ' · 선택한 여행지' : '지역 카드로 여행을 시작하세요'}</span>
+    <h2 id="selected-region-name" tabindex="-1">${region ? region.name : '전국 여행지'}</h2>
+    <div class="selected-region-meta">${region ? statusBadge(region) : '<span>가고 싶은 지역을 선택해 보세요.</span>'}</div>
+    </div>${region ? '<button type="button" class="text-button" data-action="reset-map">전국 보기</button>' : ''}`;
+}
+
+function renderRegionContent() {
+  const region = regionById.get(state.region);
+  $('region-content').innerHTML = region ? regionDetail(region) :
+    '<p class="photo-intro">사진이나 지역 카드를 선택하면<br>그 지역의 지도와 장소를 볼 수 있어요.</p>';
+}
+
+function renderPromotionPane() {
+  const region = regionById.get(state.region);
+  $('photo-title').textContent = region ? region.name + '의 풍경' : '로컬의 풍경';
+  const photos = (region ? [region] : regions).flatMap((item) =>
+    (regionPhotos[item.id] || []).map((photo) => ({ ...photo, region: item })),
+  );
+  $('photo-gallery').innerHTML = photos.map((photo, index) => `
+    <button type="button" class="promotion-photo" data-action="region" data-value="${photo.region.id}"
+      aria-label="${photo.region.name} 지도 보기">
+      <img src="${attr(photo.src)}" alt="${attr(photo.alt)}" ${index ? 'loading="lazy"' : 'fetchpriority="high"'}>
+      <span class="promotion-caption"><span>${photo.region.province}</span><strong>${photo.region.name}</strong><span>${attr(photo.caption)}</span></span>
+      ${photo.isExample ? '<span class="photo-example">예시 이미지</span>' : ''}
+    </button>`).join('') || `<div class="photo-placeholder" role="img" aria-label="${region ? region.name : '지역'} 홍보 사진 준비 중">
+      <span>${region ? region.name : '로컬의 풍경'}</span><strong>여행의 풍경을 담을 자리</strong><p>홍보 사진 준비 중</p>
+    </div>`;
+  renderRegionContent();
 }
 
 function regionDetail(region) {
@@ -85,26 +108,24 @@ function regionDetail(region) {
       <button type="button" class="place-add" data-action="add" data-value="${place.id}" aria-label="${place.name} 담기" ${state.basket.has(place.id) ? 'disabled' : ''}>${state.basket.has(place.id) ? '담음' : '담기'}</button>
     </div>`).join('');
 
-  return `<div class="region-detail"><button type="button" class="text-button" data-action="reset-map">전국 지역 목록</button>
-    <div class="detail-name"><h2 tabindex="-1" id="region-detail-name">${region.name}</h2>${statusBadge(region)}</div>
-    <p class="detail-meta">${region.province} ${region.newRegion ? '· 하반기 신규' : ''} ${region.star ? '· ' + star + ' 관광주민증 혜택' : ''}</p>
-    <div class="region-facts"><h3>신청 및 환급 정보</h3>
+  return `<div class="region-detail">
+    <section class="places-heading" aria-label="장소 목록">
+      <h2 tabindex="-1" id="region-detail-name">${region.name}의 장소</h2><div class="filter-group" aria-label="장소 유형 필터">${filters}</div>
+      ${regionPlaces || '<p class="empty">표시할 예시 장소가 없어요.</p>'}
+    </section>
+    <details class="region-information"><summary>신청 및 환급 정보</summary><div class="region-facts">
       <dl><div><dt>신청 조건</dt><dd>공고 확인 예정</dd></div>
       <div><dt>환급 조건</dt><dd>공고 확인 예정</dd></div>
       <div><dt>환급 방식</dt><dd>공고 확인 예정</dd></div>
       <div><dt>공식 신청처</dt><dd>연결 예정</dd></div></dl>
       <a class="text-button" href="#guide">사업 안내 보기</a>
-    </div>
-    <section class="places-heading" aria-label="장소 목록">
-      <h3>장소 둘러보기</h3><div class="filter-group" aria-label="장소 유형 필터">${filters}</div>
-      ${regionPlaces || '<p class="empty">표시할 예시 장소가 없어요.</p>'}
-    </section></div>`;
+    </div></details></div>`;
 }
 
 function renderTray() {
   const groups = basketGroups();
-  $('tray').innerHTML = `<div class="section-heading"><h2 id="tray-title">지역별 장바구니</h2>
-    <span class="count-label">${groups.size}개 지역 · ${state.basket.size}곳</span></div>
+  $('tray').innerHTML = `<div class="section-heading"><h2 id="tray-title">담아둔 여행지</h2>
+    <span class="count-label">${state.basket.size}곳</span></div>
     <div class="tray-content">${[...groups].map(([id, entries]) => `
       <div class="tray-row"><button type="button" class="tray-region" data-action="basket-region" data-value="${id}" aria-label="${regionById.get(id).name} 바구니 보기">${regionById.get(id).shortName} <span>${entries.length}</span></button>
         <div class="tray-places">${[...entries].reverse().map(([place]) => `
@@ -130,6 +151,13 @@ for (const path of mapGeometry.querySelectorAll('[data-region]')) {
   mapRegionPaths.set(path.dataset.region, path);
 }
 
+function setMapZoom(zoom) {
+  const nextZoom = Math.min(8, Math.max(1, zoom));
+  if (nextZoom === state.zoom) return false;
+  state.zoom = nextZoom;
+  return true;
+}
+
 function renderMap() {
   const region = regionById.get(state.region);
   const matching = visibleRegions();
@@ -141,11 +169,11 @@ function renderMap() {
   const position = (x, y) => `left:${(x - originX) * 100 / width}%;top:${(y - originY) * 100 / height}%`;
 
   $('map-header').innerHTML = region
-    ? `<div><h1 id="map-title">${region.name} 지도</h1><p>${region.province} · ${statuses[region.status]}</p></div>
+    ? `<div class="map-heading"><span class="panel-eyebrow">${region.province}에서 찾은 여행</span><h1 id="map-title" tabindex="-1">${region.name} 지도</h1><p>${statuses[region.status]} · 가고 싶은 장소를 바구니에 담아보세요.</p></div><div class="map-header-actions">
       <button type="button" class="chip mobile-details" data-action="show-details">지역 상세</button>
-      <button type="button" class="chip" data-action="reset-map">전국 지도</button>`
-    : `<div><h1 id="map-title">반값여행 지역 지도</h1><p>지역을 선택해 신청 정보와 장소를 확인하세요.</p></div>
-      <span class="map-badge"><b>${matching.length}</b>곳${state.filter === 'all' ? ' 대상' : ' 표시'}</span>`;
+      <button type="button" class="chip" data-action="reset-map">전국 지도</button></div>`
+    : `<div class="map-heading"><span class="panel-eyebrow">가까운 곳에서 발견하는 새로운 여행</span><h1 id="map-title" tabindex="-1">반값여행 지역 지도</h1><p>지역을 선택하고, 나만의 여행을 만들어보세요.</p></div>
+      <span class="map-badge"><span>${state.filter === 'all' ? '대상 지역' : '표시 지역'}</span><span><b>${matching.length}</b>곳</span></span>`;
 
   mapGeometry.setAttribute('viewBox', `${originX} ${originY} ${width} ${height}`);
   const highlighted = new Set(region ? [region.id] : matching.map(({ id }) => id));
@@ -165,7 +193,10 @@ function renderMap() {
     }
     labels.push(`<span class="area-label" aria-hidden="true">${region.shortName}</span>`);
   } else {
-    lines.push('<text class="sea-label" x="71" y="344">서해</text><text class="sea-label" x="539" y="253">동해</text><text class="sea-label" x="446" y="550">남해</text>');
+    // Keep all map text in the HTML overlay so SVG zoom only scales geometry.
+    for (const [name, x, y] of [['서해', 71, 344], ['동해', 539, 253], ['남해', 446, 550]]) {
+      labels.push(`<span class="sea-label" aria-hidden="true" style="${position(x, y)}">${name}</span>`);
+    }
     for (const item of matching) {
       const [x, y] = project(item.lon, item.lat);
       const labelX = x + item.offsetX;
@@ -175,7 +206,7 @@ function renderMap() {
       lines.push(`<line class="map-leader" x1="${x}" y1="${y}" x2="${labelX}" y2="${labelY}"/><circle class="map-anchor" cx="${x}" cy="${y}" r="1.7"/>`);
       labels.push(`<button type="button" class="map-marker ${item.status}" data-action="region" data-value="${item.id}"
         aria-label="${item.name} ${statuses[item.status]}" style="${position(labelX, labelY)}">
-        <span class="status-dot" aria-hidden="true"></span>${item.shortName}${item.star ? star : ''}</button>`);
+        ${item.shortName}</button>`);
     }
   }
   $('map-labels').innerHTML = lines.join('');
@@ -219,6 +250,7 @@ function basketItem(place, quantity) {
 
 function renderTrip() {
   const groups = basketGroups();
+  const showCostDetails = $('cost-details')?.open ?? false;
   if (state.basketRegion !== 'all' && !groups.has(state.basketRegion)) state.basketRegion = groups.keys().next().value ?? 'all';
   const tabs = [['all', '전체 ' + state.basket.size], ...[...groups].map(([id, entries]) => [id, regionById.get(id).name + ' ' + entries.length])];
   const activeGroups = [...groups].filter(([id]) => state.basketRegion === 'all' || id === state.basketRegion);
@@ -236,23 +268,26 @@ function renderTrip() {
     `<button type="button" data-action="support" data-value="${type}" aria-pressed="${state.support === type}">${type}</button>`,
   ).join('');
   $('trip-items').innerHTML = `
-    <div class="breakdown" aria-hidden="true">${Object.entries(totals).map(([key, cost]) => `<span class="${key}" style="width:${total ? cost * 100 / total : 0}%"></span>`).join('')}</div>
-    <div class="category-totals">${Object.entries(totals).map(([key, price]) => `<span><i class="place-dot ${key}"></i>${categories[key].name} <b>${won(price)}</b></span>`).join('')}</div>
     <div class="trip-tabs" aria-label="여행 경비를 볼 지역">${tabs.map(([key, label]) => chip(label, 'basket-region', key, state.basketRegion === key)).join('')}</div>
+    <div class="basket-section-heading"><h3>담은 장소</h3><span>${activeGroups.reduce((count, [, entries]) => count + entries.length, 0)}곳</span></div>
     ${activeGroups.map(([id, entries]) => {
       const region = regionById.get(id);
       const subtotal = entries.reduce((sum, [place, quantity]) => sum + itemCost(place, quantity), 0);
       return `<section class="basket-card">
-        <div class="basket-heading"><h3>${region.name} 바구니</h3>${statusBadge(region)}<strong>${won(subtotal)}</strong></div>
+        <div class="basket-heading"><h4>${region.name}</h4>${statusBadge(region)}<strong>${won(subtotal)}</strong></div>
         ${entries.map(([place, quantity]) => basketItem(place, quantity)).join('')}</section>`;
-    }).join('') || '<p class="empty">장바구니에 담은 장소가 없어요.</p>'}`;
+    }).join('') || '<div class="basket-empty"><span aria-hidden="true">＋</span><h3>어떤 여행을 떠나볼까요?</h3><p>지도에서 지역을 고른 뒤<br>가고 싶은 장소를 담아보세요.</p></div>'}
+    <details class="cost-details" id="cost-details" ${showCostDetails ? 'open' : ''}>
+      <summary>항목별 경비</summary>
+      <div class="breakdown" aria-hidden="true">${Object.entries(totals).map(([key, cost]) => `<span class="${key}" style="width:${total ? cost * 100 / total : 0}%"></span>`).join('')}</div>
+      <div class="category-totals">${Object.entries(totals).map(([key, price]) => `<span><i class="place-dot ${key}" aria-hidden="true"></i>${categories[key].name} <b>${won(price)}</b></span>`).join('')}</div>
+    </details>`;
 
   const nights = tripNights();
-  $('trip-summary').innerHTML = `<dl>
-    <div><dt>여행 기간</dt><dd>${nights ? nights + '박 ' + (nights + 1) + '일' : '당일'} · ${state.people}명</dd></div>
+  $('trip-summary').innerHTML = `<div class="summary-heading"><h3>예상 여행 경비</h3><span>${nights ? nights + '박 ' + (nights + 1) + '일' : '당일'} · ${state.people}명</span></div><dl>
     <div><dt>예상 경비 합계</dt><dd>${won(total)}</dd></div>
     <div><dt>예상 환급 (${state.support} · 50% 예시)</dt><dd class="discount">−${won(discount)}</dd></div>
-    </dl><div class="total"><strong>실제 부담 예상</strong><output>${won(total - discount)}</output></div>
+    </dl><div class="total"><span>실제 부담 예상<small>환급 후 예상 금액</small></span><output>${won(total - discount)}</output></div>
     <p class="fine-print">시안용 계산이에요. 실제 환급 조건과 한도는 지자체 공고에서 확인하세요.</p>`;
 }
 
@@ -284,10 +319,11 @@ function renderSecondary(page) {
 function renderPage() {
   const name = location.hash.slice(1);
   const page = ['calendar', 'route', 'guide'].includes(name) ? name : 'map';
+  document.body.dataset.page = page;
   $('workspace').hidden = page !== 'map';
   $('secondary').hidden = page === 'map';
   $('secondary').classList.toggle('calendar-page', page === 'calendar');
-  for (const link of document.querySelectorAll('[data-page]')) {
+  for (const link of document.querySelectorAll('.navigation [data-page]')) {
     if (link.dataset.page === page) link.setAttribute('aria-current', 'page');
     else link.removeAttribute('aria-current');
   }
@@ -301,15 +337,20 @@ function selectRegion(regionId, focusHeading) {
   state.place = null;
   state.zoom = regionId ? 5 : 1;
   renderRegionPane();
-  $('region-pane').scrollTop = 0;
+  renderSelectedRegion();
+  renderPromotionPane();
+  $('photo-scroll').scrollTop = 0;
   renderMap();
-  if (focusHeading) ($('region-detail-name') || $('region-pane')).focus({ preventScroll: true });
+  if (focusHeading) {
+    const card = regionId && $('region-pane').querySelector(`[data-value="${regionId}"]`);
+    (card || $('selected-region-name')).focus({ preventScroll: true });
+  }
 }
 
 function updateBasket() {
   renderTray();
   renderTrip();
-  if (state.region) renderRegionPane();
+  if (state.region) renderRegionContent();
 }
 
 document.addEventListener('click', (event) => {
@@ -331,23 +372,22 @@ document.addEventListener('click', (event) => {
       selectRegion(null, keyboard);
       return;
     case 'show-details':
-      $('region-pane').scrollIntoView({ block: 'start', behavior: 'smooth' });
+      $('region-content').scrollIntoView({ block: 'start', behavior: 'smooth' });
       $('region-detail-name').focus({ preventScroll: true });
       return;
     case 'zoom-in':
     case 'zoom-out':
-      state.zoom = Math.min(8, Math.max(1, state.zoom * (action === 'zoom-in' ? 1.25 : 0.8)));
-      renderMap();
+      if (setMapZoom(state.zoom * (action === 'zoom-in' ? 1.25 : 0.8))) renderMap();
       break;
     case 'category':
       state.category = value;
       state.place = null;
-      renderRegionPane();
+      renderRegionContent();
       renderMap();
       break;
     case 'place':
       state.place = value;
-      renderRegionPane();
+      renderRegionContent();
       renderMap();
       if (getComputedStyle(document.querySelector('.mobile-details')).display === 'none') {
         $('place-' + value)?.scrollIntoView({ block: 'nearest' });
@@ -388,6 +428,23 @@ document.addEventListener('click', (event) => {
   }
 });
 
+let wheelZoomFrame = null;
+$('map-stage').addEventListener('wheel', (event) => {
+  if (!Number.isFinite(event.deltaY) || event.deltaY === 0) return;
+  // Consume vertical scrolling only over the map, including at zoom limits.
+  event.preventDefault();
+  const unit = event.deltaMode === 1 ? 16 : event.deltaMode === 2 ? $('map-stage').clientHeight : 1;
+  const delta = Math.max(-100, Math.min(100, event.deltaY * unit));
+  if (!setMapZoom(state.zoom * Math.exp(-delta * 0.0025))) return;
+  // Trackpads can emit several events per frame; redraw the latest zoom once.
+  if (wheelZoomFrame === null) {
+    wheelZoomFrame = requestAnimationFrame(() => {
+      wheelZoomFrame = null;
+      renderMap();
+    });
+  }
+}, { passive: false });
+
 for (const id of ['start-date', 'end-date']) {
   $(id).addEventListener('change', () => {
     const start = $('start-date');
@@ -400,6 +457,8 @@ for (const id of ['start-date', 'end-date']) {
 
 window.addEventListener('hashchange', renderPage);
 renderRegionPane();
+renderSelectedRegion();
+renderPromotionPane();
 renderTray();
 renderMap();
 renderTrip();

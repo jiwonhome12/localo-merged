@@ -7,12 +7,15 @@
   <title>로컬로 · 반값여행 지역 지도</title>
   <link rel="stylesheet" href="styles.css">
   <link rel="stylesheet" href="calendar.css">
+  <link rel="stylesheet" href="map.css">
   <script defer src="regions.js"></script>
+  <script defer src="region-photos.js"></script>
   <script defer src="map-data.js"></script>
   <script defer src="calendar.js"></script>
   <script defer src="app.js"></script>
 </head>
-<body>
+<body data-page="map">
+  <a class="skip-link" href="#map-title">지도로 바로가기</a>
   <header class="site-header">
     <a class="brand" href="#map" aria-label="로컬로 홈">
       <span class="brand-mark" aria-hidden="true"><span></span></span>
@@ -29,9 +32,12 @@
   </header>
 
   <main class="workspace" id="workspace">
-    <aside class="panel region-panel" aria-label="지역과 장소">
-      <div class="region-scroll" id="region-pane" tabindex="0"></div>
-      <section class="tray" id="tray" aria-labelledby="tray-title"></section>
+    <aside class="panel photo-panel" aria-labelledby="photo-title">
+      <div class="photo-scroll" id="photo-scroll">
+        <header class="photo-heading"><span class="panel-eyebrow">사진으로 만나는 여행</span><h2 id="photo-title">로컬의 풍경</h2></header>
+        <div class="photo-gallery" id="photo-gallery"></div>
+        <div id="region-content"></div>
+      </div>
     </aside>
 
     <section class="panel center-panel" id="map-panel" aria-labelledby="map-title">
@@ -42,6 +48,12 @@
           <div class="map-markers" id="map-markers"></div>
         </div>
         <div class="compass" aria-hidden="true"><span>N</span><span class="compass-needle"></span></div>
+        <div class="map-legend" aria-label="지역 신청 상태">
+          <span class="travel">여행 가능</span>
+          <span class="open">신청접수중</span>
+          <span class="soon">준비중</span>
+          <span class="closed">마감</span>
+        </div>
         <div class="map-controls" aria-label="지도 크기 조절">
           <button type="button" data-action="zoom-in" aria-label="지도 확대">+</button>
           <button type="button" data-action="zoom-out" aria-label="지도 축소">−</button>
@@ -49,16 +61,23 @@
         </div>
       </div>
       <footer class="map-footer">
-        <span><span class="tourism-star" aria-hidden="true">★</span> 디지털 관광주민증 혜택</span>
+        <span>휠로 확대·축소 · 지역 카드로 선택</span>
         <a href="https://github.com/southkorea/southkorea-maps/blob/master/kostat/2018/json/LICENSE.md" target="_blank" rel="noreferrer">지도 경계 · 통계청 SGIS 2018</a>
       </footer>
     </section>
 
+    <section class="selected-region" id="selected-region" aria-labelledby="selected-region-name" aria-live="polite"></section>
+
+    <aside class="panel region-panel" aria-label="진행 상황별 지역 선택">
+      <div class="region-scroll" id="region-pane" tabindex="0"></div>
+    </aside>
+
     <section class="panel trip-panel" id="trip-panel" aria-labelledby="trip-title">
       <header class="trip-head">
         <div>
-          <h2 id="trip-title">내 여행 스택</h2>
-          <p>담은 장소로 여행 경비를 계산해 보세요.</p>
+          <span class="panel-eyebrow">나만의 여행 계획</span>
+          <h2 id="trip-title">내 여행 바구니</h2>
+          <p>가고 싶은 곳을 담고, 경비를 확인해요.</p>
         </div>
         <span class="head-icon icon-holder" data-icon="bag"></span>
       </header>
@@ -66,10 +85,11 @@
         <div class="trip-fields">
           <label>가는 날<input type="date" id="start-date" value="2026-11-21" required></label>
           <label>오는 날<input type="date" id="end-date" value="2026-11-22" min="2026-11-21" required></label>
-          <div><span class="field-label">인원</span><div class="stepper"><button type="button" data-action="people" data-delta="-1" aria-label="인원 줄이기">−</button><output id="people-label">2명</output><button type="button" data-action="people" data-delta="1" aria-label="인원 늘리기">+</button></div></div>
-          <div><span class="field-label">지원 유형</span><div class="segmented" id="support-options" aria-label="지원 유형"></div></div>
+          <div><span class="field-label" id="people-title">인원</span><div class="stepper" role="group" aria-labelledby="people-title"><button type="button" data-action="people" data-delta="-1" aria-label="인원 줄이기">−</button><output id="people-label">2명</output><button type="button" data-action="people" data-delta="1" aria-label="인원 늘리기">+</button></div></div>
+          <div><span class="field-label">지원 유형</span><div class="segmented" id="support-options" role="group" aria-label="지원 유형"></div></div>
         </div>
         <div id="trip-items"></div>
+        <section class="tray" id="tray" aria-labelledby="tray-title"></section>
       </div>
       <div class="trip-summary" id="trip-summary" aria-live="polite"></div>
     </section>
