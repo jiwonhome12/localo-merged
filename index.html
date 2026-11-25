@@ -25,6 +25,7 @@
       <button type="button" id="start-travel" class="start-travel" autofocus>여행 시작하기!! <span aria-hidden="true">→</span></button>
     </div>
   </dialog>
+  <a class="skip-link" id="skip-map" href="#map-viewport">지도로 바로가기</a>
   <header class="site-header">
     <button class="brand" type="button" id="replay-intro" aria-label="로컬로 시작 화면 다시 보기" aria-haspopup="dialog">
       <span class="brand-mark" aria-hidden="true"><span></span></span>
@@ -90,8 +91,8 @@
               <div class="trip-fields">
                 <label>가는 날<input type="date" id="start-date" required></label>
                 <label>오는 날<input type="date" id="end-date" required></label>
-                <div><span class="field-label">인원</span><div class="stepper"><button type="button" data-action="people" data-delta="-1" aria-label="인원 줄이기">−</button><output id="people-label">2명</output><button type="button" data-action="people" data-delta="1" aria-label="인원 늘리기">+</button></div></div>
-                <div><span class="field-label">지원 유형</span><div class="segmented" id="support-options" aria-label="지원 유형"></div></div>
+                <div><span class="field-label" id="people-title">인원</span><div class="stepper" role="group" aria-labelledby="people-title"><button type="button" data-action="people" data-delta="-1" aria-label="인원 줄이기">−</button><output id="people-label">2명</output><button type="button" data-action="people" data-delta="1" aria-label="인원 늘리기">+</button></div></div>
+                <div><span class="field-label">지원 유형</span><div class="segmented" id="support-options" role="group" aria-label="지원 유형"></div></div>
               </div>
             </section>
             <section class="trip-summary" id="trip-summary" aria-label="예상 여행 경비" aria-live="polite"></section>

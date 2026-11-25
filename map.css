@@ -10,6 +10,8 @@
   --tile-height: clamp(34px, 5.3dvh, 61px);
 }
 .workspace .map-header { left: var(--atlas-edge); }
+.skip-link { position: fixed; z-index: 20; top: 8px; left: 16px; padding: 12px 18px; border-radius: 8px; background: #234457; color: white; transform: translateY(-160%); }
+.skip-link:focus { transform: translateY(0); }
 .has-region .map-header > div {
   background: rgb(255 255 255 / 92%); border-radius: 3px;
   box-shadow: 0 0 0 5px rgb(255 255 255 / 92%);

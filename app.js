@@ -216,6 +216,10 @@ const mapRegionPaths = new Map();
 const emphasisBounds = new Map();
 const mapGeometry = $('map-geometry');
 const mapViewport = $('map-viewport');
+$('skip-map').addEventListener('click', (event) => {
+  event.preventDefault();
+  mapViewport.focus();
+});
 const mapScene = $('map-scene');
 const minMapZoom = 1;
 const maxMapZoom = 400;
@@ -1022,6 +1026,7 @@ function renderPage() {
   state.page = page;
   document.title = { map: '지역 지도', planner: '여행 플래너', calendar: '축제 캘린더' }[page] + ' · 로컬로';
   $('workspace').hidden = page !== 'map';
+  $('skip-map').hidden = page !== 'map';
   $('secondary').hidden = page !== 'calendar';
   $('planner-page').hidden = page !== 'planner';
   $('secondary').classList.toggle('calendar-page', page === 'calendar');
