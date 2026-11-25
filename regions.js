@@ -53,20 +53,32 @@ const regions = Object.entries(regionGroups).flatMap(([province, entries]) =>
 
 const statuses = { open: '신청접수중', soon: '준비중', closed: '마감' };
 
+// Sample travel windows shared by the calendar and the map. The status in
+// regionGroups describes applications, which may close before travel begins.
+const travelPeriods = [
+  { region: 'andong', type: 'travel', start: '2026-11-13', end: '2026-11-22' },
+  { region: 'gochang', type: 'travel', start: '2026-11-20', end: '2026-11-30' },
+  { region: 'geochang', type: 'travel', start: '2026-11-21', end: '2026-12-06' },
+  { region: 'hamyang', type: 'travel', start: '2026-11-29', end: '2026-12-13' },
+];
+
 const categories = {
-  food: { name: '식당', symbol: '식', unit: '인분' },
-  stay: { name: '숙박', symbol: '숙', unit: '실' },
-  cafe: { name: '카페', symbol: '카', unit: '잔' },
-  spot: { name: '관광지', symbol: '관', unit: '명' },
+  food: { name: '식당', symbol: '식', unit: '인분', icon: '<path d="M5 3v6c0 3 5 3 5 0V3M7.5 3v18M19 21v-8h-4c0-6 2-9 4-10z"/>' },
+  stay: { name: '숙박', symbol: '숙', unit: '실', icon: '<path d="M3 5v15m18-9v9M3 16h18M9 9h8a4 4 0 0 1 4 4v3H9z"/><circle cx="6" cy="10" r="1.4"/>' },
+  cafe: { name: '카페', symbol: '카', unit: '잔', icon: '<path d="M4 8h13v5a6 6 0 0 1-6 6h-1a6 6 0 0 1-6-6zM17 9h2a3 3 0 0 1 0 6h-2M3 21h16M8 3v2m4-2v2"/>' },
+  spot: { name: '관광지', symbol: '관', unit: '명', icon: '<path d="m2 19 7-11 5 7 3-5 5 9z"/><circle cx="16" cy="5.5" r="1.7"/>' },
 };
 
-// Example businesses and prices used to exercise the layout.
+// Example locations are offsets in projected map units, inside the corresponding district.
 const places = [
-  { id: 'gc-soup', region: 'geochang', category: 'food', name: '읍내 국밥집', price: 9000, x: 22, y: -6 },
-  { id: 'gc-stay', region: 'geochang', category: 'stay', name: '강변 펜션', price: 110000, x: -27, y: -23 },
-  { id: 'gc-coffee', region: 'geochang', category: 'cafe', name: '로스터리 카페', price: 6500, x: 28, y: 19 },
-  { id: 'gc-trail', region: 'geochang', category: 'spot', name: '생태 탐방로', price: 0, x: -23, y: 21 },
-  { id: 'hy-beef', region: 'hamyang', category: 'food', name: '한우 정육식당', price: 26000, x: 20, y: -18 },
-  { id: 'hy-stay', region: 'hamyang', category: 'stay', name: '숲길 스테이', price: 95000, x: -20, y: 9 },
-  { id: 'hy-park', region: 'hamyang', category: 'spot', name: '천년 숲 산책로', price: 0, x: 23, y: 23 },
+  { id: 'gc-soup', region: 'geochang', locality: '거창읍', category: 'food', name: '읍내 국밥집', price: 9000, x: 1, y: -0.6 },
+  { id: 'gc-stay', region: 'geochang', locality: '거창읍', category: 'stay', name: '강변 펜션', price: 110000, x: -0.3, y: -1.7 },
+  { id: 'gc-coffee', region: 'geochang', locality: '거창읍', category: 'cafe', name: '로스터리 카페', price: 6500, x: -1.8, y: -0.6 },
+  { id: 'gc-trail', region: 'geochang', locality: '거창읍', category: 'spot', name: '생태 탐방로', price: 0, x: 0.1, y: 1.4 },
+  { id: 'hy-beef', region: 'hamyang', locality: '함양읍', category: 'food', name: '한우 정육식당', price: 26000, x: -0.3, y: -0.7 },
+  { id: 'hy-stay', region: 'hamyang', locality: '함양읍', category: 'stay', name: '숲길 스테이', price: 95000, x: -0.4, y: -1.9 },
+  { id: 'hy-park', region: 'hamyang', locality: '함양읍', category: 'spot', name: '천년 숲 산책로', price: 0, x: -0.4, y: 2 },
+  { id: 'gch-soup', region: 'gochang', locality: '고창읍', category: 'food', name: '시장 국밥집', price: 9000, x: 0.5, y: -1.2, photo: 'gc-soup' },
+  { id: 'gch-cafe', region: 'gochang', locality: '고창읍', category: 'cafe', name: '들녘 카페', price: 6000, x: -1.8, y: -0.1, photo: 'gc-coffee' },
+  { id: 'gch-path', region: 'gochang', locality: '고창읍', category: 'spot', name: '고창 산책길', price: 0, x: -1.1, y: 1.2, photo: 'gc-trail' },
 ];

@@ -4,77 +4,111 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="description" content="지역사랑휴가지원사업 대상 지역을 둘러보고 여행 경비를 계산하는 로컬로 레이아웃 시안">
-  <title>로컬로 · 반값여행 지역 지도</title>
+  <title>로컬로 · 반값여행</title>
   <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="map.css">
+  <link rel="stylesheet" href="cart.css">
   <link rel="stylesheet" href="calendar.css">
+  <script defer src="intro.js"></script>
   <script defer src="regions.js"></script>
   <script defer src="map-data.js"></script>
   <script defer src="calendar.js"></script>
   <script defer src="app.js"></script>
 </head>
 <body>
+  <dialog class="intro" id="intro" aria-labelledby="intro-title">
+    <div class="intro-content">
+      <h1 id="intro-title" class="intro-logo" aria-label="로컬로">
+        <span class="logo-half" aria-hidden="true"><span class="brand-mark"><span></span></span>로컬로</span>
+        <span class="logo-half" aria-hidden="true"><span class="brand-mark"><span></span></span>로컬로</span>
+      </h1>
+      <button type="button" id="start-travel" class="start-travel" autofocus>여행 시작하기!! <span aria-hidden="true">→</span></button>
+    </div>
+  </dialog>
   <header class="site-header">
-    <a class="brand" href="#map" aria-label="로컬로 홈">
+    <button class="brand" type="button" id="replay-intro" aria-label="로컬로 시작 화면 다시 보기" aria-haspopup="dialog">
       <span class="brand-mark" aria-hidden="true"><span></span></span>
       <span class="brand-name">로컬로</span>
-      <span class="brand-caption">지역사랑휴가지원사업</span>
-    </a>
+    </button>
     <nav class="navigation" aria-label="주 메뉴">
-      <a href="#map" data-page="map" aria-current="page">지역 지도</a>
-      <a href="#calendar" data-page="calendar">축제 캘린더</a>
-      <a href="#route" data-page="route">AI 코스 추천</a>
-      <a href="#guide" data-page="guide">반값여행 안내</a>
+      <a href="#map" data-page="map" aria-current="page">지도</a>
+      <a href="#planner" data-page="planner">플래너</a>
+      <a href="#calendar" data-page="calendar">캘린더</a>
+      <button type="button" disabled title="준비 중">반값여행 개요</button>
+      <button type="button" disabled title="준비 중">정보 모아보기</button>
     </nav>
-    <div class="header-note"><span class="draft">레이아웃 시안</span><span>2026.11.09 예시</span></div>
   </header>
 
   <main class="workspace" id="workspace">
-    <aside class="panel region-panel" aria-label="지역과 장소">
-      <div class="region-scroll" id="region-pane" tabindex="0"></div>
-      <section class="tray" id="tray" aria-labelledby="tray-title"></section>
+    <aside class="region-panel" id="region-list-panel" aria-label="지역 선택">
+      <div class="region-scroll" id="region-pane"></div>
     </aside>
+    <aside class="region-information" id="region-information" aria-labelledby="region-detail-name" hidden></aside>
 
     <section class="panel center-panel" id="map-panel" aria-labelledby="map-title">
       <header class="map-header" id="map-header"></header>
       <div class="map-stage" id="map-stage">
-        <div class="map-scene" id="map-scene">
-          <svg class="map-geometry" id="map-geometry" viewBox="0 0 620 640" aria-hidden="true"></svg>
-          <div class="map-markers" id="map-markers"></div>
+        <div class="national-map-area" id="national-map-area" aria-hidden="true"></div>
+        <div id="map-viewport" class="map-viewport" tabindex="0" role="region" aria-label="여행 지도" aria-describedby="map-gestures">
+          <div id="map-surface" class="map-surface">
+            <div class="map-scene" id="map-scene">
+              <svg class="map-geometry" id="map-geometry" viewBox="0 0 620 640" aria-hidden="true"></svg>
+              <div class="map-markers" id="map-markers"></div>
+            </div>
+          </div>
         </div>
         <div class="compass" aria-hidden="true"><span>N</span><span class="compass-needle"></span></div>
-        <div class="map-controls" aria-label="지도 크기 조절">
-          <button type="button" data-action="zoom-in" aria-label="지도 확대">+</button>
+        <div class="map-controls" role="group" aria-label="지도 크기 조절">
           <button type="button" data-action="zoom-out" aria-label="지도 축소">−</button>
-          <button type="button" data-action="reset-map" aria-label="전국 지도"><span class="icon-holder" data-icon="focus"></span></button>
+          <output id="map-zoom" aria-label="현재 지도 확대율" aria-live="off">100%</output>
+          <button type="button" data-action="zoom-in" aria-label="지도 확대">+</button>
         </div>
       </div>
       <footer class="map-footer">
         <span><span class="tourism-star" aria-hidden="true">★</span> 디지털 관광주민증 혜택</span>
+        <span class="map-gestures" id="map-gestures"><span class="mouse-tip">Ctrl + 휠로 확대·축소 · 확대 후 휠로 이동하거나 스페이스바를 누르고 드래그</span><span class="touch-tip">＋·−로 확대·축소 · 확대한 지도를 밀어서 이동</span></span>
         <a href="https://github.com/southkorea/southkorea-maps/blob/master/kostat/2018/json/LICENSE.md" target="_blank" rel="noreferrer">지도 경계 · 통계청 SGIS 2018</a>
       </footer>
     </section>
 
-    <section class="panel trip-panel" id="trip-panel" aria-labelledby="trip-title">
-      <header class="trip-head">
-        <div>
-          <h2 id="trip-title">내 여행 스택</h2>
-          <p>담은 장소로 여행 경비를 계산해 보세요.</p>
+    <div class="cart-dock" id="cart-dock">
+      <button type="button" class="cart-toggle" id="cart-toggle" data-action="toggle-cart"
+        aria-controls="trip-panel" aria-expanded="false" aria-label="여행 일정표 열기">
+        <span class="icon-holder" data-icon="bag"></span><span class="cart-count" id="cart-count" hidden></span>
+      </button>
+      <section class="panel trip-panel" id="trip-panel" aria-labelledby="trip-title" inert aria-hidden="true">
+        <header class="trip-head">
+          <div><h2 id="trip-title">여행 일정표</h2><p id="trip-count"></p></div>
+          <a class="planner-link" href="#planner">플래너 열기 <span aria-hidden="true">↗</span></a>
+        </header>
+        <div class="trip-layout">
+          <section class="trip-places" aria-label="담은 장소"><div id="trip-items"></div></section>
+          <details class="trip-calculator" id="trip-calculator">
+            <summary>여행 설정과 경비</summary>
+            <section class="trip-settings" aria-labelledby="trip-settings-title">
+              <h3 id="trip-settings-title">여행 설정</h3>
+              <div class="trip-fields">
+                <label>가는 날<input type="date" id="start-date" required></label>
+                <label>오는 날<input type="date" id="end-date" required></label>
+                <div><span class="field-label">인원</span><div class="stepper"><button type="button" data-action="people" data-delta="-1" aria-label="인원 줄이기">−</button><output id="people-label">2명</output><button type="button" data-action="people" data-delta="1" aria-label="인원 늘리기">+</button></div></div>
+                <div><span class="field-label">지원 유형</span><div class="segmented" id="support-options" aria-label="지원 유형"></div></div>
+              </div>
+            </section>
+            <section class="trip-summary" id="trip-summary" aria-label="예상 여행 경비" aria-live="polite"></section>
+          </details>
         </div>
-        <span class="head-icon icon-holder" data-icon="bag"></span>
-      </header>
-      <div class="trip-scroll" id="trip-scroll">
-        <div class="trip-fields">
-          <label>가는 날<input type="date" id="start-date" value="2026-11-21" required></label>
-          <label>오는 날<input type="date" id="end-date" value="2026-11-22" min="2026-11-21" required></label>
-          <div><span class="field-label">인원</span><div class="stepper"><button type="button" data-action="people" data-delta="-1" aria-label="인원 줄이기">−</button><output id="people-label">2명</output><button type="button" data-action="people" data-delta="1" aria-label="인원 늘리기">+</button></div></div>
-          <div><span class="field-label">지원 유형</span><div class="segmented" id="support-options" aria-label="지원 유형"></div></div>
-        </div>
-        <div id="trip-items"></div>
-      </div>
-      <div class="trip-summary" id="trip-summary" aria-live="polite"></div>
-    </section>
+        <footer class="trip-person-total">
+          <div><strong>1인당 예상 부담금</strong><small id="split-count"></small></div>
+          <output id="split-estimate" aria-live="polite">0원</output>
+        </footer>
+      </section>
+    </div>
   </main>
 
   <main class="secondary" id="secondary" hidden></main>
+  <main class="planner" id="planner-page" hidden>
+    <header class="planner-heading"><h1>여행 플래너</h1><a href="#map">지도로 돌아가기 <span aria-hidden="true">↗</span></a></header>
+  </main>
+  <div class="cart-announcement" id="cart-announcement" role="status"></div>
 </body>
 </html>
