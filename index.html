@@ -55,7 +55,9 @@
     <aside class="region-tourism" id="region-tourism" aria-labelledby="region-tourism-title" data-open="false" hidden inert>
       <div class="tourism-sheet">
         <h2 id="region-tourism-title" hidden></h2>
-        <div id="region-tourism-scroll" role="region" tabindex="0" aria-label="관광지 사진 목록">
+        <div id="tourism-filters" role="group" aria-label="사진 카테고리"></div>
+        <select id="tourism-select" aria-label="사진 카테고리" aria-controls="region-tourism-cards"></select>
+        <div id="region-tourism-scroll" role="region" tabindex="0" aria-label="장소 사진 목록">
           <div id="region-tourism-cards"></div>
         </div>
       </div>

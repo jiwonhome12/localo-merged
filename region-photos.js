@@ -8,6 +8,7 @@ const regionPhotos = {
       src: 'assets/landmarks/gochang.webp',
       alt: '분홍빛 꽃길을 따라 언덕 위로 이어지는 고창읍성 성벽',
       caption: '고창읍성',
+      category: 'spot',
       lat: 35.430776, lon: 126.704622,
       description: '고창읍의 낮은 산등성이를 따라 조선 시대 돌 성벽이 굽이굽이 이어집니다.',
       credit: 'Leeyoungbum',
@@ -19,6 +20,7 @@ const regionPhotos = {
       src: 'assets/landmarks/gochang-dolmen.webp',
       alt: '죽림리의 낮은 받침돌 위에 넓적한 덮개돌이 놓인 고인돌',
       caption: '고창 고인돌 유적',
+      category: 'spot',
       lat: 35.441273, lon: 126.651433,
       description: '죽림리 일대에는 청동기 시대 사람들이 세운 고인돌이 무리를 이루고 있습니다.',
       credit: 'Kussy',
@@ -30,6 +32,7 @@ const regionPhotos = {
       src: 'assets/landmarks/gochang-seonunsa.webp',
       alt: '푸른 산 아래 선운사 대웅전의 단청과 마당',
       caption: '선운사',
+      category: 'spot',
       lat: 35.497229, lon: 126.578160,
       description: '선운산 자락의 절로, 대웅전 뒤편에는 산비탈을 따라 동백나무 숲이 펼쳐집니다.',
       credit: 'Euchan0224',
@@ -43,6 +46,7 @@ const regionPhotos = {
       src: 'assets/landmarks/geochang.webp',
       alt: '거창 수승대의 물길 한가운데 솟은 커다란 바위와 소나무',
       caption: '수승대',
+      category: 'spot',
       lat: 35.7608, lon: 127.8327,
       description: '위천 물길 한가운데 거북 모양의 커다란 바위가 솟아 있고, 그 위로 소나무가 자랍니다.',
       credit: 'Dittwjfsdgkvkdjg (© Beehive)',
@@ -54,6 +58,7 @@ const regionPhotos = {
       src: 'assets/landmarks/geochang-dongho.webp',
       alt: '햇살이 비치는 동호숲 사이로 굽은 소나무 줄기들이 늘어선 모습',
       caption: '동호숲',
+      category: 'spot',
       lat: 35.800082, lon: 127.920939, // In-grove location from the credited photo's GPS metadata.
       description: '웅양면 동호마을 어귀에 주민들이 마을의 안녕을 빌며 가꾼 소나무 숲이 있습니다.',
       credit: 'CHUNGMALLO',
@@ -65,6 +70,7 @@ const regionPhotos = {
       src: 'assets/landmarks/geochang-market.webp',
       alt: '거창시장 간판 아래로 상점과 노점이 이어지는 시장 입구의 옛 모습',
       caption: '거창전통시장',
+      category: 'other',
       lat: 35.686832, lon: 127.914035, // Market entrance at 거창읍 중앙로 140, per Geochang County.
       description: '거창읍 장터에서는 상설시장과 오일장이 함께 열려 지역의 먹거리와 장 풍경을 만날 수 있습니다.',
       credit: 'Visviva',
@@ -78,6 +84,7 @@ const regionPhotos = {
       src: 'assets/landmarks/hamyang.webp',
       alt: '함양 상림을 따라 흐르는 물길과 숲 너머로 보이는 아치형 다리',
       caption: '함양 상림',
+      category: 'spot',
       lat: 35.5306, lon: 127.7141,
       description: '함양읍 위천 곁에 조성된 숲으로, 넓은잎나무 사이로 산책길이 이어집니다.',
       credit: '최옥석',
@@ -89,6 +96,7 @@ const regionPhotos = {
       src: 'assets/landmarks/hamyang-namgye.webp',
       alt: '들판 너머 완만한 언덕을 따라 들어선 함양 남계서원의 전각들',
       caption: '남계서원',
+      category: 'spot',
       lat: 35.548854, lon: 127.783513,
       description: '조선의 학자 정여창을 기린 서원으로, 앞쪽의 배움터에서 뒤편 언덕의 사당으로 공간이 이어집니다.',
       credit: '국가유산청',
@@ -100,6 +108,7 @@ const regionPhotos = {
       src: 'assets/landmarks/hamyang-haksaru.webp',
       alt: '나무 기둥 위에 넓은 누마루와 기와지붕을 얹은 함양 학사루',
       caption: '학사루',
+      category: 'spot',
       lat: 35.519940, lon: 127.725902,
       description: '함양읍 한복판에 남아 있는 목조 누각으로, 높이 올린 마루와 사방이 열린 구조가 눈에 띕니다.',
       credit: 'HappyMidnight',
@@ -113,6 +122,7 @@ const regionPhotos = {
       src: 'assets/landmarks/andong.webp',
       alt: '낙동강 건너에서 내려다본 안동 하회마을과 들판',
       caption: '하회마을',
+      category: 'spot',
       lat: 36.539326, lon: 128.517343,
       description: '낙동강이 마을을 휘감아 흐르고, 마을 안에는 낮은 담장을 따라 기와집과 초가가 이어집니다.',
       credit: 'Bernard Gagnon',
@@ -124,6 +134,7 @@ const regionPhotos = {
       src: 'assets/landmarks/andong-woryeonggyo.webp',
       alt: '저녁 불빛을 밝힌 월영교와 다리 위 정자가 강물에 비친 풍경',
       caption: '월영교',
+      category: 'spot',
       lat: 36.576667, lon: 128.760750, // Wikidata Q12609478, bridge pavilion.
       description: '낙동강 위로 이어지는 보행교로, 다리 중간의 정자에서 강변을 바라볼 수 있습니다.',
       credit: 'Bernard Gagnon',
@@ -135,6 +146,7 @@ const regionPhotos = {
       src: 'assets/landmarks/andong-dosan.webp',
       alt: '도산서원의 기와집 사이로 붉은 꽃이 핀 돌계단이 이어지는 모습',
       caption: '도산서원',
+      category: 'spot',
       lat: 36.727384, lon: 128.843464,
       description: '퇴계 이황을 기리며 제자들이 세운 서원으로, 마당과 돌계단을 따라 옛 배움터를 둘러볼 수 있습니다.',
       credit: 'Steve46814',
@@ -150,3 +162,19 @@ const regionPhotos = {
     },
   ],
 };
+
+function regionGalleryPhotos(regionId, category) {
+  const landmarks = (regionPhotos[regionId] || []).filter((photo) => photo.category === category && !photo.isExample);
+  const examples = places
+    .filter((place) => place.region === regionId && (place.category === 'stay' ? 'other' : place.category) === category)
+    .map((place) => ({
+      placeId: place.id,
+      category,
+      caption: place.name,
+      description: `${place.locality} · 예시 장소`,
+      src: `assets/places/${place.photo || place.id}.jpg`,
+      alt: `${place.name} 예시 사진`,
+      isExample: true,
+    }));
+  return [...landmarks, ...examples];
+}
