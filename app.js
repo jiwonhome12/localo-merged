@@ -32,16 +32,29 @@ function categoryIcon(category) {
   return `<span class="category-icon ${category}" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">${categories[category].icon}</svg></span>`;
 }
 
-const travelLabels = { available: '여행 가능', upcoming: '여행 예정', ended: '여행 종료', unknown: '일정 미정' };
+const travelLabels = { available: '여행 가능', applying: '신청 중', upcoming: '여행 예정', ended: '여행 종료', unknown: '일정 미정' };
 const travelDateFormat = new Intl.DateTimeFormat('sv-SE', {
   year: 'numeric', month: '2-digit', day: '2-digit', timeZone: 'Asia/Seoul',
 });
+const koreaClock = new Intl.DateTimeFormat('sv-SE', {
+  hour: '2-digit', minute: '2-digit', hourCycle: 'h23', timeZone: 'Asia/Seoul',
+});
 
-function travelStatus(regionId, date = travelDateFormat.format(new Date())) {
+function openForApplications(period, date, time) {
+  return period.start <= date && date <= period.end &&
+    (date !== period.end || !period.closingTime || time < period.closingTime);
+}
+
+function travelStatus(regionId, date = travelDateFormat.format(new Date()), time = koreaClock.format(new Date())) {
   const periods = travelPeriods.filter((period) => period.region === regionId);
   if (periods.some(({ start, end }) => start <= date && date <= end)) return 'available';
+  if (applicationPeriods.some((p) => p.region === regionId && openForApplications(p, date, time))) return 'applying';
   if (periods.some(({ start }) => date < start)) return 'upcoming';
   return periods.length ? 'ended' : 'unknown';
+}
+
+function selectableStatus(status) {
+  return status === 'available' || status === 'applying';
 }
 
 function visibleRegions() {
@@ -60,8 +73,27 @@ function regionListVisible() {
 
 function syncRegionList() {
   const open = regionListVisible();
-  $('region-list-panel').hidden = !open;
+  const panel = $('region-list-panel');
   document.querySelector('[data-action="region-list"]')?.setAttribute('aria-expanded', String(open));
+  if (panel.dataset.open === String(open)) return;
+  const firstRender = panel.dataset.open === undefined;
+  panel.inert = !open;
+  if (open && panel.hidden) {
+    panel.hidden = false;
+    // Establish the offscreen position before reversing the transition.
+    panel.getBoundingClientRect();
+  }
+  panel.dataset.open = String(open);
+  if (open) return;
+  const filter = panel.querySelector('.rail-filter');
+  const animations = firstRender ? [] : filter.getAnimations();
+  if (!animations.length) {
+    panel.hidden = true;
+    return;
+  }
+  Promise.allSettled(animations.map((animation) => animation.finished)).then(() => {
+    if (panel.inert && !filter.getAnimations().length) panel.hidden = true;
+  });
 }
 compactRegions.addEventListener('change', syncRegionList);
 
@@ -81,26 +113,44 @@ function setRegionList(open, keyboard = false) {
   }
 }
 
-function regionListContent(date) {
-  const availableCount = regions.filter((item) => travelStatus(item.id, date) === 'available').length;
+function landmarkPhoto(regionId) {
+  return regionPhotos[regionId]?.find((photo) => !photo.isExample);
+}
+
+function landmarkPostcard(region, status) {
+  if (!selectableStatus(status)) return '';
+  const photo = landmarkPhoto(region.id);
+  if (!photo) return '';
+  return `<button type="button" class="landmark-postcard ${status}" data-action="region" data-value="${region.id}"
+      aria-label="${attr(region.name + ' · ' + photo.caption + ', ' + travelLabels[status] + ' 지역 선택')}">
+      <img src="${attr(photo.src)}" alt="" width="160" height="100" decoding="async">
+      <span>${photo.caption.startsWith(region.shortName) ? '' : `<small>${region.shortName}</small>`}<b>${attr(photo.caption)}</b></span>
+    </button>`;
+}
+
+function regionListContent(statuses) {
+  const availableCount = regions.filter((item) => statuses[item.id] === 'available').length;
   const filters = chip('전체 ' + regions.length, 'filter', 'all', false) +
     chip('여행 가능 ' + availableCount, 'filter', 'available', false);
   function provinceCard(province) {
     const group = regions.filter((region) => region.province === province);
     const rows = group.map((region) => {
-      const status = travelStatus(region.id, date);
+      const status = statuses[region.id];
       const title = travelLabels[status];
       return `
       <button type="button" class="region-row ${status}" data-action="region" data-value="${region.id}"
-        ${status === 'available' ? 'aria-pressed="false"' : 'aria-disabled="true" tabindex="-1"'}
+        ${selectableStatus(status) ? 'aria-pressed="false"' : 'aria-disabled="true" tabindex="-1"'}
         aria-label="${region.province} ${region.name}, ${title}" title="${region.province} ${region.name} · ${title}">
         <span class="region-name">${region.shortName}${region.star ? star : ''}</span>
         ${status === 'unknown' ? '' : `<span class="region-state">${title}</span>`}
       </button>`;
     }).join('');
-    return `<section class="province-card" aria-labelledby="province-${province}">
-      <h2 id="province-${province}">${province}</h2>
-      <div class="province-tiles">${rows}</div></section>`;
+    const photos = group.map((region) => landmarkPostcard(region, statuses[region.id])).join('');
+    return `<section class="province-group" aria-labelledby="province-${province}">
+      <div class="province-card"><h2 id="province-${province}">${province}</h2>
+        <div class="province-tiles">${rows}</div></div>
+      ${photos ? `<div class="province-landmarks">${photos}</div>` : ''}
+    </section>`;
   }
   const banks = [
     ['west', ['충북', '충남', '전북', '전남']],
@@ -117,16 +167,19 @@ function regionListContent(date) {
 
 function renderRegionPane() {
   const pane = $('region-pane');
-  const date = travelDateFormat.format(new Date());
-  if (pane.dataset.date !== date) {
-    pane.innerHTML = regionListContent(date);
-    pane.dataset.date = date;
+  const now = new Date();
+  const date = travelDateFormat.format(now), time = koreaClock.format(now);
+  const statuses = Object.fromEntries(regions.map(({ id }) => [id, travelStatus(id, date, time)]));
+  const statusKey = Object.values(statuses).join(',');
+  if (pane.dataset.statuses !== statusKey) {
+    pane.innerHTML = regionListContent(statuses);
+    pane.dataset.statuses = statusKey;
   }
   pane.dataset.filter = state.filter;
   for (const button of pane.querySelectorAll('[data-action="filter"]')) {
     button.setAttribute('aria-pressed', String(button.dataset.value === state.filter));
   }
-  for (const button of pane.querySelectorAll('.region-row.available')) {
+  for (const button of pane.querySelectorAll('.region-row[aria-pressed]')) {
     button.setAttribute('aria-pressed', String(button.dataset.value === state.region));
   }
   $('workspace').classList.toggle('has-region', Boolean(state.region));
@@ -154,6 +207,7 @@ function setRegionInfo(open, focus = false) {
 }
 
 document.addEventListener('pointerdown', (event) => {
+  if ($('basket-confirm').open) return;
   if ((state.region || compactRegions.matches) && regionListVisible() &&
       !event.target.closest('#region-list-panel, [data-action="region-list"]')) {
     setRegionList(false);
@@ -163,7 +217,7 @@ document.addEventListener('pointerdown', (event) => {
   }
 });
 document.addEventListener('keydown', (event) => {
-  if (event.key !== 'Escape') return;
+  if (event.key !== 'Escape' || $('basket-confirm').open) return;
   if (regionListVisible() && (state.region || compactRegions.matches || $('region-list-panel').contains(event.target)) && state.page === 'map' && !$('intro').open) {
     event.preventDefault();
     event.stopPropagation();
@@ -176,9 +230,14 @@ document.addEventListener('keydown', (event) => {
 }, true);
 
 function regionDetail(region) {
+  const site = reservationSites[region.id];
   const today = travelDateFormat.format(new Date());
-  const period = travelPeriods.find((item) => item.region === region.id &&
-    item.start <= today && today <= item.end);
+  const time = koreaClock.format(new Date());
+  const status = travelStatus(region.id, today, time);
+  const application = applicationPeriods.find((item) => item.region === region.id && openForApplications(item, today, time));
+  const period = travelPeriods.find((item) => item.region === region.id && item.end >= today);
+  const range = (item) => item.start.slice(5).replace('-', '.') + ' ~ ' + item.end.slice(5).replace('-', '.');
+  const photo = landmarkPhoto(region.id);
   const filters = [['all', { name: '전체' }], ...Object.entries(categories)].map(([key, category]) =>
     chip(category.name, 'category', key, state.category === key),
   ).join('');
@@ -190,14 +249,21 @@ function regionDetail(region) {
     </div>`).join('');
 
   return `<div class="region-detail"><button type="button" class="info-close" data-action="hide-details" aria-label="지역 상세 닫기">×</button>
-    <div class="detail-name"><h2 tabindex="-1" id="region-detail-name">${region.name}</h2><span class="status-label available">${travelLabels[travelStatus(region.id)]}</span></div>
+    <div class="detail-name"><h2 tabindex="-1" id="region-detail-name">${region.name}</h2><span class="status-label ${status}">${travelLabels[status]}</span></div>
     <p class="detail-meta">${region.province} ${region.newRegion ? '· 하반기 신규' : ''} ${region.star ? '· ' + star + ' 관광주민증 혜택' : ''}</p>
+    ${photo ? `<figure class="landmark-detail">
+      <img src="${attr(photo.src)}" alt="${attr(photo.alt)}" width="480" height="300" decoding="async">
+      <figcaption><strong>${attr(photo.caption)}</strong>
+        <span><a href="${attr(photo.source)}" target="_blank" rel="noreferrer">${attr(photo.credit)}</a>
+          · <a href="${attr(photo.licenseUrl)}" target="_blank" rel="noreferrer">${attr(photo.license)}</a> · 축소·크롭</span>
+      </figcaption></figure>` : ''}
     <div class="region-facts"><h3>여행 및 환급 정보</h3>
-      <dl>${period ? `<div><dt>여행 가능 기간</dt><dd>${period.start.slice(5).replace('-', '.')} ~ ${period.end.slice(5).replace('-', '.')}</dd></div>` : ''}
+      <dl>${application ? `<div><dt>신청 기간</dt><dd>${range(application)}${application.closingTime ? ' ' + application.closingTime + ' 마감' : ''}</dd></div>` : ''}
+        ${period ? `<div><dt>여행 가능 기간</dt><dd>${range(period)}</dd></div>` : ''}
         <div><dt>신청 조건</dt><dd>공고 확인 예정</dd></div>
       <div><dt>환급 조건</dt><dd>공고 확인 예정</dd></div>
       <div><dt>환급 방식</dt><dd>공고 확인 예정</dd></div>
-      <div><dt>공식 신청처</dt><dd>연결 예정</dd></div></dl>
+      <div><dt>공식 신청처</dt><dd><a href="${attr(site.url)}" target="_blank" rel="noopener noreferrer">${site.label || '사전 신청'} ↗</a></dd></div></dl>
     </div>
     <section class="places-heading" aria-label="장소 목록">
       <h3>장소 둘러보기</h3><div class="filter-group" aria-label="장소 유형 필터">${filters}</div>
@@ -209,9 +275,6 @@ function project(lon, lat) {
   return [112 + (lon - 125.55) * 94, 32 + (38.7 - lat) * 109];
 }
 
-const districtByName = new Map(regions.map((region) => [
-  region.name === '고성군' ? '38340' : region.name, region,
-]));
 const mapRegionPaths = new Map();
 const emphasisBounds = new Map();
 const mapGeometry = $('map-geometry');
@@ -221,9 +284,9 @@ $('skip-map').addEventListener('click', (event) => {
   mapViewport.focus();
 });
 const mapScene = $('map-scene');
-const minMapZoom = 1;
+const minMapZoom = 0.3;
 const maxMapZoom = 400;
-const placePinZoom = 8;
+const placePinZoom = 20;
 // Extents of the contiguous mainland and Jeju in this map's projected coordinates.
 const mainlandAndJeju = { left: 164.8, right: 491.2, top: 41.4, bottom: 632.1 - 36 };
 let mapLayout;
@@ -233,22 +296,24 @@ let pendingZoom = null;
 let pendingAnchor = null;
 let pendingPhotoId = null;
 
-mapGeometry.innerHTML = '<g id="map-districts">' + districtPaths.map(([code, name, path]) => {
-  const region = districtByName.get(name === '고성군' ? code : name);
-  if (code === '39010' || code === '39020') {
-    // Each municipality's longest outline is its portion of Jeju itself.
-    // Neighboring islands in these records keep their original positions.
-    const rings = path.match(/M[^Z]+Z/g);
-    const mainIsland = rings.reduce((largest, ring) => ring.length > largest.length ? ring : largest);
-    return `<path class="district" d="${rings.filter((ring) => ring !== mainIsland).join('')}"/><path class="district jeju-main" d="${mainIsland}" transform="translate(0 -36)"/>`;
-  }
-  return `<path class="district" ${region ? 'data-region="' + region.id + '"' : ''} d="${path}"/>`;
-}).join('') + '</g><g class="district-outlines" aria-hidden="true"><path id="hover-outline"/><path id="selection-outline"/></g><g id="map-labels"></g>';
+const provinceLayer = provincePaths.map(([code, path]) =>
+  `<path class="district province" data-province="${code}" d="${path}"/>`).join('');
+const targetLayer = targetPaths.map(([id, path]) =>
+  `<path class="district target" data-region="${id}" d="${path}"/>`).join('');
+mapGeometry.innerHTML = `<defs><filter id="land-shadow" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+    <feDropShadow dx="0" dy="1.5" stdDeviation="1.2" flood-color="#554d55" flood-opacity=".2"/>
+  </filter></defs>
+  <g id="map-provinces" fill-rule="evenodd" filter="url(#land-shadow)">${provinceLayer}</g>
+  <g id="map-districts">${targetLayer}</g>
+  <g id="district-halos" aria-hidden="true"></g>
+  <g class="district-outlines" aria-hidden="true"><path id="hover-outline"/><path id="selection-outline"/></g><g id="map-labels"></g>`;
 for (const path of mapGeometry.querySelectorAll('[data-region]')) {
   mapRegionPaths.set(path.dataset.region, path);
 }
 
 const districtOutlines = [$('hover-outline'), $('selection-outline')];
+const landShadow = $('land-shadow');
+const shadowEffect = landShadow.firstElementChild;
 
 // Lift the printed shape very slightly in the overview. Even outlying islands
 // move at most two screen pixels, and the base path owns every pointer event.
@@ -284,14 +349,15 @@ function setDistrictOutline(layer, regionId) {
 }
 
 function layoutMap(center, anchor) {
-  const locked = state.zoom <= minMapZoom;
+  const locked = state.zoom <= 1;
   mapViewport.classList.toggle('national-view', locked);
   const viewportWidth = mapViewport.clientWidth;
   const viewportHeight = mapViewport.clientHeight;
   if (!viewportWidth || !viewportHeight) return;
   const viewport = mapViewport.getBoundingClientRect();
-  const usable = visibleMapBounds();
-  const centerX = (usable.left + usable.right) / 2 - viewport.left;
+  const regionFrame = state.region && !locked ? regionalFrame(state.region) : null;
+  const usable = regionFrame || visibleMapBounds();
+  const centerX = (regionFrame?.centerX ?? (usable.left + usable.right) / 2) - viewport.left;
   const centerY = (usable.top + usable.bottom) / 2 - viewport.top;
   const fittedWidth = fittedMapWidth();
   const previous = mapLayout;
@@ -303,14 +369,9 @@ function layoutMap(center, anchor) {
       (mapViewport.scrollTop + oldY - previous.top) / previous.height,
     ];
   }
-  center ??= [0.5, 0.5];
+  center ??= overviewCenter();
   const width = fittedWidth * state.zoom;
   const height = width * 640 / 620;
-  if (state.zoom <= 1 && !mapAnimation) {
-    // At national scale the entire country takes precedence over the wheel cursor.
-    center = overviewCenter();
-    anchor = null;
-  }
   const targetX = anchor?.[0] ?? centerX;
   const targetY = anchor?.[1] ?? centerY;
   const left = locked ? targetX - width * center[0] : viewportWidth;
@@ -324,15 +385,12 @@ function layoutMap(center, anchor) {
   mapViewport.scrollLeft = locked ? 0 : left + width * center[0] - targetX;
   mapViewport.scrollTop = locked ? 0 : top + height * center[1] - targetY;
   syncMapProjection();
-  const controls = $('map-stage').querySelector('.map-controls');
-  const controlsX = state.region && !locked ? centerX : centerX + Math.min(95, (usable.right - usable.left) * 0.22);
-  controls.style.left = controlsX + 'px';
-  controls.style.bottom = (state.region && !locked ? viewport.bottom - usable.bottom - controls.offsetHeight : viewport.bottom - usable.bottom + 7) + 'px';
+  positionMapControls(regionFrame);
   if (!state.region && locked && !mapAnimation) positionRegionLabels(usable, []);
 }
 
 function fittedMapWidth() {
-  const frame = visibleMapBounds(false, true);
+  const frame = visibleMapBounds({ baseline: true });
   return Math.max(1, 620 * Math.min((frame.right - frame.left - 4) / (mainlandAndJeju.right - mainlandAndJeju.left),
     (frame.bottom - frame.top - 4) / (mainlandAndJeju.bottom - mainlandAndJeju.top)));
 }
@@ -347,6 +405,13 @@ function syncMapProjection() {
   mapScene.style.setProperty('--origin-x', -x + 'px');
   mapScene.style.setProperty('--origin-y', -y + 'px');
   mapGeometry.setAttribute('viewBox', `${x / scale} ${y / scale} ${mapViewport.clientWidth / scale} ${mapViewport.clientHeight / scale}`);
+  // Clip the shadow surface to the viewport and keep its relief a few screen pixels at every scale.
+  landShadow.setAttribute('x', (x - 6) / scale);
+  landShadow.setAttribute('y', (y - 6) / scale);
+  landShadow.setAttribute('width', (mapViewport.clientWidth + 12) / scale);
+  landShadow.setAttribute('height', (mapViewport.clientHeight + 12) / scale);
+  shadowEffect.setAttribute('dy', 1.5 / scale);
+  shadowEffect.setAttribute('stdDeviation', 1.2 / scale);
   // Leader offsets belong to the labels on screen, not to the terrain.
   // Ease them down to zero by 200%, where every label sits on its coordinate.
   const labelScale = Math.min(scale, 1) * Math.max(0, 2 - state.zoom);
@@ -384,10 +449,10 @@ function cancelMapAnimation() {
 
 function animateMap(previous, center, zoom, fittedWidth, anchor, onArrival) {
   function draw(value, focus, zoomAnchor) {
-    const overviewChanged = (state.zoom <= minMapZoom) !== (value <= minMapZoom);
-    const placesChanged = state.region && (state.zoom > placePinZoom) !== (value > placePinZoom);
+    const overviewChanged = (state.zoom <= 1) !== (value <= 1);
+    const placesChanged = state.region && (state.zoom >= placePinZoom) !== (value >= placePinZoom);
     state.zoom = value;
-    if (placesChanged && value <= placePinZoom) {
+    if (placesChanged && value < placePinZoom) {
       if (document.activeElement?.closest('.place-balloon, .map-marker.place')) mapViewport.focus({ preventScroll: true });
       closeBalloon(false);
     }
@@ -449,18 +514,17 @@ function zoomMap(factor, anchor) {
   if (zoom === pendingZoom || (!mapAnimation && state.zoom === zoom)) return;
   const sameAnchor = anchor && pendingAnchor ? Math.hypot(anchor[0] - pendingAnchor[0], anchor[1] - pendingAnchor[1]) < 2
     : !anchor && !pendingAnchor;
-  if (pendingZoom !== null && mapAnimation && sameAnchor && zoom > minMapZoom && pendingZoom > minMapZoom) {
+  if (pendingZoom !== null && mapAnimation && sameAnchor && (zoom <= 1) === (pendingZoom <= 1)) {
     // A stream of wheel ticks should keep moving instead of restarting the ease-in.
     pendingZoom = zoom;
     return;
   }
   cancelMapAnimation();
-  // The 100% endpoint frames the whole country. Other steps keep the point
-  // under the cursor (or viewport center for the buttons) stationary.
-  if (zoom === minMapZoom) anchor = null;
+  // Nationwide zoom steps use the current center, including any manual pan.
+  if (zoom <= 1) anchor = null;
   const previous = currentMapCamera(anchor);
   const width = fittedMapWidth();
-  const center = zoom === minMapZoom || !previous ? overviewCenter() : previous.center;
+  const center = previous?.center ?? overviewCenter();
   pendingZoom = zoom;
   pendingAnchor = anchor;
   animateMap(previous, center, zoom, width, anchor);
@@ -504,12 +568,29 @@ function renderMap() {
     aria-controls="region-list-panel" aria-expanded="${regionListVisible()}">지역 목록</button>`;
 
   highlightRegion(null);
+  const activeBorders = [];
   for (const [id, path] of mapRegionPaths) {
-    path.setAttribute('class', `district target ${travelStatus(id)}${id === state.region ? ' selected' : ''}`);
+    const status = travelStatus(id);
+    path.setAttribute('class', `district target ${status}${id === state.region ? ' selected' : ''}`);
+    if (selectableStatus(status)) activeBorders.push([id, status]);
   }
+  renderDistrictHalos(activeBorders);
   setDistrictOutline($('selection-outline'), state.region);
 
   renderMapMarkers(region, matching);
+}
+
+function renderDistrictHalos(borders) {
+  const layer = $('district-halos');
+  const signature = borders.map(([id, status]) => id + ':' + status).join(',');
+  if (layer.dataset.borders === signature) return;
+  layer.dataset.borders = signature;
+  // All three strokes stay the same screen width, including at 40,000% zoom.
+  const shapes = borders.map(([id]) =>
+    `<path id="rim-${id}" d="${mapRegionPaths.get(id).getAttribute('d')}" vector-effect="non-scaling-stroke"/>`).join('');
+  const strokes = ['aura', 'glow', 'edge'].map((weight) =>
+    borders.map(([id, status]) => `<use class="${weight} ${status}" href="#rim-${id}"/>`).join('')).join('');
+  layer.innerHTML = `<defs>${shapes}</defs>${strokes}`;
 }
 
 function renderMapMarkers(region = regionById.get(state.region), matching = visibleRegions()) {
@@ -518,7 +599,7 @@ function renderMapMarkers(region = regionById.get(state.region), matching = visi
   if (region) {
     const [centerX, centerY] = project(region.lon, region.lat);
     labels.push(`<span class="area-label" style="${mapPosition(centerX, centerY)}" aria-hidden="true">${region.shortName}</span>`);
-    for (const place of state.zoom > placePinZoom ? visiblePlaces() : []) {
+    for (const place of state.zoom >= placePinZoom ? visiblePlaces() : []) {
       const x = centerX + place.x;
       const y = centerY + place.y;
       labels.push(`<button type="button" class="map-marker place ${place.category} ${state.place === place.id ? 'active' : ''}"
@@ -531,12 +612,12 @@ function renderMapMarkers(region = regionById.get(state.region), matching = visi
     for (const item of matching) {
       const [x, y] = project(item.lon, item.lat);
       const status = travelStatus(item.id);
-      if (region && (item.id === region.id || status !== 'available')) continue;
+      if (region && (item.id === region.id || !selectableStatus(status))) continue;
       const offsetX = status === 'unknown' ? 0 : item.offsetX;
       const offsetY = status === 'unknown' ? 0 : item.offsetY;
       if (status !== 'unknown') lines.push(`<line class="map-leader" data-leader="${item.id}" x1="${x}" y1="${y}" x2="${x}" y2="${y}"/><circle class="map-anchor" cx="${x}" cy="${y}" r="0"/>`);
       labels.push(`<button type="button" class="map-marker region-marker ${status}" data-action="region" data-value="${item.id}"
-        ${status === 'available' ? '' : 'aria-disabled="true" tabindex="-1"'} aria-label="${item.name} ${travelLabels[status]}" style="${mapPosition(x, y)};--offset-x:${offsetX};--offset-y:${offsetY}">
+        ${selectableStatus(status) ? '' : 'aria-disabled="true" tabindex="-1"'} aria-label="${item.name} ${travelLabels[status]}" style="${mapPosition(x, y)};--offset-x:${offsetX};--offset-y:${offsetY}">
         <span class="status-dot" aria-hidden="true"></span><span class="marker-name">${item.shortName}</span></button>`);
     }
   }
@@ -545,27 +626,27 @@ function renderMapMarkers(region = regionById.get(state.region), matching = visi
   syncMapProjection();
   updateZoomControls();
   positionBalloon();
-  if (!region && state.zoom <= minMapZoom && mapLayout && !mapAnimation) positionRegionLabels(visibleMapBounds(), []);
+  if (!region && state.zoom <= 1 && mapLayout && !mapAnimation) positionRegionLabels(visibleMapBounds(), []);
 }
 
-function visibleMapBounds(withDrawer = true, baseline = false) {
+function visibleMapBounds({ baseline = false, national = !state.region || state.zoom <= 1, avoidDrawer = false } = {}) {
   const frame = mapViewport.getBoundingClientRect();
   let left = Math.max(0, frame.left);
   let top = Math.max(0, frame.top);
   let right = Math.min(window.innerWidth, baseline ? frame.right : frame.left + mapViewport.clientWidth);
   let bottom = Math.min(window.innerHeight, baseline ? frame.bottom : frame.top + mapViewport.clientHeight);
-  const national = (baseline || !state.region || state.zoom <= minMapZoom) && $('national-map-area')?.getBoundingClientRect();
-  if (national?.width && national.height) {
-    left = Math.max(left, national.left);
-    right = Math.min(right, national.right);
-    top = Math.max(top, national.top);
-    bottom = Math.min(bottom, national.bottom);
+  const nationalFrame = (baseline || national) && $('national-map-area').getBoundingClientRect();
+  if (nationalFrame?.width && nationalFrame.height) {
+    left = Math.max(left, nationalFrame.left);
+    right = Math.min(right, nationalFrame.right);
+    top = Math.max(top, nationalFrame.top);
+    bottom = Math.min(bottom, nationalFrame.bottom);
   }
   const header = $('map-header').getBoundingClientRect();
-  if (!baseline && state.region && state.zoom > minMapZoom && header.bottom > top && header.top < bottom && header.right > left && header.left < right) {
+  if (!baseline && !national && header.bottom > top && header.top < bottom && header.right > left && header.left < right) {
     top = header.bottom + 6;
   }
-  if (withDrawer && state.drawerOpen) {
+  if (avoidDrawer) {
     // The dock's anchor is stationary throughout the drawer's slide animation.
     const dock = $('cart-dock').getBoundingClientRect();
     const panel = $('trip-panel');
@@ -581,12 +662,48 @@ function visibleMapBounds(withDrawer = true, baseline = false) {
       }
     }
   }
-  if (!baseline && state.region && state.zoom > minMapZoom) bottom -= $('map-stage').querySelector('.map-controls').offsetHeight + 14;
+  if (!baseline && !national) bottom -= $('map-stage').querySelector('.map-controls').offsetHeight + 14;
   return { left, top, right, bottom: Math.max(top, bottom) };
 }
 
+// Use the same regional frame with the drawer open or closed. Its button can
+// overlay the map without changing the camera or its anchor for subsequent zooms.
+function regionalFrame(id) {
+  const full = visibleMapBounds({ national: false });
+  const room = visibleMapBounds({ national: false, avoidDrawer: true });
+  const bounds = mapRegionPaths.get(id).getBBox();
+  const width = room.right - room.left;
+  const height = room.bottom - room.top;
+  const pad = Math.min(22, Math.min(width, height) * .035);
+  const scale = Math.min((width - 2 * pad) / bounds.width, (height - 2 * pad) / bounds.height);
+  const halfWidth = bounds.width * scale / 2 + pad;
+  const middle = (full.left + full.right) / 2;
+  const centerX = Math.max(room.left + halfWidth, Math.min(middle, room.right - halfWidth));
+  return { ...room, centerX, scale };
+}
+
+function positionMapControls(regionFrame) {
+  if (state.page !== 'map' || !mapViewport.clientWidth) return;
+  const viewport = mapViewport.getBoundingClientRect();
+  const controls = $('map-stage').querySelector('.map-controls');
+  const room = regionFrame || (state.drawerOpen && visibleMapBounds({ national: false, avoidDrawer: true }));
+  if (room) {
+    const besideDrawer = room.right < viewport.left + mapViewport.clientWidth - 10;
+    const right = room.right - (besideDrawer ? $('cart-toggle').offsetWidth + 8 : 0);
+    const half = controls.offsetWidth / 2 + 3;
+    const middle = regionFrame?.centerX ?? (room.left + room.right) / 2;
+    controls.style.left = (Math.max(room.left + half, Math.min(middle, right - half)) - viewport.left) + 'px';
+    controls.style.bottom = (viewport.bottom - room.bottom - controls.offsetHeight) + 'px';
+  } else {
+    const frame = visibleMapBounds();
+    const width = frame.right - frame.left;
+    controls.style.left = (frame.left - viewport.left + width / 2 + Math.min(95, width * .22)) + 'px';
+    controls.style.bottom = (viewport.bottom - frame.bottom + 7) + 'px';
+  }
+}
+
 function balloonFrame() {
-  const normal = visibleMapBounds();
+  const normal = visibleMapBounds({ avoidDrawer: state.drawerOpen });
   if (normal.bottom - normal.top >= 190) return normal;
   // In landscape, the space beside a control may fit the whole bubble even
   // when treating that control as a full-width row leaves very little room.
@@ -752,15 +869,16 @@ mapGeometry.addEventListener('click', (event) => {
   const path = event.target.closest('[data-region]');
   if (path && path.dataset.region !== state.region) selectRegion(path.dataset.region, false);
 });
-mapViewport.addEventListener('scroll', () => {
+function updateAfterPan() {
   syncMapProjection();
   positionBalloon();
-  if (!state.region && state.zoom <= minMapZoom && !mapAnimation) positionRegionLabels(visibleMapBounds(), []);
-}, { passive: true });
+  if (!state.region && state.zoom <= 1 && !mapAnimation) positionRegionLabels(visibleMapBounds(), []);
+}
+mapViewport.addEventListener('scroll', updateAfterPan, { passive: true });
 $('map-stage').addEventListener('wheel', (event) => {
   if (!event.ctrlKey) {
-    if (state.zoom <= minMapZoom) event.preventDefault();
-    if (state.zoom > minMapZoom || pendingPhotoId) cancelMapAnimation();
+    if (state.zoom <= 1) event.preventDefault();
+    if (state.zoom > 1 || pendingPhotoId) cancelMapAnimation();
     return;
   }
   event.preventDefault();
@@ -789,7 +907,7 @@ function stopPanning() {
 }
 window.addEventListener('keydown', (event) => {
   if (event.key === 'Tab') keyboardNavigation = true;
-  if (state.page !== 'map' || state.zoom <= minMapZoom || event.code !== 'Space' || !pointerOnMap || event.ctrlKey || event.metaKey || event.altKey) return;
+  if (state.page !== 'map' || event.code !== 'Space' || !pointerOnMap || event.ctrlKey || event.metaKey || event.altKey) return;
   if (event.target.closest?.('input, textarea, select, [contenteditable="true"]') ||
     (keyboardNavigation && event.target.closest?.('button, a'))) return;
   event.preventDefault();
@@ -816,7 +934,7 @@ document.addEventListener('keydown', (event) => {
 }, true);
 mapViewport.addEventListener('pointerdown', (event) => {
   suppressPanClick = false;
-  if (state.zoom <= minMapZoom || !panArmed || !event.isPrimary || event.button !== 0) return;
+  if (!panArmed || !event.isPrimary || event.button !== 0) return;
   cancelMapAnimation();
   event.preventDefault();
   event.stopImmediatePropagation();
@@ -837,8 +955,17 @@ mapViewport.addEventListener('pointermove', (event) => {
   pointerOnMap = true;
   if (!panPointer || panPointer.id !== event.pointerId) return;
   if (!(event.buttons & 1)) { releasePan(); return; }
-  mapViewport.scrollLeft -= event.clientX - panPointer.x;
-  mapViewport.scrollTop -= event.clientY - panPointer.y;
+  const dx = event.clientX - panPointer.x;
+  const dy = event.clientY - panPointer.y;
+  if (state.zoom <= 1) {
+    // The overview has no scrollbars. Move its projected origin with the pointer.
+    mapLayout.left += dx;
+    mapLayout.top += dy;
+    updateAfterPan();
+  } else {
+    mapViewport.scrollLeft -= dx;
+    mapViewport.scrollTop -= dy;
+  }
   panPointer.x = event.clientX;
   panPointer.y = event.clientY;
 });
@@ -855,14 +982,16 @@ function refreshMapFrame() {
   revealPlace();
 }
 const mapResize = new ResizeObserver(refreshMapFrame);
-for (const surface of [mapViewport, $('trip-panel')]) mapResize.observe(surface);
+mapResize.observe(mapViewport);
 if ($('national-map-area')) mapResize.observe($('national-map-area'));
-let mapDrawerOpen = false;
-new MutationObserver(() => {
-  if (state.drawerOpen === mapDrawerOpen) return;
-  mapDrawerOpen = state.drawerOpen;
-  refreshMapFrame();
-}).observe($('cart-dock'), { attributes: true, attributeFilter: ['class'] });
+// Reposition overlays without changing the visible map or its scroll position.
+function refreshDrawerOverlays() {
+  if (state.page !== 'map' || !mapViewport.clientWidth) return;
+  positionMapControls(state.region && state.zoom > 1 ? regionalFrame(state.region) : null);
+  positionBalloon();
+}
+new ResizeObserver(refreshDrawerOverlays).observe($('trip-panel'));
+new MutationObserver(refreshDrawerOverlays).observe($('cart-dock'), { attributes: true, attributeFilter: ['class'] });
 
 function closeBalloon(focusPin) {
   if (!state.place) return;
@@ -876,8 +1005,17 @@ function closeBalloon(focusPin) {
   if (focusPin) (pin || mapViewport).focus({ preventScroll: true });
 }
 
-function regionSelectionZoom(width) {
-  return Math.min(80, Math.max(50, 38 * 620 / width));
+function regionCamera(id, fittedWidth) {
+  const bounds = mapRegionPaths.get(id).getBBox();
+  // A zoomed viewport reserves its scrollbar gutters, even when selection starts at 30%.
+  const wasNational = mapViewport.classList.contains('national-view');
+  if (wasNational) mapViewport.classList.remove('national-view');
+  const { scale } = regionalFrame(id);
+  if (wasNational) mapViewport.classList.add('national-view');
+  return {
+    center: [(bounds.x + bounds.width / 2) / 620, (bounds.y + bounds.height / 2) / 640],
+    zoom: Math.max(minMapZoom, Math.min(maxMapZoom, scale * 620 / fittedWidth)),
+  };
 }
 
 function selectPlace(id, fromPin, keyboard) {
@@ -886,7 +1024,7 @@ function selectPlace(id, fromPin, keyboard) {
   cancelMapAnimation();
   setRegionInfo(false);
   function showPhoto() {
-    if (state.page !== 'map' || state.region !== place.region || state.zoom <= placePinZoom) return;
+    if (state.page !== 'map' || state.region !== place.region || state.zoom < placePinZoom) return;
     state.place = id;
     renderMapMarkers();
     document.dispatchEvent(new CustomEvent('localo:place', { detail: { placeId: id } }));
@@ -894,7 +1032,7 @@ function selectPlace(id, fromPin, keyboard) {
     if (fromPin) mapScene.querySelector('.balloon-bubble')?.classList.add('opening');
     if (keyboard) mapScene.querySelector('.balloon-close')?.focus({ preventScroll: true });
   }
-  if (state.zoom > placePinZoom) {
+  if (state.zoom >= placePinZoom) {
     showPhoto();
     return;
   }
@@ -905,7 +1043,7 @@ function selectPlace(id, fromPin, keyboard) {
   const center = [(x + place.x) / 620, (y + place.y) / 640];
   pendingPhotoId = id;
   if (keyboard) mapViewport.focus({ preventScroll: true });
-  animateMap(currentMapCamera(), center, regionSelectionZoom(width), width, null, showPhoto);
+  animateMap(currentMapCamera(), center, placePinZoom, width, null, showPhoto);
 }
 
 // These named sample businesses illustrate the calculation; official eligibility is unverified.
@@ -923,19 +1061,20 @@ function itemCost(place, quantity) {
   return place.price * quantity * (place.category === 'stay' ? tripNights() : 1);
 }
 
-function visitTimeLabel({ start, end }) {
-  if (!start) return end ? `${end}까지` : '방문 시간 정하기';
-  if (!end || end === start) return start;
-  return `${start} – ${end < start ? '다음 날 ' : ''}${end}`;
+function visitTimeLabel({ date, start, end }) {
+  const day = date ? date.slice(5).replace('-', '.') : '';
+  const time = start && end && start !== end ? `${start} – ${end < start ? '다음 날 ' : ''}${end}`
+    : start || (end ? `${end}까지` : '');
+  return [day, time].filter(Boolean).join(' · ') || '방문 시간 정하기';
 }
 
-function basketItem({ place, visit, number, cost, status }, open) {
+function basketItem({ place, visit, number, cost, status }, open, index, count) {
   const name = attr(place.name);
   const unit = categories[place.category].unit;
   const label = { eligible: '환급 대상 · 예시', excluded: '환급 제외 · 예시', unknown: '환급 미확인', free: '무료' }[status];
   const priceDetail = `${won(place.price)} × ${place.category === 'stay' ? tripNights() + '박 × ' : ''}${visit.quantity}${unit}`;
-  return `<li class="itinerary-stop" value="${number}">
-    <span class="stop-number" aria-hidden="true">${String(number).padStart(2, '0')}</span>
+  return `<li class="itinerary-stop" data-stop-id="${place.id}" value="${number}">
+    <span class="stop-number" aria-hidden="true" ${count > 1 ? 'title="끌어서 순서 바꾸기"' : ''}>${String(number).padStart(2, '0')}</span>
     <details class="stop-editor" data-stop="${place.id}" ${open ? 'open' : ''}>
       <summary>
         <span class="stop-time"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M12 6v6l4 2"/></svg><span class="visit-time-label">${visitTimeLabel(visit)}</span><span class="stop-chevron" aria-hidden="true"></span></span>
@@ -944,6 +1083,7 @@ function basketItem({ place, visit, number, cost, status }, open) {
       </summary>
       <div class="stop-fields">
         <div class="stop-times">
+          ${state.page === 'planner' ? `<label>방문 날짜<input type="date" data-visit-field="date" value="${visit.date || ''}" min="${$('start-date').value}" max="${$('end-date').value}" aria-label="${name} 방문 날짜"></label>` : ''}
           <label>시작 시각<input type="time" data-visit-field="start" value="${visit.start}" aria-label="${name} 방문 시작 시각"></label>
           <label>종료 시각<input type="time" data-visit-field="end" value="${visit.end}" aria-label="${name} 방문 종료 시각"></label>
         </div>
@@ -952,6 +1092,10 @@ function basketItem({ place, visit, number, cost, status }, open) {
           <output>${visit.quantity}${unit}</output>
           <button type="button" data-action="quantity" data-value="${place.id}" data-delta="1" aria-label="${name} 수량 늘리기" ${visit.quantity >= 99 ? 'disabled' : ''}>+</button>
         </div><button type="button" class="delete-item" data-action="remove" data-value="${place.id}" aria-label="${name} 삭제">삭제</button></div>
+        ${count > 1 ? `<div class="stop-order-actions" role="group" aria-label="${name} 방문 순서">
+          <button type="button" data-move="-1" aria-label="${name} 한 칸 위로" ${index === 0 ? 'disabled' : ''}>↑ 위로</button>
+          <button type="button" data-move="1" aria-label="${name} 한 칸 아래로" ${index === count - 1 ? 'disabled' : ''}>↓ 아래로</button>
+        </div>` : ''}
       </div>
     </details>
   </li>`;
@@ -959,11 +1103,13 @@ function basketItem({ place, visit, number, cost, status }, open) {
 
 $('trip-items').addEventListener('input', (event) => {
   const field = event.target.dataset.visitField;
-  if (field !== 'start' && field !== 'end') return;
+  if (!['date', 'start', 'end'].includes(field)) return;
   const editor = event.target.closest('details[data-stop]');
   const visit = state.basket.get(editor.dataset.stop);
+  if (!event.target.validity.valid) return;
   visit[field] = event.target.value;
   editor.querySelector('.visit-time-label').textContent = visitTimeLabel(visit);
+  myPlans.saveEdits();
 });
 
 function renderTrip() {
@@ -985,6 +1131,10 @@ function renderTrip() {
   $('cart-count').hidden = count === 0;
   $('cart-count').textContent = count;
   $('trip-count').textContent = count ? `${regionIds.length}개 지역 · ${count}곳` : '담은 장소 0곳';
+  const destination = state.page === 'map' && regionById.get(state.region);
+  $('trip-destination').hidden = !destination;
+  $('trip-region').textContent = destination ? destination.name : '';
+  if (destination) $('trip-region').setAttribute('aria-label', `${destination.name} · 다른 곳 여행하기`);
   $('cart-toggle').setAttribute('aria-label', `여행 일정표 ${state.drawerOpen ? '닫기' : '열기'}, 담은 장소 ${count}곳`);
   $('people-label').textContent = state.people + '명';
   document.querySelector('[data-action="people"][data-delta="-1"]').disabled = state.people <= 1;
@@ -998,7 +1148,7 @@ function renderTrip() {
   const tabs = [['all', '전체'], ...regionIds.map((id) => [id, regionById.get(id).shortName])];
   tripItems.innerHTML = stops.length ? `
     ${state.page === 'planner' && regionIds.length > 1 ? `<div class="trip-tabs" aria-label="일정과 경비를 볼 지역">${tabs.map(([key, label]) => chip(label, 'basket-region', key, regionFilter === key)).join('')}</div>` : ''}
-    <ol class="itinerary-list" aria-label="담은 순서대로 정리한 여행 일정">${shown.map((stop) => basketItem(stop, openStops.has(stop.place.id))).join('')}</ol>`
+    <ol class="itinerary-list" aria-label="방문 순서로 정리한 여행 일정">${shown.map((stop, i) => basketItem(stop, openStops.has(stop.place.id), i, shown.length)).join('')}</ol>`
     : `<div class="cart-empty">
       <span class="cart-empty-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round">${icons.bag}</svg></span>
       <strong>아직 담은 장소가 없어요</strong>
@@ -1016,13 +1166,17 @@ function renderTrip() {
     <p class="fine-print">요금과 환급 조건은 시안용 예시입니다. 실제 업체별 환급 자격은 미확인입니다.</p>`;
   $('split-count').textContent = `${scope}예시 · ${state.people}명 균등 분할`;
   $('split-estimate').textContent = won(share);
+  myPlans.render(regionIds);
 }
 
 function renderPage() {
   const name = location.hash.slice(1);
   const page = name === 'route' ? 'planner' : ['calendar', 'planner'].includes(name) ? name : 'map';
   const changedPage = page !== state.page;
+  if (changedPage && $('plan-save-dialog').open) $('plan-save-dialog').close();
+  if (changedPage && $('basket-confirm').open) $('basket-confirm').close('keep');
   if (changedPage) setRegionInfo(false);
+  if (changedPage) myPlans.switchPage(state.page, page);
   state.page = page;
   document.title = { map: '지역 지도', planner: '여행 플래너', calendar: '축제 캘린더' }[page] + ' · 로컬로';
   $('workspace').hidden = page !== 'map';
@@ -1030,10 +1184,11 @@ function renderPage() {
   $('secondary').hidden = page !== 'calendar';
   $('planner-page').hidden = page !== 'planner';
   $('secondary').classList.toggle('calendar-page', page === 'calendar');
-  const panelParent = page === 'planner' ? $('planner-page') : $('cart-dock');
+  const panelParent = page === 'planner' ? $('plan-content') : $('cart-dock');
   if ($('trip-panel').parentNode !== panelParent) panelParent.append($('trip-panel'));
   $('trip-calculator').open = page === 'planner';
   setCartOpen(false);
+  if (changedPage && page === 'map') renderMap();
   renderTrip();
   for (const link of document.querySelectorAll('[data-page]')) {
     if (link.dataset.page === page) link.setAttribute('aria-current', 'page');
@@ -1052,7 +1207,7 @@ function renderPage() {
 }
 
 function selectRegion(regionId, focusHeading) {
-  if (regionId && travelStatus(regionId) !== 'available') return;
+  if (regionId && !selectableStatus(travelStatus(regionId))) return;
   cancelMapAnimation();
   stopPanning();
   const previous = currentMapCamera();
@@ -1061,13 +1216,16 @@ function selectRegion(regionId, focusHeading) {
   state.regionListOpen = !regionId;
   state.category = 'all';
   state.place = null;
+  if (regionId) {
+    state.drawerManuallyClosed = false;
+    setCartOpen(true);
+  }
+  renderTrip();
   renderRegionPane();
   renderMap();
   const fittedWidth = fittedMapWidth();
-  const zoom = regionId ? regionSelectionZoom(fittedWidth) : minMapZoom;
   const region = regionById.get(regionId);
-  const point = region && project(region.lon, region.lat);
-  const center = region ? [point[0] / 620, point[1] / 640] : overviewCenter();
+  const { center, zoom } = region ? regionCamera(regionId, fittedWidth) : { center: overviewCenter(), zoom: 1 };
   animateMap(previous, center, zoom, fittedWidth);
   if (focusHeading) {
     const first = region ? mapScene.querySelector('.place') : $('region-pane').querySelector('.region-row.available');
@@ -1077,8 +1235,9 @@ function selectRegion(regionId, focusHeading) {
 
 function updateBasket() {
   if (state.basket.size === 0) state.drawerManuallyClosed = false;
+  myPlans.saveEdits();
   renderTrip();
-  if (state.region) {
+  if (state.page === 'map' && state.region) {
     refreshRegionInfo();
     renderMap();
   }
@@ -1099,6 +1258,35 @@ function toggleCart() {
   setCartOpen(!state.drawerOpen);
 }
 
+function switchTripRegion() {
+  if (!state.region) return;
+  setRegionList(true);
+  stopPanning();
+  state.region = null;
+  state.category = 'all';
+  state.place = null;
+  renderRegionPane();
+  renderMap();
+  renderTrip();
+  setCartOpen(false);
+  if (state.basket.size) {
+    const confirm = $('basket-confirm');
+    confirm.returnValue = 'keep';
+    confirm.showModal();
+  } else {
+    setRegionList(true, true);
+  }
+}
+
+$('basket-confirm').addEventListener('close', () => {
+  if ($('basket-confirm').returnValue === 'clear') {
+    state.basket.clear();
+    updateBasket();
+    $('cart-announcement').textContent = '담은 장소를 모두 삭제했어요.';
+  }
+  if (state.page === 'map') setRegionList(true, true);
+});
+
 function addPlace(id) {
   const place = placeById.get(id);
   if (!place || state.basket.has(id)) return;
@@ -1114,8 +1302,8 @@ document.addEventListener('localo:place', (event) => {
 });
 
 document.addEventListener('click', (event) => {
-  if (state.drawerOpen && !state.basket.size && !$('cart-dock').contains(event.target) &&
-      !event.target.closest('[data-action="region-list"], #region-list-panel [data-action="filter"]')) setCartOpen(false);
+  if (state.drawerOpen && !state.region && !state.basket.size && !$('cart-dock').contains(event.target) &&
+      !event.target.closest('dialog, [data-action="region-list"], #region-list-panel [data-action="filter"]')) setCartOpen(false);
 }, true);
 
 document.addEventListener('keydown', (event) => {
@@ -1268,10 +1456,12 @@ document.addEventListener('click', (event) => {
       return;
     case 'people':
       state.people += Number(delta);
+      myPlans.saveEdits();
       renderTrip();
       break;
     case 'support':
       state.support = value;
+      myPlans.saveEdits();
       renderTrip();
       break;
     case 'basket-region':
@@ -1281,6 +1471,9 @@ document.addEventListener('click', (event) => {
     case 'toggle-cart':
       toggleCart();
       break;
+    case 'switch-region':
+      switchTripRegion();
+      return;
     case 'add':
       addPlace(value);
       if (keyboard) $('cart-toggle').focus({ preventScroll: true });
@@ -1296,6 +1489,7 @@ document.addEventListener('click', (event) => {
       break;
     case 'quantity':
       state.basket.get(value).quantity += Number(delta);
+      myPlans.saveEdits();
       renderTrip();
       break;
   }
@@ -1330,11 +1524,17 @@ for (const id of ['start-date', 'end-date']) {
     if (!end.value) end.value = start.value;
     end.min = start.value;
     if (start.value && end.value && end.value < start.value) end.value = start.value;
+    for (const visit of state.basket.values()) {
+      if (visit.date && visit.date < start.value) visit.date = start.value;
+      if (visit.date && visit.date > end.value) visit.date = end.value;
+    }
+    myPlans.saveEdits();
     renderTrip();
   });
 }
 
 window.addEventListener('hashchange', renderPage);
+myPlans.initialize();
 renderRegionPane();
 renderMap();
 renderPage();

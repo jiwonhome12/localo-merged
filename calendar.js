@@ -7,24 +7,26 @@ const festivalCalendar = (() => {
   const detailOrder = ['event', 'application', 'travel'];
   const weekdays = ['일', '월', '화', '수', '목', '금', '토'];
   const regionById = new Map(regions.map((region) => [region.id, region]));
+  const openingIcons = {
+    application: '<path d="M9 5H6a1 1 0 0 0-1 1v15h14V6a1 1 0 0 0-1-1h-3"/><rect x="9" y="3" width="6" height="4" rx="1"/><path d="m8.5 14 2.2 2.2 4.8-5"/>',
+    travel: '<rect x="3" y="7" width="18" height="13" rx="2.5"/><path d="M9 7V4h6v3M7 8v11m10-11v11"/>',
+    event: '<path d="m3 21 4.3-13 8.7 8.7-13 4.3ZM12 7l1-4m3 6 3-4m-1 8 4-1M5.7 13l5.3 5.3"/><circle cx="18.5" cy="2.5" r=".65"/><circle cx="21" cy="8" r=".65"/>',
+  };
 
   // Fictional schedules demonstrate overlap, opening and closing days, and month boundaries.
   const schedules = [
-    { region: 'andong', type: 'application', start: '2026-11-02', end: '2026-11-08' },
+    ...applicationPeriods,
     ...travelPeriods,
     { region: 'andong', type: 'event', start: '2026-11-19', end: '2026-11-22',
       name: '하회마을 가을 문화제', hours: '11:00–18:00', image: 'assets/calendar-andong.png',
       imageAlt: '한옥 마당에서 전통 공연을 보는 관객들',
       description: '하회마을 한옥 마당에서 전통 공연을 즐기는 가을 행사예요.' },
-    { region: 'gochang', type: 'application', start: '2026-11-12', end: '2026-11-19', closingTime: '18:00' },
     { region: 'gochang', type: 'event', start: '2026-11-21', end: '2026-11-22', name: '고창 단풍 산책', hours: '10:00–16:00',
       image: 'assets/places/gc-trail.jpg', imageAlt: '숲 사이로 이어지는 산책길 예시',
       description: '울긋불긋 물든 숲길을 따라 고창의 늦가을 풍경을 만나는 산책이에요.' },
-    { region: 'geochang', type: 'application', start: '2026-11-16', end: '2026-11-22', closingTime: '17:00' },
     { region: 'geochang', type: 'event', start: '2026-11-28', end: '2026-11-29', name: '거창 로컬마켓', hours: '11:00–17:00',
       image: 'assets/events/geochang-market.jpg', imageAlt: '지역 장터의 판매대 예시',
       description: '거창에서 만든 먹거리와 수공예품을 한자리에서 둘러보는 장터예요.' },
-    { region: 'hamyang', type: 'application', start: '2026-11-23', end: '2026-11-28' },
     { region: 'hamyang', type: 'event', start: '2026-12-05', end: '2026-12-06', name: '함양 겨울 장터',
       image: 'assets/events/hamyang-market.jpg', imageAlt: '겨울 장터의 풍경 예시',
       description: '함양의 농산물과 따뜻한 겨울 먹거리를 만나는 계절 장터예요.' },
@@ -44,6 +46,67 @@ const festivalCalendar = (() => {
   const favoriteKey = 'localo.favoriteDates.v1';
   const favorites = loadFavorites();
   const bookmarkIcon = '<svg viewBox="0 0 16 20" aria-hidden="true"><path d="M2 2h12v15l-6-4-6 4z"/></svg>';
+  let refreshMountedPlans;
+  window.addEventListener('localo:plans-changed', () => refreshMountedPlans?.());
+
+  function escapeText(value) {
+    const entities = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' };
+    return String(value).replace(/[&<>"']/g, (char) => entities[char]);
+  }
+
+  function openingIcon(type) {
+    return `<svg class="calendar-start-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${openingIcons[type]}</svg>`;
+  }
+
+  function planColors(plan) {
+    const color = /^#[\da-f]{6}$/i.test(plan.color) ? plan.color : '#ccb8dd';
+    const [r, g, b] = color.slice(1).match(/../g).map((hex) => {
+      const c = parseInt(hex, 16) / 255;
+      return c <= .04045 ? c / 12.92 : ((c + .055) / 1.055) ** 2.4;
+    });
+    const lightness = r * .2126 + g * .7152 + b * .0722;
+    return `--plan-color:${color};--plan-ink:${lightness > .179 ? '#160e18' : '#fff'}`;
+  }
+
+  function planDetails(plan, date) {
+    const visits = plan.stops.filter(([, visit]) => visit.date === date);
+    const stops = visits.map(([id, visit]) => {
+      const times = [visit.start, visit.end].filter(Boolean).join('–');
+      return `<li>${times ? `<span>${escapeText(times)}</span> ` : ''}${escapeText(placeById.get(id).name)}</li>`;
+    }).join('');
+    return `<li class="calendar-detail-item calendar-plan-card" style="${planColors(plan)}">
+      <div class="calendar-detail-row"><h4>${escapeText(plan.name)}</h4></div>
+      <p class="calendar-period">${formatPeriod({ start: plan.startDate, end: plan.endDate })}</p>
+      ${stops ? `<ol class="calendar-plan-stops">${stops}</ol>` : ''}
+      <button type="button" class="calendar-plan-edit" data-edit-plan="${escapeText(plan.id)}">플래너에서 수정하기 <span aria-hidden="true">↗</span></button>
+    </li>`;
+  }
+
+  function renderWeek(cells, renderCell) {
+    // A continuing plan keeps its lane as others start or finish. The notebook lists every overlap.
+    const lanes = [null, null];
+    const ribbons = [];
+    const buttons = cells.map((cell, column) => {
+      for (let row = 0; row < lanes.length; row++) {
+        if (!cell.plans.includes(lanes[row]?.plan)) lanes[row] = null;
+      }
+      for (const plan of cell.plans) {
+        if (lanes.some((ribbon) => ribbon?.plan === plan)) continue;
+        const row = lanes.indexOf(null);
+        if (row < 0) break;
+        lanes[row] = { plan, row, start: column, end: column };
+        ribbons.push(lanes[row]);
+      }
+      for (const ribbon of lanes) if (ribbon) ribbon.end = column;
+      return renderCell(cell, lanes[1] ? 2 : lanes[0] ? 1 : 0, Math.max(0, cell.plans.length - lanes.length));
+    }).join('');
+    const bands = ribbons.map(({ plan, row, start, end }) => {
+      const outside = cells.slice(start, end + 1).every((cell) => cell.outside);
+      return `<span class="calendar-plan-band${outside ? ' is-spillover' : ''}"
+        style="${planColors(plan)};grid-column:${start + 1} / ${end + 2};grid-row:${2 - row}">${escapeText(plan.name)}</span>`;
+    }).join('');
+    return `<div class="calendar-week">${buttons}${bands ? `<div class="calendar-plan-bands" aria-hidden="true">${bands}</div>` : ''}</div>`;
+  }
 
   function loadFavorites() {
     try {
@@ -124,7 +187,7 @@ const festivalCalendar = (() => {
           <div class="calendar-filters">
             <label class="calendar-region">지역 <select id="calendar-region">${regionOptions()}</select></label>
             <button type="button" class="calendar-event-switch" role="switch" aria-checked="${showEvents}">
-              행사일 함께 보기<span class="calendar-switch-track" aria-hidden="true"></span>
+              이벤트<span class="calendar-switch-track" aria-hidden="true"></span>
             </button>
           </div>
         </header>
@@ -136,9 +199,10 @@ const festivalCalendar = (() => {
         </div>
         <div class="calendar-key" aria-label="날짜 표시">
           <span><i class="calendar-key-today"></i>오늘</span>
-          <span><i class="calendar-key-travel"></i>여행 가능일</span>
+          <span><i class="calendar-key-travel"></i>신청·여행 가능일</span>
           <span class="calendar-event-key" ${showEvents ? '' : 'hidden'}><i class="calendar-event-dot"></i>행사일</span>
           <span><i class="calendar-key-favorite">${bookmarkIcon}</i>찜한 날</span>
+          ${Object.entries(types).map(([type, category]) => `<span class="calendar-opening-key ${type}" ${type === 'event' && !showEvents ? 'hidden' : ''}>${openingIcon(type)}${category.short} ${category.verb}</span>`).join('')}
         </div>
       </section>
       <aside class="calendar-details" aria-labelledby="calendar-detail-title" aria-live="polite"></aside>
@@ -155,6 +219,7 @@ const festivalCalendar = (() => {
     const regionSelect = root.querySelector('#calendar-region');
     regionSelect.value = selectedRegion;
     let days = new Map();
+    let savedPlans = [];
     let hoveredDay = null;
     let showTimer;
     let hideTimer;
@@ -171,7 +236,7 @@ const festivalCalendar = (() => {
     function showTooltip(button) {
       hideTooltip();
       const date = button.dataset.day;
-      const list = days.get(date).filter((item) => item.start === date || item.type === 'travel' || (showEvents && item.type === 'event'));
+      const list = days.get(date);
       if (!list.length) return;
       tooltip.innerHTML = `<strong>${dateLabel.format(parseDate(date))}</strong>
         <ul>${list.slice(0, 4).map((item) => `<li class="${item.type}">
@@ -192,6 +257,9 @@ const festivalCalendar = (() => {
 
     function renderDetails() {
       const list = days.get(selectedDate) || [];
+      const plans = savedPlans.filter((plan) => plan.startDate <= selectedDate && selectedDate <= plan.endDate);
+      const personalSection = plans.length ? `<section class="calendar-detail-group calendar-my-plans"><h3>마이 플랜</h3>
+        <ul>${plans.map((plan) => planDetails(plan, selectedDate)).join('')}</ul></section>` : '';
       const sections = detailOrder.map((type) => {
         const items = list.filter((item) => item.type === type);
         if (!items.length) return '';
@@ -201,10 +269,10 @@ const festivalCalendar = (() => {
       const date = parseDate(selectedDate);
       sidebar.innerHTML = `<header class="calendar-detail-header">
         <div><h2 id="calendar-detail-title">${shortDate.format(date)}</h2>
-          <p>${weekdays[date.getUTCDay()]}요일 · 예시 일정 ${list.length}개</p></div>
+          <p>${weekdays[date.getUTCDay()]}요일${plans.length ? ' · 마이 플랜 ' + plans.length + '개' : ''} · 예시 일정 ${list.length}개</p></div>
         <button type="button" class="calendar-favorite" aria-label="${shortDate.format(date)} 찜하기"
           aria-pressed="${favorites.has(selectedDate)}" title="${favorites.has(selectedDate) ? '찜 해제' : '이 날짜 찜하기'}">${bookmarkIcon}</button>
-      </header><div class="calendar-detail-content">${sections || '<p class="calendar-empty">선택한 날짜와 조건에 맞는 일정이 없어요.</p>'}</div>
+      </header><div class="calendar-detail-content">${personalSection + sections || '<p class="calendar-empty">선택한 날짜와 조건에 맞는 일정이 없어요.</p>'}</div>
         <button class="calendar-return" type="button">달력으로 돌아가기 <span aria-hidden="true">↑</span></button>`;
       if (sidebar.dataset.date !== selectedDate) sidebar.scrollTop = 0;
       sidebar.dataset.date = selectedDate;
@@ -228,47 +296,54 @@ const festivalCalendar = (() => {
       const firstDay = month.getUTCDay();
       const dayCount = new Date(Date.UTC(year, monthIndex + 1, 0)).getUTCDate();
       const today = todayInKorea();
-      const regionSchedules = schedules.filter(matchesRegion);
+      const regionSchedules = schedules.filter((item) => matchesRegion(item) && (item.type !== 'event' || showEvents));
+      savedPlans = myPlans.calendarPlans().slice().sort((a, b) =>
+        a.startDate.localeCompare(b.startDate) || b.endDate.localeCompare(a.endDate) || a.id.localeCompare(b.id));
       days = new Map();
-      const dates = Array.from({ length: dayCount }, (_, index) => {
-        const day = index + 1;
-        const date = isoDate(new Date(Date.UTC(year, monthIndex, day)));
+      const cellCount = Math.ceil((firstDay + dayCount) / 7) * 7;
+      const cells = Array.from({ length: cellCount }, (_, index) => {
+        const day = new Date(Date.UTC(year, monthIndex, index + 1 - firstDay));
+        const date = isoDate(day);
         const list = regionSchedules.filter((item) => item.start <= date && date <= item.end);
         days.set(date, list);
-        return { day, date, items: list };
+        return { day: day.getUTCDate(), date, outside: day.getUTCMonth() !== monthIndex, items: list,
+          plans: savedPlans.filter((plan) => plan.startDate <= date && date <= plan.endDate) };
       });
-      const cells = Array(firstDay).fill(null).concat(dates);
-      const lastBlanks = (7 - cells.length % 7) % 7;
-      cells.push(...Array(lastBlanks).fill(null));
-      const blank = '<span class="calendar-blank" aria-hidden="true"></span>';
-      const renderCell = (cell) => {
-        if (!cell) return blank;
-        const { day, date, items } = cell;
+      const renderCell = (cell, laneCount, hiddenPlans) => {
+        const { day, date, items, outside, plans } = cell;
         const canTravel = items.some((item) => item.type === 'travel');
+        const canApply = items.some((item) => item.type === 'application');
         const starts = items.filter((item) => item.start === date);
         const startLabels = starts.map((item) => ({
-          text: `${regionById.get(item.region).shortName} ${types[item.type].short}`,
+          region: regionById.get(item.region).shortName, category: types[item.type].short,
           verb: types[item.type].verb, type: item.type, name: item.name,
         }));
-        const startingNames = startLabels.map(({ text, verb, name }) => `${text} ${verb}${name ? ' · ' + name : ''}`);
+        const startingNames = startLabels.map(({ region, category, verb, name }) => `${region} ${category} ${verb}${name ? ' · ' + name : ''}`);
         const events = showEvents ? items.filter((item) => item.type === 'event') : [];
         const continuingNames = events.filter((item) => item.start !== date).map((item) => item.name + ' 진행 중');
         const favorite = favorites.has(date);
-        const labels = [dateLabel.format(parseDate(date)), canTravel ? '여행 가능' : '등록된 여행 기간 없음', ...startingNames, ...continuingNames];
+        const labels = [dateLabel.format(parseDate(date)), ...startingNames, ...continuingNames];
+        if (canTravel) labels.push('여행 가능');
+        if (canApply) labels.push('신청 가능');
+        if (plans.length) labels.push('마이 플랜 ' + plans.map((plan) => plan.name).join(', '));
         if (favorite) labels.push('찜한 날');
-        return `<button type="button" class="calendar-day${canTravel ? ' can-travel' : ''}" data-day="${date}" tabindex="${date === selectedDate ? 0 : -1}"
-          aria-label="${labels.join(', ')}"
+        const classes = ['calendar-day', outside && 'is-outside', (canApply || canTravel) && 'is-available', canTravel && 'can-travel', events.length && 'has-event'];
+        return `<button type="button" class="${classes.filter(Boolean).join(' ')}" data-day="${date}" data-plan-lanes="${laneCount}" tabindex="${date === selectedDate ? 0 : -1}"
+          aria-label="${escapeText(labels.join(', '))}"
           aria-pressed="${date === selectedDate}" ${date === today ? 'aria-current="date"' : ''}>
           <span class="calendar-date-line" aria-hidden="true"><span class="calendar-day-number">${day}</span>
-            ${events.length ? '<span class="calendar-event-dot"></span>' : ''}</span>
+            ${events.length ? '<span class="calendar-event-dot"></span>' : ''}${hiddenPlans ? `<span class="calendar-plan-more">+${hiddenPlans}</span>` : ''}</span>
+          ${date === today ? '<span class="calendar-today-mark" aria-hidden="true" lang="en">Today</span>' : ''}
           ${favorite ? `<span class="calendar-saved" aria-hidden="true">${bookmarkIcon}</span>` : ''}
-          ${startLabels.length ? `<span class="calendar-starts" aria-hidden="true">${startLabels.map(({ text, verb, type }) =>
-            `<span class="calendar-start ${type}">${text}<span class="calendar-start-verb"> ${verb}</span></span>`).join('')}</span>` : ''}
+          ${startLabels.length ? `<span class="calendar-starts" aria-hidden="true">${startLabels.map(({ region, category, verb, type }) =>
+            `<span class="calendar-start ${type}">${openingIcon(type)}<span class="calendar-start-text">${region}<span class="calendar-start-category"> ${category}<span class="calendar-start-verb"> ${verb}</span></span></span></span>`).join('')}</span>` : ''}
         </button>`;
       };
       root.querySelector('#calendar-year').textContent = year + '년';
       root.querySelector('#calendar-month-name').innerHTML = `${monthIndex + 1}<span>월</span>`;
-      grid.innerHTML = cells.map(renderCell).join('');
+      const weeks = [];
+      for (let i = 0; i < cellCount; i += 7) weeks.push(renderWeek(cells.slice(i, i + 7), renderCell));
+      grid.innerHTML = weeks.join('');
       renderDetails();
       if (oldSheet) {
         const leaving = oldSheet;
@@ -283,6 +358,11 @@ const festivalCalendar = (() => {
     }
 
     sidebar.addEventListener('click', (event) => {
+      const edit = event.target.closest('[data-edit-plan]');
+      if (edit) {
+        myPlans.openInPlanner(edit.dataset.editPlan);
+        return;
+      }
       if (event.target.closest('.calendar-return')) {
         const day = grid.querySelector('[aria-pressed="true"]');
         day.focus({ preventScroll: true });
@@ -320,6 +400,7 @@ const festivalCalendar = (() => {
       showEvents = !showEvents;
       eventSwitch.setAttribute('aria-checked', String(showEvents));
       eventKey.hidden = !showEvents;
+      root.querySelector('.calendar-opening-key.event').hidden = !showEvents;
       renderMonth();
     });
 
@@ -334,7 +415,15 @@ const festivalCalendar = (() => {
       button.setAttribute('aria-pressed', 'true');
       button.tabIndex = 0;
       selectedDate = button.dataset.day;
-      renderDetails();
+      if (button.classList.contains('is-outside')) {
+        const next = parseDate(selectedDate.slice(0, 7) + '-01');
+        const direction = Math.sign(next - month);
+        month = next;
+        renderMonth(direction);
+        grid.querySelector(`[data-day="${selectedDate}"]`).focus({ preventScroll: true });
+      } else {
+        renderDetails();
+      }
       if (event.detail > 0 && getComputedStyle(sidebar).position !== 'sticky') {
         sidebar.scrollIntoView({ block: 'start' });
       }
@@ -369,7 +458,7 @@ const festivalCalendar = (() => {
       const next = parseDate(event.target.dataset.day);
       next.setUTCDate(next.getUTCDate() + offset);
       const nextDate = isoDate(next);
-      if (!days.has(nextDate)) {
+      if (next.getUTCMonth() !== month.getUTCMonth()) {
         selectedDate = nextDate;
         month = parseDate(nextDate.slice(0, 7) + '-01');
         renderMonth(Math.sign(offset));
@@ -381,6 +470,9 @@ const festivalCalendar = (() => {
     });
     grid.addEventListener('wheel', hideTooltip, { passive: true });
 
+    refreshMountedPlans = () => {
+      if (!root.hidden && grid.isConnected) renderMonth();
+    };
     renderMonth();
   }
 

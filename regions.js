@@ -53,6 +53,45 @@ const regions = Object.entries(regionGroups).flatMap(([province, entries]) =>
 
 const statuses = { open: '신청접수중', soon: '준비중', closed: '마감' };
 
+// 2026 municipal program sites listed by the Korea Tourism Organization:
+// https://m.visitkorea.or.kr/dgtourcard/tour50.do
+// Where the operator publishes a direct application form, use that entry point.
+const reservationSites = {
+  hwacheon: { url: 'https://ihctour.kr/forms/apply.php?gp_id=28' },
+  pyeongchang: { url: 'https://pc.halftrip.kr/Home/H120000/H120100/register' },
+  hoengseong: { url: 'https://hs.halftrip.kr/Home/H120000/H120100/register' },
+  yeongwol: { url: 'https://halftour.kr/forms/apply.php?gp_id=74' },
+  jecheon: { url: 'https://www.jctour.kr/', label: '신청 안내' },
+  taean: { url: 'https://taeantour.kr/forms/apply.php?gp_id=59' },
+  seocheon: { url: 'https://seocheontour.kr/forms/apply.php?gp_id=78' },
+  andong: { url: 'https://andonghalftour.kr/forms/apply.php?gp_id=71' },
+  yeongcheon: { url: 'https://yctour.kr/forms/apply.php?gp_id=54' },
+  geochang: { url: 'https://geochangtour.kr/bbs/apply_date.php' },
+  hamyang: { url: 'https://hytour.kr/forms/apply.php?gp_id=52' },
+  hapcheon: { url: 'https://www.hctour.kr/', label: '신청 안내' },
+  sancheong: { url: 'https://sancheongtour.kr/forms/apply.php?gp_id=79' },
+  hadong: { url: 'https://hadongtrip.kr/index.php', label: '신청 안내' },
+  miryang: { url: 'https://www.mybanhada.com/apply/detail' },
+  goseong: { url: 'https://healinggoseong.kr/apply.html#apply-form' },
+  namhae: { url: 'https://www.namhae.go.kr/tour/main.web', label: '신청 안내' },
+  gochang: { url: 'https://gochangtrip.co.kr/bbs/apply_date.php' },
+  yeonggwang: { url: 'https://www.yeonggwang.go.kr/travel/', label: '신청 안내' },
+  yeongam: { url: 'https://www.yeongam.go.kr/oneplusone', label: '신청 안내' },
+  jangheung: { url: 'https://www.jangheung.go.kr/travel', label: '신청 안내' },
+  gangjin: { url: 'https://www.gangjintour.com/', label: '신청 안내' },
+  haenam: { url: 'https://www.haenam50.kr/index', label: '신청 안내' },
+  goheung: { url: 'https://tour.goheung.go.kr/front/M0000362/rsvh/apply.do' },
+  wando: { url: 'https://www.wandotrip.kr/bbs/apply_date.php' },
+};
+
+// Dated sample application windows are used by both the map and the calendar.
+const applicationPeriods = [
+  { region: 'andong', type: 'application', start: '2026-11-02', end: '2026-11-08' },
+  { region: 'gochang', type: 'application', start: '2026-11-12', end: '2026-11-19', closingTime: '18:00' },
+  { region: 'geochang', type: 'application', start: '2026-11-16', end: '2026-11-22', closingTime: '17:00' },
+  { region: 'hamyang', type: 'application', start: '2026-11-23', end: '2026-11-28' },
+];
+
 // Sample travel windows shared by the calendar and the map. The status in
 // regionGroups describes applications, which may close before travel begins.
 const travelPeriods = [

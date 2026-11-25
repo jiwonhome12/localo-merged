@@ -11,9 +11,12 @@
   <link rel="stylesheet" href="calendar.css">
   <script defer src="intro.js"></script>
   <script defer src="regions.js"></script>
+  <script defer src="region-photos.js"></script>
   <script defer src="map-data.js"></script>
   <script defer src="calendar.js"></script>
+  <script defer src="plans.js"></script>
   <script defer src="app.js"></script>
+  <script defer src="itinerary-order.js"></script>
 </head>
 <body>
   <dialog class="intro" id="intro" aria-labelledby="intro-title">
@@ -38,6 +41,11 @@
       <button type="button" disabled title="준비 중">반값여행 개요</button>
       <button type="button" disabled title="준비 중">정보 모아보기</button>
     </nav>
+    <div class="account-actions" role="group" aria-label="회원 메뉴 · 준비 중">
+      <button type="button" disabled>회원가입</button>
+      <button type="button" disabled>로그인</button>
+      <button type="button" disabled>회원정보</button>
+    </div>
   </header>
 
   <main class="workspace" id="workspace">
@@ -67,7 +75,7 @@
       </div>
       <footer class="map-footer">
         <span><span class="tourism-star" aria-hidden="true">★</span> 디지털 관광주민증 혜택</span>
-        <span class="map-gestures" id="map-gestures"><span class="mouse-tip">Ctrl + 휠로 확대·축소 · 확대 후 휠로 이동하거나 스페이스바를 누르고 드래그</span><span class="touch-tip">＋·−로 확대·축소 · 확대한 지도를 밀어서 이동</span></span>
+        <span class="map-gestures" id="map-gestures"><span class="mouse-tip">Ctrl + 휠로 확대·축소 · 스페이스바를 누른 채 드래그로 이동 · 확대 후 휠로 이동</span><span class="touch-tip">＋·−로 확대·축소 · 확대한 지도를 밀어서 이동</span></span>
         <a href="https://github.com/southkorea/southkorea-maps/blob/master/kostat/2018/json/LICENSE.md" target="_blank" rel="noreferrer">지도 경계 · 통계청 SGIS 2018</a>
       </footer>
     </section>
@@ -78,9 +86,26 @@
         <span class="icon-holder" data-icon="bag"></span><span class="cart-count" id="cart-count" hidden></span>
       </button>
       <section class="panel trip-panel" id="trip-panel" aria-labelledby="trip-title" inert aria-hidden="true">
+        <nav class="cart-tabs" aria-label="장바구니 선택">
+          <div id="map-basket-list"></div>
+          <button class="add-basket" type="button" data-new-basket aria-label="새 장바구니 추가" title="새 장바구니 추가">+</button>
+        </nav>
         <header class="trip-head">
-          <div><h2 id="trip-title">여행 일정표</h2><p id="trip-count"></p></div>
+          <div>
+            <div class="trip-heading-line">
+              <h2 id="trip-title">여행 일정표</h2>
+              <button class="rename-basket" id="rename-basket" type="button" aria-label="장바구니 이름 바꾸기" title="장바구니 이름 바꾸기">
+                <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="m15 5 4 4M4 20l4-1 12-12a2.8 2.8 0 0 0-4-4L4 15.5z"/></svg>
+              </button>
+              <span class="trip-destination" id="trip-destination" hidden>
+                <button type="button" id="trip-region" data-action="switch-region" aria-describedby="trip-region-tip" aria-controls="region-list-panel"></button>
+                <span role="tooltip" id="trip-region-tip">다른 곳이 좋을까?</span>
+              </span>
+            </div>
+            <p id="trip-count"></p>
+          </div>
           <a class="planner-link" href="#planner">플래너 열기 <span aria-hidden="true">↗</span></a>
+          <button type="button" id="delete-trip" class="delete-trip" hidden>삭제</button>
         </header>
         <div class="trip-layout">
           <section class="trip-places" aria-label="담은 장소"><div id="trip-items"></div></section>
@@ -93,6 +118,7 @@
                 <label>오는 날<input type="date" id="end-date" required></label>
                 <div><span class="field-label" id="people-title">인원</span><div class="stepper" role="group" aria-labelledby="people-title"><button type="button" data-action="people" data-delta="-1" aria-label="인원 줄이기">−</button><output id="people-label">2명</output><button type="button" data-action="people" data-delta="1" aria-label="인원 늘리기">+</button></div></div>
                 <div><span class="field-label">지원 유형</span><div class="segmented" id="support-options" role="group" aria-label="지원 유형"></div></div>
+                <label class="plan-color" id="plan-color-field" hidden>캘린더 표시 색상<input type="color" id="plan-color" value="#cbb6df"></label>
               </div>
             </section>
             <section class="trip-summary" id="trip-summary" aria-label="예상 여행 경비" aria-live="polite"></section>
@@ -101,6 +127,7 @@
         <footer class="trip-person-total">
           <div><strong>1인당 예상 부담금</strong><small id="split-count"></small></div>
           <output id="split-estimate" aria-live="polite">0원</output>
+          <button class="save-trip" type="button" id="save-trip" disabled><span aria-hidden="true">♡</span> 찜!</button>
         </footer>
       </section>
     </div>
@@ -109,7 +136,58 @@
   <main class="secondary" id="secondary" hidden></main>
   <main class="planner" id="planner-page" hidden>
     <header class="planner-heading"><h1>여행 플래너</h1><a href="#map">지도로 돌아가기 <span aria-hidden="true">↗</span></a></header>
+    <div class="planner-frame">
+      <nav class="planner-library" aria-label="장바구니와 마이 플랜">
+        <section class="my-plans" aria-labelledby="current-baskets-title">
+          <header><h2 id="current-baskets-title">현재 장바구니</h2><button class="add-basket" type="button" data-new-basket aria-label="새 장바구니 추가" title="새 장바구니 추가">+</button></header>
+          <div class="planner-list" id="planner-basket-list"></div>
+        </section>
+        <section class="my-plans" aria-labelledby="my-plans-title">
+          <header><h2 id="my-plans-title">마이 플랜</h2></header>
+          <div class="planner-list" id="my-plans-list"></div>
+        </section>
+      </nav>
+      <div class="planner-detail">
+        <div id="plan-content"></div>
+        <div class="planner-actions">
+          <div id="planner-save-slot"></div>
+          <div class="plan-booking" id="plan-booking" role="group" aria-label="지역별 사전 신청" hidden></div>
+        </div>
+      </div>
+    </div>
   </main>
+  <p id="plan-storage-note" role="status" hidden></p>
+  <dialog class="basket-confirm plan-save-dialog" id="plan-save-dialog" aria-labelledby="plan-save-title">
+    <form id="plan-save-form">
+      <h2 id="plan-save-title">마이 플랜에 찜하기</h2>
+      <label for="plan-name" id="plan-name-label">플랜 이름</label>
+      <input id="plan-name" type="text" maxlength="60" required autocomplete="off">
+      <p id="plan-save-error" role="alert" hidden></p>
+      <div class="basket-confirm-actions">
+        <button type="button" id="cancel-plan-save">취소</button>
+        <button type="submit" id="submit-plan-name">저장하고 플래너 열기</button>
+      </div>
+    </form>
+  </dialog>
+  <dialog class="basket-confirm" id="trip-delete-dialog" aria-labelledby="trip-delete-title">
+    <form method="dialog">
+      <h2 id="trip-delete-title"></h2>
+      <p id="trip-delete-message"></p>
+      <div class="basket-confirm-actions">
+        <button type="submit" value="cancel" autofocus>취소</button>
+        <button type="submit" value="clear">삭제하기</button>
+      </div>
+    </form>
+  </dialog>
   <div class="cart-announcement" id="cart-announcement" role="status"></div>
+  <dialog class="basket-confirm" id="basket-confirm" aria-labelledby="basket-question">
+    <form method="dialog">
+      <h2 id="basket-question">담은 장소들을 삭제할까요?</h2>
+      <div class="basket-confirm-actions">
+        <button type="submit" value="keep" autofocus>그대로 두기</button>
+        <button type="submit" value="clear">삭제하기</button>
+      </div>
+    </form>
+  </dialog>
 </body>
 </html>
