@@ -110,14 +110,14 @@ const categories = {
 
 // Example locations are offsets in projected map units, inside the corresponding district.
 const places = [
-  { id: 'gc-soup', region: 'geochang', locality: '거창읍', category: 'food', name: '읍내 국밥집', price: 9000, x: 1, y: -0.6 },
+  { id: 'gc-soup', region: 'geochang', locality: '거창읍', category: 'food', name: '읍내 국밥집', price: 9000, x: 1, y: -0.6, featured: true },
   { id: 'gc-stay', region: 'geochang', locality: '거창읍', category: 'stay', name: '강변 펜션', price: 110000, x: -0.3, y: -1.7 },
   { id: 'gc-coffee', region: 'geochang', locality: '거창읍', category: 'cafe', name: '로스터리 카페', price: 6500, x: -1.8, y: -0.6 },
-  { id: 'gc-trail', region: 'geochang', locality: '거창읍', category: 'spot', name: '생태 탐방로', price: 0, x: 0.1, y: 1.4 },
-  { id: 'hy-beef', region: 'hamyang', locality: '함양읍', category: 'food', name: '한우 정육식당', price: 26000, x: -0.3, y: -0.7 },
+  { id: 'gc-trail', region: 'geochang', locality: '거창읍', category: 'spot', name: '생태 탐방로', price: 0, x: 0.1, y: 1.4, featured: true },
+  { id: 'hy-beef', region: 'hamyang', locality: '함양읍', category: 'food', name: '한우 정육식당', price: 26000, x: -0.3, y: -0.7, featured: true },
   { id: 'hy-stay', region: 'hamyang', locality: '함양읍', category: 'stay', name: '숲길 스테이', price: 95000, x: -0.4, y: -1.9 },
-  { id: 'hy-park', region: 'hamyang', locality: '함양읍', category: 'spot', name: '천년 숲 산책로', price: 0, x: -0.4, y: 2 },
-  { id: 'gch-soup', region: 'gochang', locality: '고창읍', category: 'food', name: '시장 국밥집', price: 9000, x: 0.5, y: -1.2, photo: 'gc-soup' },
+  { id: 'hy-park', region: 'hamyang', locality: '함양읍', category: 'spot', name: '천년 숲 산책로', price: 0, x: -0.4, y: 2, featured: true },
+  { id: 'gch-soup', region: 'gochang', locality: '고창읍', category: 'food', name: '시장 국밥집', price: 9000, x: 0.5, y: -1.2, photo: 'gc-soup', featured: true },
   { id: 'gch-cafe', region: 'gochang', locality: '고창읍', category: 'cafe', name: '들녘 카페', price: 6000, x: -1.8, y: -0.1, photo: 'gc-coffee' },
-  { id: 'gch-path', region: 'gochang', locality: '고창읍', category: 'spot', name: '고창 산책길', price: 0, x: -1.1, y: 1.2, photo: 'gc-trail' },
+  { id: 'gch-path', region: 'gochang', locality: '고창읍', category: 'spot', name: '고창 산책길', price: 0, x: -1.1, y: 1.2, photo: 'gc-trail', featured: true },
 ];

@@ -2,7 +2,7 @@ const $ = (id) => document.getElementById(id);
 const regionById = new Map(regions.map((region) => [region.id, region]));
 const placeById = new Map(places.map((place) => [place.id, place]));
 const state = {
-  filter: 'all', region: null, regionListOpen: null, category: 'all', place: null, zoom: 1,
+  filter: 'all', region: null, regionListOpen: null, category: 'all', place: null, landmark: null, zoom: 1,
   people: 2, support: '일반', basketRegion: 'all', basket: new Map(),
   drawerOpen: false, drawerManuallyClosed: false, page: 'map',
 };
@@ -71,10 +71,7 @@ function regionListVisible() {
   return state.regionListOpen ?? !compactRegions.matches;
 }
 
-function syncRegionList() {
-  const open = regionListVisible();
-  const panel = $('region-list-panel');
-  document.querySelector('[data-action="region-list"]')?.setAttribute('aria-expanded', String(open));
+function slidePanel(panel, open, movingElement) {
   if (panel.dataset.open === String(open)) return;
   const firstRender = panel.dataset.open === undefined;
   panel.inert = !open;
@@ -85,15 +82,22 @@ function syncRegionList() {
   }
   panel.dataset.open = String(open);
   if (open) return;
-  const filter = panel.querySelector('.rail-filter');
-  const animations = firstRender ? [] : filter.getAnimations();
+  const animations = firstRender ? [] : movingElement.getAnimations();
   if (!animations.length) {
     panel.hidden = true;
     return;
   }
   Promise.allSettled(animations.map((animation) => animation.finished)).then(() => {
-    if (panel.inert && !filter.getAnimations().length) panel.hidden = true;
+    if (panel.inert && !movingElement.getAnimations().length) panel.hidden = true;
   });
+}
+
+function syncRegionList() {
+  const open = regionListVisible();
+  const panel = $('region-list-panel');
+  document.querySelector('[data-action="region-list"]')?.setAttribute('aria-expanded', String(open));
+  slidePanel(panel, open, panel.querySelector('.rail-filter'));
+  syncTourismPanel(Boolean(state.region) && !open);
 }
 compactRegions.addEventListener('change', syncRegionList);
 
@@ -117,15 +121,34 @@ function landmarkPhoto(regionId) {
   return regionPhotos[regionId]?.find((photo) => !photo.isExample);
 }
 
-function landmarkPostcard(region, status) {
-  if (!selectableStatus(status)) return '';
-  const photo = landmarkPhoto(region.id);
-  if (!photo) return '';
-  return `<button type="button" class="landmark-postcard ${status}" data-action="region" data-value="${region.id}"
-      aria-label="${attr(region.name + ' · ' + photo.caption + ', ' + travelLabels[status] + ' 지역 선택')}">
-      <img src="${attr(photo.src)}" alt="" width="160" height="100" decoding="async">
-      <span>${photo.caption.startsWith(region.shortName) ? '' : `<small>${region.shortName}</small>`}<b>${attr(photo.caption)}</b></span>
-    </button>`;
+function tourismCards(regionId) {
+  const photos = (regionPhotos[regionId] || []).filter((photo) => !photo.isExample);
+  return photos.map((photo) => `<figure class="tourism-photo">
+      <img src="${attr(photo.src)}" alt="${attr(photo.alt)}" width="480" height="540" decoding="async">
+      <figcaption><strong>${attr(photo.caption)}</strong>${photo.description ? `<span>${attr(photo.description)}</span>` : ''}</figcaption>
+      <button type="button" class="tourism-locate" data-action="landmark-location" data-value="${attr(photo.caption)}"
+        aria-label="${attr(photo.caption)} 지도에서 위치 보기" aria-pressed="${photo === state.landmark}"></button>
+      ${photo.credit ? `<details class="tourism-credit"><summary aria-label="${attr(photo.caption)} 사진 출처">ⓘ</summary>
+        <small><a href="${attr(photo.source)}" target="_blank" rel="noreferrer">${attr(photo.credit)}</a> ·
+        <a href="${attr(photo.licenseUrl)}" target="_blank" rel="noreferrer">${attr(photo.license)}</a> · 축소·크롭</small></details>` : ''}
+    </figure>`).join('');
+}
+
+function syncTourismPanel(open) {
+  const panel = $('region-tourism');
+  const region = regionById.get(state.region);
+  if (open && panel.dataset.region !== region.id) {
+    // A selection via the map can switch directly between two open galleries.
+    panel.hidden = true;
+    panel.dataset.open = 'false';
+    panel.dataset.region = region.id;
+    $('region-tourism-title').textContent = region.name + ' 가볼 만한 곳';
+    $('region-tourism-scroll').setAttribute('aria-label', region.name + ' 관광지 사진 목록');
+    $('region-tourism-cards').innerHTML = tourismCards(region.id) || '<p class="empty">등록된 관광지 사진이 없어요.</p>';
+  }
+  const opening = open && panel.dataset.open !== 'true';
+  slidePanel(panel, open, panel.firstElementChild);
+  if (opening) $('region-tourism-scroll').scrollTop = 0;
 }
 
 function regionListContent(statuses) {
@@ -145,11 +168,9 @@ function regionListContent(statuses) {
         ${status === 'unknown' ? '' : `<span class="region-state">${title}</span>`}
       </button>`;
     }).join('');
-    const photos = group.map((region) => landmarkPostcard(region, statuses[region.id])).join('');
-    return `<section class="province-group" aria-labelledby="province-${province}">
-      <div class="province-card"><h2 id="province-${province}">${province}</h2>
-        <div class="province-tiles">${rows}</div></div>
-      ${photos ? `<div class="province-landmarks">${photos}</div>` : ''}
+    return `<section class="province-group province-card" aria-labelledby="province-${province}">
+      <h2 id="province-${province}">${province}</h2>
+      <div class="province-tiles">${rows}</div>
     </section>`;
   }
   const banks = [
@@ -286,7 +307,7 @@ $('skip-map').addEventListener('click', (event) => {
 const mapScene = $('map-scene');
 const minMapZoom = 0.3;
 const maxMapZoom = 400;
-const placePinZoom = 20;
+const placePinZoom = 15;
 // Extents of the contiguous mainland and Jeju in this map's projected coordinates.
 const mainlandAndJeju = { left: 164.8, right: 491.2, top: 41.4, bottom: 632.1 - 36 };
 let mapLayout;
@@ -602,9 +623,11 @@ function renderMapMarkers(region = regionById.get(state.region), matching = visi
     for (const place of state.zoom >= placePinZoom ? visiblePlaces() : []) {
       const x = centerX + place.x;
       const y = centerY + place.y;
+      const preview = place.featured ? `<span class="place-preview" hidden aria-hidden="true">
+        <img src="assets/places/${place.photo || place.id}.jpg" alt="" draggable="false"><span>${attr(place.name)}</span></span>` : '';
       labels.push(`<button type="button" class="map-marker place ${place.category} ${state.place === place.id ? 'active' : ''}"
         data-action="place" data-value="${place.id}" aria-expanded="${state.place === place.id}" aria-label="${categories[place.category].name} ${place.name} 사진 보기"
-        style="${mapPosition(x, y)}">${categoryIcon(place.category)}<span class="pin-name" aria-hidden="true">${place.name}</span></button>`);
+        style="${mapPosition(x, y)}">${categoryIcon(place.category)}<span class="pin-name" aria-hidden="true">${place.name}</span>${preview}</button>`);
       if (state.place === place.id) labels.push(placeBalloon(place, x, y));
     }
   }
@@ -642,10 +665,15 @@ function visibleMapBounds({ baseline = false, national = !state.region || state.
     top = Math.max(top, nationalFrame.top);
     bottom = Math.min(bottom, nationalFrame.bottom);
   }
-  const header = $('map-header').getBoundingClientRect();
-  if (!baseline && !national && header.bottom > top && header.top < bottom && header.right > left && header.left < right) {
-    top = header.bottom + 6;
+  if (!baseline && !national && state.region) {
+    // The map keeps its framing while the region list temporarily covers the gallery.
+    left = Math.max(left, frame.left + parseFloat(getComputedStyle($('region-tourism')).width) + 6);
   }
+  const header = $('map-header').getBoundingClientRect();
+  const regional = !baseline && !national;
+  const belowHeader = (edge) => regional && header.bottom > top && header.top < bottom && header.right > left && header.left < edge
+    ? header.bottom + 6 : top;
+  const controlsHeight = regional ? $('map-stage').querySelector('.map-controls').offsetHeight + 14 : 0;
   if (avoidDrawer) {
     // The dock's anchor is stationary throughout the drawer's slide animation.
     const dock = $('cart-dock').getBoundingClientRect();
@@ -653,16 +681,17 @@ function visibleMapBounds({ baseline = false, national = !state.region || state.
     const drawerLeft = dock.right - panel.offsetWidth;
     const drawerTop = dock.bottom - panel.offsetHeight;
     if (drawerLeft < right && drawerTop < bottom) {
-      const roomAbove = Math.max(0, drawerTop - top);
-      const roomBeside = Math.max(0, drawerLeft - left);
-      if (roomAbove > 0 && (roomBeside < 180 || roomAbove * (right - left) > roomBeside * (bottom - top))) {
+      const roomAbove = Math.max(0, drawerTop - 6 - belowHeader(right) - controlsHeight) * (right - left);
+      const roomBeside = Math.max(0, drawerLeft - 6 - left) * Math.max(0, bottom - belowHeader(drawerLeft - 6) - controlsHeight);
+      if (roomAbove > roomBeside) {
         bottom = drawerTop - 6;
       } else {
         right = drawerLeft - 6;
       }
     }
   }
-  if (!baseline && !national) bottom -= $('map-stage').querySelector('.map-controls').offsetHeight + 14;
+  top = belowHeader(right);
+  bottom -= controlsHeight;
   return { left, top, right, bottom: Math.max(top, bottom) };
 }
 
@@ -712,6 +741,7 @@ function balloonFrame() {
     right: Math.min(innerWidth, viewport.left + mapViewport.clientWidth),
     bottom: Math.min(innerHeight, viewport.top + mapViewport.clientHeight) }];
   const overlays = [...$('map-header').children, ...$('map-stage').querySelectorAll('.map-controls, .compass')];
+  if (!$('region-tourism').inert) overlays.push($('region-tourism'));
   const bounds = overlays.map((element) => element.getBoundingClientRect()).filter((rect) => rect.width && rect.height);
   if (state.drawerOpen) {
     const anchor = $('cart-dock').getBoundingClientRect(), panel = $('trip-panel'), toggle = $('cart-toggle');
@@ -766,7 +796,45 @@ function positionRegionLabels(frame, occupied) {
   }
 }
 
+// Place previews beside their pins without covering another venue or moving the map.
+function positionPlacePreviews() {
+  const previews = mapScene.querySelectorAll('.place-preview');
+  if (!previews.length) return;
+  if (state.place || state.landmark) {
+    for (const preview of previews) preview.hidden = true;
+    return;
+  }
+  const frame = balloonFrame();
+  const bounds = new Map([...mapScene.querySelectorAll('.map-marker.place')].map((pin) => [pin, pin.getBoundingClientRect()]));
+  const occupied = [...bounds.values(), mapScene.querySelector('.area-label').getBoundingClientRect()];
+  const style = getComputedStyle(previews[0]);
+  const size = parseFloat(style.width);
+  const gap = parseFloat(style.getPropertyValue('--preview-gap'));
+  for (const preview of previews) {
+    const pin = bounds.get(preview.parentElement);
+    const x = pin.left + pin.width / 2, y = pin.top + pin.height / 2;
+    if (x < frame.left || x > frame.right || y < frame.top || y > frame.bottom) {
+      preview.hidden = true;
+      continue;
+    }
+    const candidates = [
+      ['top', x - size / 2, pin.top - size - gap], ['bottom', x - size / 2, pin.bottom + gap],
+      ['right', pin.right + gap, y - size / 2], ['left', pin.left - size - gap, y - size / 2],
+    ];
+    const slot = candidates.find(([, left, top]) =>
+      left >= frame.left && top >= frame.top && left + size <= frame.right && top + size <= frame.bottom &&
+      occupied.every((r) => left + size + 2 <= r.left || left >= r.right + 2 || top + size + 2 <= r.top || top >= r.bottom + 2));
+    preview.hidden = !slot;
+    if (slot) {
+      const [side, left, top] = slot;
+      preview.dataset.side = side;
+      occupied.push({ left, top, right: left + size, bottom: top + size });
+    }
+  }
+}
+
 function positionBalloon() {
+  positionPlacePreviews();
   const balloon = mapScene.querySelector('.place-balloon');
   const marker = mapScene.querySelector('.place.active');
   if (!balloon || !marker) return;
@@ -909,7 +977,7 @@ window.addEventListener('keydown', (event) => {
   if (event.key === 'Tab') keyboardNavigation = true;
   if (state.page !== 'map' || event.code !== 'Space' || !pointerOnMap || event.ctrlKey || event.metaKey || event.altKey) return;
   if (event.target.closest?.('input, textarea, select, [contenteditable="true"]') ||
-    (keyboardNavigation && event.target.closest?.('button, a'))) return;
+    (keyboardNavigation && event.target.closest?.('button, a, #region-tourism'))) return;
   event.preventDefault();
   panArmed = true;
   mapViewport.classList.add('pan-ready');
@@ -980,6 +1048,7 @@ function refreshMapFrame() {
   if (mapAnimation || !mapViewport.clientWidth || !mapViewport.clientHeight) return;
   layoutMap();
   revealPlace();
+  if (!state.place) positionPlacePreviews();
 }
 const mapResize = new ResizeObserver(refreshMapFrame);
 mapResize.observe(mapViewport);
@@ -1002,6 +1071,7 @@ function closeBalloon(focusPin) {
   pin?.classList.remove('active');
   pin?.setAttribute('aria-expanded', 'false');
   $('region-information').querySelector('.place-row.selected')?.classList.remove('selected');
+  positionPlacePreviews();
   if (focusPin) (pin || mapViewport).focus({ preventScroll: true });
 }
 
@@ -1018,9 +1088,38 @@ function regionCamera(id, fittedWidth) {
   };
 }
 
+function setLandmark(photo) {
+  state.landmark = photo;
+  const marker = $('landmark-location');
+  marker.hidden = !photo;
+  if (photo) {
+    marker.style.cssText = mapPosition(...project(photo.lon, photo.lat));
+    marker.querySelector('.landmark-label').textContent = photo.caption;
+  }
+  for (const button of $('region-tourism-cards').querySelectorAll('.tourism-locate')) {
+    button.setAttribute('aria-pressed', String(button.dataset.value === photo?.caption));
+  }
+  positionPlacePreviews();
+}
+
+function locateLandmark(caption) {
+  const photo = regionPhotos[state.region]?.find((item) => item.caption === caption);
+  if (!photo || !Number.isFinite(photo.lat) || !Number.isFinite(photo.lon)) return;
+  cancelMapAnimation();
+  stopPanning();
+  setRegionInfo(false);
+  closeBalloon(false);
+  setLandmark(photo);
+  const [x, y] = project(photo.lon, photo.lat);
+  const width = fittedMapWidth();
+  const zoom = Math.max(state.zoom, placePinZoom, regionCamera(state.region, width).zoom);
+  animateMap(currentMapCamera(), [x / 620, y / 640], zoom, width);
+}
+
 function selectPlace(id, fromPin, keyboard) {
   const place = placeById.get(id);
   if (!place || place.region !== state.region) return;
+  if (state.landmark) setLandmark(null);
   cancelMapAnimation();
   setRegionInfo(false);
   function showPhoto() {
@@ -1134,7 +1233,6 @@ function renderTrip() {
   const destination = state.page === 'map' && regionById.get(state.region);
   $('trip-destination').hidden = !destination;
   $('trip-region').textContent = destination ? destination.name : '';
-  if (destination) $('trip-region').setAttribute('aria-label', `${destination.name} · 다른 곳 여행하기`);
   $('cart-toggle').setAttribute('aria-label', `여행 일정표 ${state.drawerOpen ? '닫기' : '열기'}, 담은 장소 ${count}곳`);
   $('people-label').textContent = state.people + '명';
   document.querySelector('[data-action="people"][data-delta="-1"]').disabled = state.people <= 1;
@@ -1208,6 +1306,8 @@ function renderPage() {
 
 function selectRegion(regionId, focusHeading) {
   if (regionId && !selectableStatus(travelStatus(regionId))) return;
+  const previousRegion = state.region;
+  if (state.landmark) setLandmark(null);
   cancelMapAnimation();
   stopPanning();
   const previous = currentMapCamera();
@@ -1216,10 +1316,8 @@ function selectRegion(regionId, focusHeading) {
   state.regionListOpen = !regionId;
   state.category = 'all';
   state.place = null;
-  if (regionId) {
-    state.drawerManuallyClosed = false;
-    setCartOpen(true);
-  }
+  state.drawerManuallyClosed = false;
+  setCartOpen(Boolean(regionId));
   renderTrip();
   renderRegionPane();
   renderMap();
@@ -1228,8 +1326,11 @@ function selectRegion(regionId, focusHeading) {
   const { center, zoom } = region ? regionCamera(regionId, fittedWidth) : { center: overviewCenter(), zoom: 1 };
   animateMap(previous, center, zoom, fittedWidth);
   if (focusHeading) {
-    const first = region ? mapScene.querySelector('.place') : $('region-pane').querySelector('.region-row.available');
-    (first || mapViewport).focus({ preventScroll: true });
+    const visibleClass = state.filter === 'available' ? '.available' : '';
+    const previousButton = $('region-pane').querySelector(`.region-row${visibleClass}[data-value="${previousRegion}"]`);
+    const target = region ? $('region-tourism-scroll')
+      : previousButton || $('region-pane').querySelector('.rail-filter [aria-pressed="true"]');
+    (target || mapViewport).focus({ preventScroll: true });
   }
 }
 
@@ -1260,6 +1361,7 @@ function toggleCart() {
 
 function switchTripRegion() {
   if (!state.region) return;
+  if (state.landmark) setLandmark(null);
   setRegionList(true);
   stopPanning();
   state.region = null;
@@ -1451,6 +1553,9 @@ document.addEventListener('click', (event) => {
     case 'place':
       selectPlace(value, button.matches('.map-marker.place'), keyboard);
       return;
+    case 'landmark-location':
+      locateLandmark(value);
+      return;
     case 'close-balloon':
       closeBalloon(keyboard);
       return;
@@ -1532,6 +1637,20 @@ for (const id of ['start-date', 'end-date']) {
     renderTrip();
   });
 }
+
+const tourismScroll = $('region-tourism-scroll');
+function updatePhotoFades() {
+  const { scrollTop, scrollHeight, clientHeight } = tourismScroll;
+  const edge = Math.min(42, clientHeight * .12);
+  const top = Math.max(0, scrollTop);
+  const bottom = Math.max(0, scrollHeight - clientHeight - top);
+  tourismScroll.style.setProperty('--fade-top', Math.min(edge, top) + 'px');
+  tourismScroll.style.setProperty('--fade-bottom', (bottom <= 1 ? 0 : Math.min(edge, bottom)) + 'px');
+}
+tourismScroll.addEventListener('scroll', updatePhotoFades, { passive: true });
+const photoResize = new ResizeObserver(updatePhotoFades);
+photoResize.observe(tourismScroll);
+photoResize.observe($('region-tourism-cards'));
 
 window.addEventListener('hashchange', renderPage);
 myPlans.initialize();

@@ -52,6 +52,14 @@
     <aside class="region-panel" id="region-list-panel" aria-label="지역 선택">
       <div class="region-scroll" id="region-pane"></div>
     </aside>
+    <aside class="region-tourism" id="region-tourism" aria-labelledby="region-tourism-title" data-open="false" hidden inert>
+      <div class="tourism-sheet">
+        <h2 id="region-tourism-title" hidden></h2>
+        <div id="region-tourism-scroll" role="region" tabindex="0" aria-label="관광지 사진 목록">
+          <div id="region-tourism-cards"></div>
+        </div>
+      </div>
+    </aside>
     <aside class="region-information" id="region-information" aria-labelledby="region-detail-name" hidden></aside>
 
     <section class="panel center-panel" id="map-panel" aria-labelledby="map-title">
@@ -63,6 +71,10 @@
             <div class="map-scene" id="map-scene">
               <svg class="map-geometry" id="map-geometry" viewBox="0 0 620 640" aria-hidden="true"></svg>
               <div class="map-markers" id="map-markers"></div>
+              <div id="landmark-location" role="status" hidden>
+                <span class="landmark-label"></span>
+                <svg width="22" height="28" viewBox="0 0 22 28" aria-hidden="true"><path d="M11 26S1.5 16.1 1.5 11a9.5 9.5 0 0 1 19 0c0 5.1-9.5 15-9.5 15Z" fill="currentColor" stroke="white" stroke-width="2"/><circle cx="11" cy="11" r="3" fill="white"/></svg>
+              </div>
             </div>
           </div>
         </div>
@@ -93,14 +105,21 @@
         <header class="trip-head">
           <div>
             <div class="trip-heading-line">
-              <h2 id="trip-title">여행 일정표</h2>
-              <button class="rename-basket" id="rename-basket" type="button" aria-label="장바구니 이름 바꾸기" title="장바구니 이름 바꾸기">
-                <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="m15 5 4 4M4 20l4-1 12-12a2.8 2.8 0 0 0-4-4L4 15.5z"/></svg>
-              </button>
               <span class="trip-destination" id="trip-destination" hidden>
-                <button type="button" id="trip-region" data-action="switch-region" aria-describedby="trip-region-tip" aria-controls="region-list-panel"></button>
-                <span role="tooltip" id="trip-region-tip">다른 곳이 좋을까?</span>
+                <span class="trip-region-switch">
+                  <button type="button" id="clear-trip-region" data-action="switch-region" aria-label="지역 선택 해제" aria-describedby="trip-region-tip" aria-controls="region-list-panel">
+                    <svg viewBox="0 0 16 16" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><path d="m4 4 8 8m0-8-8 8"/></svg>
+                  </button>
+                  <span role="tooltip" id="trip-region-tip">다른 지역은 어떨까?</span>
+                </span>
+                <span id="trip-region"></span>
               </span>
+              <div class="trip-title-group">
+                <h2 id="trip-title">여행 일정표</h2>
+                <button class="rename-basket" id="rename-basket" type="button" aria-label="장바구니 이름 바꾸기" title="장바구니 이름 바꾸기">
+                  <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="m15 5 4 4M4 20l4-1 12-12a2.8 2.8 0 0 0-4-4L4 15.5z"/></svg>
+                </button>
+              </div>
             </div>
             <p id="trip-count"></p>
           </div>
