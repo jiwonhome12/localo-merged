@@ -116,6 +116,7 @@
     document.querySelector('[data-zoom="out"]').disabled = z <= 1.001;
     document.querySelector('[data-zoom="in"]').disabled = z >= ZMAX - 0.001;
     wrap.classList.toggle('zoomed-in', z > 1.001);
+    wrap.classList.toggle('deep', S.view === 'region' && z >= 2.4); // 사진 미리보기는 충분히 확대했을 때만
   }
   // 화면 좌표 → 지도 좌표
   function svgPt(cx, cy) { const m = svg.getScreenCTM(); if (!m) return [vb[0] + vb[2] / 2, vb[1] + vb[3] / 2]; const p = new DOMPoint(cx, cy).matrixTransform(m.inverse()); return [p.x, p.y]; }
@@ -189,6 +190,10 @@
     if (pan && pan.id === e.pointerId) { pan = null; wrap.classList.remove('panning'); }
   };
   ['pointerup', 'pointercancel', 'lostpointercapture'].forEach((t) => wrap.addEventListener(t, endPan));
+  wrap.addEventListener('click', (e) => {
+    if (!S.pid || panMoved || e.target.closest('.pop, .hit, .map-top, .map-zoom, button, a')) return;
+    S.pid = null; renderLeft(); renderOverlay(); record();
+  });
   // 끌어서 옮긴 뒤 따라오는 클릭(지역 열기)은 무시
   wrap.addEventListener('click', (e) => { if (panMoved) { panMoved = false; e.stopPropagation(); e.preventDefault(); } }, true);
   document.addEventListener('click', (e) => {
@@ -217,7 +222,7 @@
       matching.forEach((p) => {
         const inCart = S.cart.some((c) => c.pid === p.id);
         const ord = S.route ? S.route.indexOf(p.id) : -1;
-        h += `<button type="button" class="marker hit${S.pid === p.id ? ' on' : ''}${inCart ? ' in-cart' : ''}" data-p="${p.id}" aria-label="${esc(p.name)}">${ord >= 0 ? `<span class="ord">${ord + 1}</span>` : ''}<span class="mk" style="background:${CAT[p.category].c}"><i>${CAT[p.category].k}</i></span><span class="ml">${esc(p.name.replace(r.short + ' ', ''))}</span></button>`;
+        h += `<button type="button" class="marker hit${S.pid === p.id ? ' on' : ''}${inCart ? ' in-cart' : ''}" data-p="${p.id}" aria-label="${esc(p.name)}">${ord >= 0 ? `<span class="ord">${ord + 1}</span>` : ''}<span class="mk" style="background:${CAT[p.category].c}"><i>${CAT[p.category].k}</i></span><span class="ml">${esc(p.name.replace(r.short + ' ', ''))}</span>${placePhoto(p.id) && S.pid !== p.id ? `<span class="place-preview" data-drag-place="${p.id}"><img src="${esc(placePhoto(p.id).src)}" alt="" draggable="false" loading="lazy"><span>${esc(p.name.replace(r.short + ' ', ''))}</span></span>` : ''}</button>`;
       });
       if (S.pid) h += popHTML(PM[S.pid]);
     }
@@ -269,7 +274,7 @@
     // DOM 읽기를 위치 쓰기보다 먼저 끝낸다(지역명 약 250개 + 장소 마커 약 180개).
     const w = wrap.clientWidth, h = wrap.clientHeight, proj = projection(vb, w, h);
     const pop = overlay.querySelector('.pop');
-    const showPop = pop && !mobile(), pw = showPop ? pop.offsetWidth : 0, ph = showPop ? pop.offsetHeight : 0;
+    const pw = pop ? pop.offsetWidth : 0, ph = pop ? pop.offsetHeight : 0;
     const L = overlay.querySelector('#leaders'); let lines = '';
     if (S.view === 'all') layoutPins();
     overlay.querySelectorAll('.pdot').forEach((e) => { const r = RM[e.dataset.r]; const [x, y] = proj(r.cx, r.cy); e.style.left = x + 'px'; e.style.top = y + 'px'; });
@@ -286,28 +291,60 @@
       if (!outside) { e.style.left = x + 'px'; e.style.top = y + 'px'; }
     });
     overlay.querySelectorAll('.marker').forEach((e) => { const p = PM[e.dataset.p]; const [x, y] = proj(p.x, p.y); e.style.left = x + 'px'; e.style.top = y + 'px'; });
-    if (showPop) {
+    if (pop) {
       const p = PM[pop.dataset.p]; const [x, y] = proj(p.x, p.y);
-      let L2 = x + 24, T = y - ph / 2;
-      if (L2 + pw > w - 12) L2 = x - pw - 24;
-      if (L2 < 12) { L2 = Math.max(12, Math.min(w - pw - 12, x - pw / 2)); T = y + 12 + ph < h ? y + 12 : y - ph - 44; }
-      pop.style.left = L2 + 'px'; pop.style.top = Math.max(56, Math.min(h - ph - 8, T)) + 'px';
+      const below = y - ph - 30 < (mobile() ? 100 : 60) && y + ph + 30 < h;
+      const cx = Math.max(pw / 2 + 8, Math.min(w - pw / 2 - 8, x));
+      pop.style.left = x + 'px'; pop.style.top = y + 'px';
+      pop.style.setProperty('--balloon-shift', (cx - x) + 'px');
+      if (pop.classList.contains('below') !== below) pop.classList.toggle('below', below);
+      const out = x < -20 || x > w + 20 || y < -20 || y > h + 20;
+      pop.style.visibility = out ? 'hidden' : '';
     }
   }
   const safeUrl = (u) => { try { const url = new URL(u); return /^https?:$/.test(url.protocol) && !/(^|\.)matple\.com$/i.test(url.hostname) ? esc(u) : ''; } catch { return ''; } };
+  // 장소 사진: 명소 사진(region-photos.js)과 같은 자리(150m 안)로 이어진 장소만 실제 사진이 있다
+  let photoOfPlace = null;
+  function placePhoto(pid) {
+    if (!photoOfPlace) {
+      photoOfPlace = {};
+      Object.entries(window.regionPhotos || {}).forEach(([rid, list]) => list.forEach((ph) => {
+        if (ph.isExample || !RM[rid]) return; const pl = photoPlace(rid, ph); if (pl && !photoOfPlace[pl.id]) photoOfPlace[pl.id] = ph;
+      }));
+    }
+    return photoOfPlace[pid] || null;
+  }
+  // Loc 업종 아이콘(사진이 없는 장소의 말풍선 얼굴)
+  const CAT_ICON = {
+    food: '<path d="M5 3v6c0 3 5 3 5 0V3M7.5 3v18M19 21v-8h-4c0-6 2-9 4-10z"/>',
+    stay: '<path d="M3 5v15m18-9v9M3 16h18M9 9h8a4 4 0 0 1 4 4v3H9z"/><circle cx="6" cy="10" r="1.4"/>',
+    cafe: '<path d="M4 8h13v5a6 6 0 0 1-6 6h-1a6 6 0 0 1-6-6zM17 9h2a3 3 0 0 1 0 6h-2M3 21h16M8 3v2m4-2v2"/>',
+    spot: '<path d="m2 19 7-11 5 7 3-5 5 9z"/><circle cx="16" cy="5.5" r="1.7"/>',
+  };
+  const catIcon = (k) => `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${CAT_ICON[k]}</svg>`;
+  let poppedId = null; // 새로 연 말풍선만 부풀어 오르는 효과
   function popHTML(p) {
-    const r = RM[p.region_id], inCart = S.cart.some((c) => c.pid === p.id);
-    const rows = p.sample
-      ? `<dt>가격</dt><dd>${esc(p.price_text)}</dd><dt>접근성</dt><dd>${esc(p.access_text)}</dd>`
-      : `<dt>${p.category === 'food' || p.category === 'cafe' ? '대표 메뉴' : '이용 요금'}</dt><dd>${esc(p.price_text)}</dd><dt>주소</dt><dd>${esc(p.address || p.access_text)}</dd>`;
-    return `<div class="pop" data-p="${p.id}" role="dialog" aria-label="${esc(p.name)}">
-      <button class="x" type="button" data-close aria-label="닫기">✕</button>
-      <div class="cat-l" style="color:${CAT[p.category].c}">${CAT[p.category].n} · ${r.name}</div>
-      <h3>${esc(p.name)}</h3>
-      <dl>${rows}</dl>
-      <div class="links">${!p.sample ? `<a class="btn3" href="${esc(p.kakao_url)}" target="_blank" rel="noopener noreferrer">카카오맵에서 장소 확인</a>` : ''}</div>
-      ${p.price == null ? '<div class="ex">가격 확인 후 이용해 주세요. 경비 계산에는 포함되지 않습니다.</div>' : `<button class="btn${inCart ? ' added' : ''}" type="button" data-add="${p.id}">${inCart ? '담김 · 빼기' : '장바구니에 담기'}</button>`}
-      ${p.sample ? '<div class="ex">예시 장소 · 실제 위치가 아닙니다</div>' : p.approx ? '<div class="ex">지도 핀은 대략적인 위치입니다. 카카오 검색 결과의 주소를 확인해 주세요.</div>' : ''}</div>`;
+    const r = RM[p.region_id], inCart = S.cart.some((c) => c.pid === p.id), ph = placePhoto(p.id), name = esc(p.name);
+    const opening = poppedId !== p.id; poppedId = p.id;
+    const town = String(p.address || '').split(/\s+/).find((w) => /[읍면동]$/.test(w)) || '';
+    const link = safeUrl(p.kakao_url);
+    const cartIcon = inCart ? '<path d="m14 5 2 2 4-4"/>' : '<path d="M17 2v6m-3-3h6"/>';
+    return `<div class="pop place-balloon" data-p="${p.id}" data-drag-place="${p.id}" role="dialog" aria-label="${name} 사진과 위치" style="--category:${CAT[p.category].c}" title="사진을 장바구니로 끌어다 놓으면 담겨요">
+      <div class="balloon-bubble${opening ? ' opening' : ''}">
+        <div class="balloon-face">
+          ${ph ? `<img src="${esc(ph.src)}" alt="${esc(ph.alt)}" draggable="false">` : `<div class="balloon-art" aria-hidden="true">${catIcon(p.category)}<span>${CAT[p.category].n}</span></div>`}
+          <div class="balloon-caption"><strong>${name}</strong><span class="balloon-address">${esc([r.name, town].filter(Boolean).join(' '))}${p.approx ? ' · 대략 위치' : ''}</span>
+            <span class="balloon-price">${p.price == null ? '가격 확인 필요' : esc(p.price_text || '')}</span></div>
+        </div>
+        <button type="button" class="balloon-close" data-close aria-label="닫기">×</button>
+        ${link ? `<a class="balloon-link" href="${link}" target="_blank" rel="noopener noreferrer" aria-label="${name} 카카오맵에서 보기" title="카카오맵에서 장소 확인">지도</a>` : ''}
+        <button type="button" class="balloon-add" data-add="${p.id}" ${inCart ? 'disabled' : ''} aria-label="${name} ${inCart ? '장바구니에 담김' : '장바구니에 담기'}">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 4h3l2.2 10.7a2 2 0 0 0 2 1.6h8a2 2 0 0 0 1.9-1.4l1.8-5.6M6 8h5"/><circle cx="9.4" cy="20" r="1.25"/><circle cx="17.1" cy="20" r="1.25"/>${cartIcon}</svg>
+          <span>${inCart ? '담음' : '담기'}</span>
+        </button>
+        ${ph ? `<small class="balloon-credit">사진 ${esc(ph.credit)} · ${esc(ph.license)}</small>` : ''}
+      </div>
+    </div>`;
   }
 
   /* ───────── 지도 상단 ───────── */
@@ -1202,10 +1239,12 @@
     function cancel() { if (!pd) return; pd.preview?.remove(); clearReady(); document.body.classList.remove('cart-dragging'); pd = null; }
     document.addEventListener('pointerdown', (e) => {
       if (pd || e.button !== 0 || !e.isPrimary) return;
-      const src = e.target.closest('[data-drag-place], .marker[data-p]'); if (!src || src.closest('#trip')) return;
+      const src = e.target.closest('.place-preview, [data-drag-place], .marker[data-p]'); if (!src || src.closest('#trip')) return;
       // 손가락은 목록을 스크롤해야 하므로 사진과 지도 핀에서만 끌기를 시작한다
-      if (e.pointerType !== 'mouse' && !e.target.closest('img, .marker')) return;
+      if (e.pointerType !== 'mouse' && !e.target.closest('img, .marker, .balloon-face')) return;
+      if (e.target.closest('.pop button, .pop a')) return;
       pd = { id: src.dataset.dragPlace || src.dataset.p, src, x: e.clientX, y: e.clientY, pointerId: e.pointerId, preview: null };
+      if (src.closest('.pop')) e.preventDefault(); // 말풍선 글자 선택 대신 끌기
     }, true);
     addEventListener('pointermove', (e) => {
       if (!pd || e.pointerId !== pd.pointerId) return;

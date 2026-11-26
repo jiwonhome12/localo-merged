@@ -287,7 +287,7 @@ body.zoomed .target.sel{fill:#fff;stroke:var(--accent);stroke-width:2px;filter:d
   .tabbar button[aria-current="page"]{color:var(--accent);font-weight:600}
   .badge{position:absolute;top:6px;left:calc(50% + 6px);min-width:18px;height:18px;border-radius:9px;background:var(--open);color:#fff;font-size:10.5px;font-weight:700;display:grid;place-items:center;padding:0 5px}
   .pin{height:22px;font-size:11.5px;padding:0 8px 0 6px}
-  .pop{left:12px!important;right:12px;top:auto!important;bottom:12px;width:auto}
+
   .map-foot{transition:opacity .2s}
   body.zoomed .map-foot{opacity:0;pointer-events:none}
   .map-foot{bottom:26px}
@@ -788,3 +788,51 @@ body.cart-dragging,body.cart-dragging *{cursor:grabbing!important;user-select:no
   .pin .pd{width:6px;height:6px}
   .map-foot .map-tip{display:none}
 }
+
+/* ── 장소 말풍선(kangbj70-cell/Loc place-balloon): 동그란 사진 카드, 사진을 끌어 장바구니에 담기 */
+.pop.place-balloon{--balloon-shift:0px;--balloon-gap:24px;--balloon-line:color-mix(in srgb,var(--category) 62%,#b8a38f);
+  width:clamp(196px,18vw,256px);aspect-ratio:1.07;padding:0;border:0;border-radius:0;background:none;box-shadow:none;
+  container-type:inline-size;cursor:grab;user-select:none;touch-action:none;z-index:7;
+  transform:translate(calc(-50% + var(--balloon-shift)),calc(-100% - var(--balloon-gap)))}
+.pop.place-balloon.below{transform:translate(calc(-50% + var(--balloon-shift)),var(--balloon-gap))}
+.pop.place-balloon:active{cursor:grabbing}
+.balloon-bubble{--photo-cut:62%;position:absolute;inset:0;isolation:isolate;border:1px solid var(--balloon-line);border-radius:50%;background:#fff;box-shadow:0 3px 12px #6145282e;
+  transform-origin:clamp(16%,calc(50% - var(--balloon-shift)),84%) 100%}
+.below .balloon-bubble{transform-origin:clamp(16%,calc(50% - var(--balloon-shift)),84%) 0}
+@media (prefers-reduced-motion:no-preference){.balloon-bubble.opening{animation:balloon-inflate .3s ease-out}}
+@keyframes balloon-inflate{0%{transform:scale(.5);opacity:.4}72%{transform:scale(1.045);opacity:1}100%{transform:scale(1);opacity:1}}
+.balloon-bubble::before,.balloon-bubble::after{content:'';position:absolute;z-index:-1;pointer-events:none;left:clamp(16%,calc(50% - var(--balloon-shift)),84%);bottom:calc(1px - var(--tip-length));
+  width:var(--tip-base);height:var(--tip-length);transform:translateX(-50%);background:var(--tip-fill);clip-path:polygon(0 0,100% 0,40% 100%)}
+.balloon-bubble::before{--tip-base:24px;--tip-length:19px;--tip-fill:var(--balloon-line)}
+.balloon-bubble::after{--tip-base:21px;--tip-length:17px;--tip-fill:#fff}
+.below .balloon-bubble::before,.below .balloon-bubble::after{top:calc(1px - var(--tip-length));bottom:auto;transform:translateX(-50%) rotate(180deg)}
+.balloon-face{position:absolute;inset:0;overflow:hidden;border-radius:50%;background:#fff}
+.balloon-face>img{display:block;width:100%;height:var(--photo-cut);object-fit:cover;pointer-events:none}
+.balloon-art{display:grid;place-items:center;align-content:center;gap:4px;width:100%;height:var(--photo-cut);color:#fff;
+  background:radial-gradient(circle at 30% 25%,color-mix(in srgb,var(--category) 55%,#fff),var(--category) 70%)}
+.balloon-art svg{width:34%;height:auto;opacity:.95}
+.balloon-art span{font-size:11px;font-weight:700;letter-spacing:.04em;opacity:.9}
+.balloon-caption{padding:5px 11% 0;text-align:center}
+.balloon-caption strong,.balloon-address,.balloon-price{display:block;color:#503521;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.balloon-caption strong{font-size:clamp(12px,6.6cqw,17px);line-height:1.2;letter-spacing:-.04em}
+.balloon-address{margin-top:1px;font-size:clamp(10px,4.4cqw,12px);line-height:1.25;color:#766253}
+.balloon-price{font-size:clamp(9.5px,4.1cqw,11.5px);color:#8a6f5d}
+.balloon-add,.balloon-close,.balloon-link{position:absolute;z-index:1;display:inline-flex;align-items:center;justify-content:center;border-radius:20px;background:#fff;color:#774929;box-shadow:0 1px 5px #4a2e1935;text-decoration:none}
+.balloon-add{right:8%;bottom:calc(100% - var(--photo-cut) + 5px);min-height:27px;gap:3px;padding:3px 8px 3px 6px;border:1px solid #d9c5af;font-size:11px;font-weight:700;line-height:1}
+.balloon-add svg{flex:none;width:17px;height:17px}
+.balloon-add:hover:enabled,.balloon-close:hover,.balloon-link:hover{background:#fff0e0}
+.balloon-add:disabled{opacity:1;color:#4a6d63;background:#edf6f1;border-color:#bfd7cf;cursor:default}
+.balloon-close{top:10%;right:10%;width:27px;height:27px;padding:0;border:1px solid #ffffffa8;font:600 16px/1 system-ui,sans-serif}
+.balloon-link{top:10%;left:10%;height:24px;padding:0 8px;border:1px solid #ffffffa8;font-size:11px;font-weight:700}
+.balloon-credit{position:absolute;left:11%;bottom:calc(100% - var(--photo-cut) + 4px);max-width:52%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+  font-size:8.5px;color:#fff;text-shadow:0 1px 2px #0008;pointer-events:none}
+@container (max-width:200px){.balloon-bubble{--photo-cut:58%}.balloon-caption{padding-top:3px}.balloon-close{width:25px;height:25px}.balloon-add{right:7%;min-height:24px;padding:2px 6px 2px 4px}}
+
+/* 확대하면 사진 있는 장소 핀 위에 동그란 사진 미리보기 */
+.place-preview{display:none;position:absolute;left:50%;bottom:calc(100% + 6px);transform:translateX(-50%);width:76px;aspect-ratio:1;border:1.5px solid color-mix(in srgb,var(--c-spot) 50%,#fff);
+  border-radius:50%;background:#fff;box-shadow:0 2px 8px #4d354435;cursor:grab;touch-action:none}
+.place-preview img{display:block;width:100%;height:100%;padding:2px;border-radius:inherit;object-fit:cover}
+.place-preview>span{position:absolute;bottom:4%;left:50%;transform:translateX(-50%);max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding:2px 5px;border-radius:8px;background:#fffaf4;color:#513b32;box-shadow:0 1px 4px #493b3933;font-size:10.5px;line-height:1.2}
+.mapwrap.deep .place-preview{display:block}
+.mapwrap.deep .marker:has(.place-preview) .ml{opacity:0}
+@media (max-width:1023px){.pop.place-balloon{width:clamp(180px,52vw,220px)}.place-preview{width:64px}}
