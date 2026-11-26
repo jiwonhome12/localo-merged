@@ -7,6 +7,7 @@
 > | 화면 뼈대(지도·장바구니·마이·커뮤니티), 데이터(`data/`, `scripts/`), Supabase(`cloud.js`, `supabase/schema.sql`) | localo |
 > | 축제 캘린더(`calendar.js`, `calendar.css`) | Loc → 신청·여행 기간은 `data/regions.json`의 일정 문구에서 읽고, 저장한 여행(지난 여행)을 달력에 표시. 행사는 예시 |
 > | 지역 명소 사진(`region-photos.js`, `assets/landmarks/`) | Loc → 지역 화면 왼쪽 패널에 출처·라이선스와 함께 표시 |
+> | 장바구니 | localo 오른쪽 칸·지역별 바구니·환급 계산·지역별 비교·동선 + Loc 여러 장바구니 탭·이름 바꾸기, 번호 매긴 일정(방문 날짜·시간, 수량, 끌어서 순서 바꾸기), 접히는 여행 설정과 경비, 찜 버튼, 사진·장소를 장바구니로 끌어서 담기. 장바구니는 이 기기(localStorage)에 저장 |
 > | 웜톤 중성색·장소 색, 제목 글꼴 Gowun Dodum, 캘린더 글꼴 Gamja Flower(`assets/fonts/`, OFL) | Loc |
 해당파일 선택 후 python -m http.server 8000
 

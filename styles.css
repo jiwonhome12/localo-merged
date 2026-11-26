@@ -620,3 +620,138 @@ h2{font-size:21px}
 .rphoto figcaption span{color:var(--muted);display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
 .rphoto small{color:var(--faint);font-size:10.5px}
 .rphoto small a{color:inherit}
+
+/* ── 장바구니: kangbj70-cell/Loc 의 여행 일정표(cart.css)를 localo 화면에 맞춰 옮김 ─────────── */
+.sr-only{position:fixed;inset:0 auto auto 0;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
+#trip.trip-panel{--sheet-pad:clamp(16px,1.4vw,26px);background:#fffdf9}
+#trip .trip-layout{padding:0;display:flex;flex-direction:column}
+#trip .cart-tabs{display:flex;align-items:end;flex:none;gap:4px;margin:12px var(--sheet-pad) 0;padding:4px 2px 0;border-bottom:1px solid #dacbda}
+#basket-list{display:flex;gap:3px;min-width:0;overflow-x:auto;scrollbar-width:thin}
+#trip .cart-tabs button{flex:none;min-width:33px;padding:5px 10px;border:1px solid #ded3df;border-bottom:0;border-radius:9px 9px 0 0;color:#715d72;background:#f5f0f6;font-size:13px;font-weight:650;line-height:1.35}
+#basket-list button{max-width:150px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+#basket-list button .c{font-size:11px;opacity:.7}
+#trip .cart-tabs button[aria-current]{background:#e6d9ee;border-color:#b9a4be;color:#533e58;font-weight:750}
+#trip .cart-tabs button:hover{background:#ebdfef}
+.trip-title-row{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex:none;padding:16px var(--sheet-pad) 14px;border-bottom:1px solid var(--line)}
+.trip-title-text{min-width:0}
+.trip-title-group{display:flex;align-items:center;gap:8px;min-width:0}
+.trip-title-group h2{font-size:clamp(22px,1.8vw,30px);letter-spacing:-.05em;line-height:1.2;overflow-wrap:anywhere}
+.trip-title-text p{color:var(--muted);margin:4px 0 0;font-size:13px}
+.basket-name{min-width:0;width:min(220px,100%);height:36px;padding:0 10px;border:1px solid #cdbbb3;border-radius:8px;font:inherit;font-size:16px;background:#fff;color:var(--ink)}
+.rename-basket{width:28px;height:28px;display:grid;place-items:center;flex:none;padding:0;color:#7e697a;border:1px solid #ded2da;border-radius:50%;background:#fffafc}
+.rename-basket:hover{background:#f0e4ed}
+.trip-close{flex:none;display:grid;place-items:center;width:32px;height:32px;padding:0;border:1px solid #d9ccc2;border-radius:9px;background:#fffdfb;color:var(--muted)}
+.trip-close:hover{background:var(--soft)}
+#trip .trip-places{padding:0 var(--sheet-pad)}
+#trip .trip-tabs{display:flex;gap:6px;overflow-x:auto;padding:12px 0 2px}
+
+.itinerary-list{margin:0;padding:0;list-style:none}
+.itinerary-stop{position:relative;display:grid;grid-template-columns:auto minmax(0,1fr);gap:clamp(10px,1vw,18px);padding:clamp(14px,2vh,24px) 0;border-bottom:1px solid #e8dccf}
+.itinerary-stop:last-child{border-bottom:0}
+.stop-number{padding-top:1px;color:#a66e44;font:600 clamp(17px,1.4vw,24px)/1 system-ui,sans-serif;letter-spacing:-.06em}
+.itinerary-stop:not(:only-child) .stop-number{align-self:start;display:grid;justify-items:center;align-content:start;gap:5px;min-width:27px;min-height:44px;cursor:grab;touch-action:none;user-select:none}
+.itinerary-stop:not(:only-child) .stop-number::after{content:'';width:15px;height:8px;opacity:.65;background:radial-gradient(circle,currentColor 1.25px,transparent 1.5px) 0 0/5px 4px}
+.itinerary-stop.is-moving{opacity:.48}
+.itinerary-list.is-reordering,.itinerary-list.is-reordering *{cursor:grabbing}
+.itinerary-stop.insert-before::before,.itinerary-stop.insert-after::after{content:'';position:absolute;inset-inline:0;height:3px;border-radius:3px;background:var(--accent);pointer-events:none}
+.itinerary-stop.insert-before::before{top:0}
+.itinerary-stop.insert-after::after{bottom:0}
+.stop-editor{min-width:0}
+.stop-editor>summary,.trip-calculator>summary{list-style:none;cursor:pointer}
+.stop-editor>summary::-webkit-details-marker,.trip-calculator>summary::-webkit-details-marker{display:none}
+.stop-editor>summary{display:grid;gap:7px;border-radius:3px;user-select:none}
+.stop-time,.stop-meta,.stop-category{display:flex;align-items:center}
+.stop-time{gap:5px;color:#835636;font-size:12px;font-weight:650;font-variant-numeric:tabular-nums}
+.stop-time svg{flex:none;width:15px;height:15px}
+.stop-chevron,.trip-calculator>summary::after{width:6px;height:6px;border-right:1.5px solid;border-bottom:1.5px solid;transform:rotate(45deg)}
+.stop-chevron{margin-left:auto;margin-right:2px}
+.stop-editor[open] .stop-chevron,.trip-calculator[open]>summary::after{transform:rotate(225deg)}
+.stop-title{display:flex;align-items:baseline;justify-content:space-between;flex-wrap:wrap;gap:3px 12px}
+.stop-title strong{font-size:clamp(15px,1.25vw,20px);line-height:1.3;letter-spacing:-.045em;font-weight:650}
+.stop-title b{font-size:clamp(14px,1vw,16px)}
+.stop-meta{flex-wrap:wrap;gap:5px 8px;color:var(--muted);font-size:12px}
+.stop-category{gap:5px;white-space:nowrap}
+.place-dot{display:inline-block;width:8px;height:8px;border-radius:50%}
+.refund-status{display:inline-block;padding:2px 5px;border-radius:4px;font-size:11px;white-space:nowrap;background:#edf2f4;color:#526875}
+.refund-status.free{background:#e5f3ee;color:#306a58}
+.refund-status.unknown{background:#f5eee6;color:#795d42}
+.stop-fields{display:grid;gap:10px;padding-top:11px}
+.stop-times{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(110px,100%),1fr));gap:6px}
+.stop-times label{font-size:12px;color:var(--muted)}
+.stop-times input{display:block;width:100%;min-width:0;margin-top:3px;padding:4px 5px;color:var(--ink);border:1px solid var(--line);border-radius:6px;background:#fffbf4;font:inherit;font-size:13px}
+.stop-quantity{display:flex;gap:5px 8px;flex-wrap:wrap;align-items:center}
+.stop-quantity small{margin-right:auto;color:var(--muted);font-size:11.5px}
+.stop-quantity .mini button:disabled{opacity:.35}
+.delete-item{border:0;background:none;color:var(--muted);padding:2px 0 2px 3px;font-size:12px}
+.delete-item:hover{color:#9a4632}
+.stop-order-actions{display:flex;gap:6px}
+.stop-order-actions button{min-height:28px;padding:3px 8px;border:1px solid var(--line);border-radius:6px;background:#fff;font-size:12px;color:var(--muted)}
+.stop-order-actions button:disabled{opacity:.4}
+.stop-link{font-size:12px;color:#974923;font-weight:600;text-decoration:none}
+.stop-link:hover{text-decoration:underline}
+.cart-empty{display:grid;flex-grow:1;align-content:center;gap:7px;justify-items:center;min-height:180px;padding:24px 6px;text-align:center}
+.cart-empty-icon{display:grid;place-items:center;width:44px;height:44px;margin-bottom:3px;border-radius:50%;background:#f9ecdb;color:#a1653e}
+.cart-empty-icon svg{width:23px;height:23px}
+.cart-empty strong{font-size:15px}
+.cart-empty p{color:var(--muted);font-size:12px;margin:0}
+#trip .route{margin:4px var(--sheet-pad) 16px;padding-top:14px}
+#trip .route:empty{display:none}
+
+.trip-calculator{flex:none;min-width:0;border-top:1px solid var(--line);margin-top:auto}
+.trip-calculator>summary{display:flex;align-items:center;justify-content:space-between;padding:13px var(--sheet-pad);font-size:13px;font-weight:700;color:#89502d}
+.trip-calculator>summary::after{content:'';margin-right:3px}
+.trip-settings,#trip .trip-summary{padding:14px var(--sheet-pad);background:#fbf7ef}
+.trip-settings h3,#trip .trip-summary h3{font-size:15px;margin:0 0 10px}
+#trip .trip-settings .form{margin:0}
+#trip .field input,#trip .stepper,#trip .seg button{background:#fffbf4}
+#trip .trip-summary{border-top:1px solid #efe4d6}
+#trip .trip-summary .bar{margin:0 0 10px}
+#trip .trip-summary dl{margin:0;display:grid;gap:6px}
+#trip .trip-summary dl>div{display:flex;justify-content:space-between;align-items:baseline;gap:8px;font-size:12.5px}
+#trip .trip-summary dt{color:var(--muted)}
+#trip .trip-summary dt small{font-size:11px;color:var(--faint)}
+#trip .trip-summary dd{margin:0;text-align:right;font-weight:700;white-space:nowrap}
+#trip .trip-summary .discount{color:#98481f}
+#trip .trip-summary .total-row{padding-top:7px;margin-top:2px;border-top:1px dashed #e2d3c2;font-size:13.5px}
+#trip .trip-summary .total-row dt{color:var(--ink);font-weight:600}
+.fine-print{margin:8px 0 0;color:#715e50;font-size:11px;line-height:1.5}
+#trip .cmp{margin:0;padding:14px var(--sheet-pad) 18px;background:#fbf7ef}
+#trip .cmp:empty{display:none}
+
+.trip-person-total{display:flex;flex:none;align-items:center;flex-wrap:wrap;gap:4px 12px;padding:clamp(12px,2vh,22px) var(--sheet-pad);border-top:1px solid #e7cdb2;background:#fbefde}
+.trip-person-total strong,.trip-person-total small{display:block}
+.trip-person-total strong{font-size:clamp(14px,1vw,16px)}
+.trip-person-total small{color:var(--muted);font-size:11px;margin-top:2px}
+.trip-person-total output{margin-left:auto;color:#86401c;font-size:clamp(20px,1.9vw,30px);font-weight:800;letter-spacing:-.05em}
+#trip .save-trip{margin:0;display:inline-flex;align-items:center;justify-content:center;gap:5px;padding:7px 13px;border:1px solid #754661;border-radius:20px;background:#754661;color:#fff;font-weight:750;font-size:14px;white-space:nowrap}
+#trip .save-trip span{font:19px/1 system-ui,sans-serif}
+#trip .save-trip:hover:enabled{background:#603850}
+#trip .save-trip:disabled{color:#7d706f;background:transparent;border-color:#cdbfb6;opacity:.75;cursor:default}
+
+/* 끌어서 담기: 장소 사진·장소 줄·지도 핀을 장바구니(오른쪽 칸, 휴대폰은 위 가방 버튼)에 놓는다 */
+.cart-drag-preview{position:fixed;inset:0 auto auto 0;z-index:80;width:84px;height:57px;padding:3px;border-radius:10px;background:#fff;box-shadow:0 4px 14px #663b2355;object-fit:cover;pointer-events:none}
+.cart-drag-chip{position:fixed;inset:0 auto auto 0;z-index:80;max-width:200px;padding:6px 10px;border-radius:999px;background:#fff;color:var(--ink);font-size:12.5px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;box-shadow:0 4px 14px #663b2355;pointer-events:none}
+body.cart-dragging,body.cart-dragging *{cursor:grabbing!important;user-select:none}
+#trip.drop-ready,.ibtn.drop-ready{outline:3px solid #c9703e;outline-offset:-3px}
+.ibtn.drop-ready{outline-offset:2px;border-radius:12px}
+.rphoto[data-drag-place] img{cursor:grab}
+.rphoto .rp-add{display:inline-flex;align-items:center;gap:4px;justify-self:start;margin-top:2px;padding:3px 8px;border:1px solid #d7b99c;border-radius:999px;background:#fff8ef;color:#974923;font-size:11.5px;font-weight:650}
+.rphoto .rp-add.on{background:#a94e25;border-color:#a94e25;color:#fff}
+.place-row-head[data-drag-place]{cursor:grab}
+
+/* 지역별 바구니 안에 Loc 일정표 */
+#trip .bgroup{padding:4px 12px 10px;gap:0;margin-top:12px;background:#fbf6ef;border-color:#eadccd}
+#trip .bgroup .bg-h{padding:10px 0 4px}
+#trip .bgroup .bg-f{margin-top:2px}
+#trip .bgroup .itinerary-stop{padding:12px 0;border-bottom-color:#eadccd}
+#trip .trip-tabs{padding-top:10px}
+#trip .trip-tabs+.bgroup{margin-top:8px}
+@media (min-width:1024px){
+  #trip.trip-panel{--sheet-pad:18px}
+  #trip .stop-title strong{font-size:15px}
+  #trip .trip-title-group h2{font-size:24px}
+}
+@media (max-width:1023px){
+  #trip .cart-tabs{margin-top:10px}
+  .trip-person-total{padding-bottom:calc(12px + env(safe-area-inset-bottom,0px))}
+}

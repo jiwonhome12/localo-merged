@@ -16,7 +16,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;600;700&display=swap">
 <link rel="stylesheet" href="calendar.css?v=20261126a">
-<link rel="stylesheet" href="styles.css?v=20261126d">
+<link rel="stylesheet" href="styles.css?v=20261126g">
 </head>
 <body>
 <script>document.body.dataset.sheet="peek"</script>
@@ -64,30 +64,53 @@
     </div>
   </section>
 
-  <aside class="panel right" id="trip" aria-label="여행 경비 계산">
-    <div class="trip-head">장바구니 <button type="button" data-tab="map">지도로</button></div>
-    <div class="p-scroll">
-            <div class="form">
-        <div class="field"><label for="d1">가는 날</label><input id="d1" type="date" value="2026-11-21"></div>
-        <div class="field"><label for="d2">오는 날</label><input id="d2" type="date" value="2026-11-22"></div>
-        <div class="field"><label id="pplLabel">인원</label>
-          <div class="stepper" role="group" aria-labelledby="pplLabel"><button type="button" id="pm" aria-label="인원 줄이기">−</button><span class="num" id="pp">2명</span><button type="button" id="pl" aria-label="인원 늘리기">+</button></div>
-        </div>
-        <div class="field"><label id="modeLabel">지원 유형</label>
-          <div class="seg" id="mode" role="group" aria-labelledby="modeLabel">
-            <button type="button" data-m="normal" aria-pressed="true">일반</button>
-            <button type="button" data-m="youth" aria-pressed="false">청년</button>
-            <button type="button" data-m="family" aria-pressed="false">가족</button>
-          </div>
-        </div>
+  <!-- 장바구니: kangbj70-cell/Loc 의 여행 일정표 형태(여러 장바구니 · 방문 순서 · 접히는 경비 · 1인당 부담금).
+       환급 계산은 localo 지역 규칙(data/regions.json), 저장은 Supabase 지난 여행 -->
+  <aside class="panel right trip-panel" id="trip" aria-label="여행 일정표">
+    <div class="trip-head"><span>장바구니</span><button type="button" data-tab="map">지도로</button></div>
+    <nav class="cart-tabs" aria-label="장바구니 선택">
+      <div id="basket-list"></div>
+      <button class="add-basket" type="button" data-new-basket aria-label="새 장바구니 추가" title="새 장바구니 추가">+</button>
+    </nav>
+    <header class="trip-title-row">
+      <div class="trip-title-text">
+        <div class="trip-title-group" id="trip-title-group"></div>
+        <p id="trip-count"></p>
       </div>
-      <div class="bar" id="bar"></div>
-      <div class="stack" id="stack"></div>
-      <div class="cmp" id="cmp"></div>
+    </header>
+    <div class="trip-layout p-scroll" id="trip-scroll">
+      <section class="trip-places" aria-label="담은 장소"><div id="trip-items"></div></section>
       <div class="route" id="route"></div>
+      <details class="trip-calculator" id="trip-calculator" open>
+        <summary>여행 설정과 경비</summary>
+        <section class="trip-settings" aria-labelledby="trip-settings-title">
+          <h3 id="trip-settings-title">여행 설정</h3>
+          <div class="form">
+            <div class="field"><label for="d1">가는 날</label><input id="d1" type="date" value="2026-11-21"></div>
+            <div class="field"><label for="d2">오는 날</label><input id="d2" type="date" value="2026-11-22"></div>
+            <div class="field"><label id="pplLabel">인원</label>
+              <div class="stepper" role="group" aria-labelledby="pplLabel"><button type="button" id="pm" aria-label="인원 줄이기">−</button><span class="num" id="pp">2명</span><button type="button" id="pl" aria-label="인원 늘리기">+</button></div>
+            </div>
+            <div class="field"><label id="modeLabel">지원 유형</label>
+              <div class="seg" id="mode" role="group" aria-labelledby="modeLabel">
+                <button type="button" data-m="normal" aria-pressed="true">일반</button>
+                <button type="button" data-m="youth" aria-pressed="false">청년</button>
+                <button type="button" data-m="family" aria-pressed="false">가족</button>
+              </div>
+            </div>
+          </div>
+        </section>
+        <section class="trip-summary" id="sum" aria-label="예상 여행 경비" aria-live="polite"></section>
+        <div class="cmp" id="cmp"></div>
+      </details>
     </div>
-    <div class="sum" id="sum"></div>
+    <footer class="trip-person-total">
+      <div><strong>실제 부담 예상</strong><small id="split-count"></small></div>
+      <output id="pay-total" class="num" aria-live="polite">0원</output>
+      <button class="save-trip" type="button" id="save-trip" data-save-trip disabled><span aria-hidden="true">♡</span> 찜!</button>
+    </footer>
   </aside>
+  <div class="sr-only" id="cart-announcement" role="status"></div>
 
   <!-- 마이·커뮤니티: 휴대폰은 전체 화면, PC는 지도 위 창 -->
   <section class="page" id="page-my" aria-label="마이"><div class="page-head"><b>마이</b></div><div class="page-body" id="my"></div></section>
@@ -110,6 +133,6 @@
 <script src="cloud.js?v=20261117i"></script>
 <script src="region-photos.js?v=20261126a"></script>
 <script src="calendar.js?v=20261126c"></script>
-<script src="app.js?v=20261126c"></script>
+<script src="app.js?v=20261126h"></script>
 </body>
 </html>
