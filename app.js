@@ -85,7 +85,7 @@
     const ox = (w - box[2] * s) / 2 - box[0] * s, oy = (h - box[3] * s) / 2 - box[1] * s;
     return (x, y) => [ox + x * s, oy + y * s];
   }
-  function setVB(v) { vb = v; svg.setAttribute('viewBox', v.join(' ')); placeOverlay(); }
+  function setVB(v) { vb = v; svg.setAttribute('viewBox', v.join(' ')); placeOverlay(); showZoom(); }
   let anim = null, zoomSize = null;
   function stopZoom() { cancelAnimationFrame(anim); anim = null; zoomSize = null; }
   function animateVB(to, ms = 650) {
@@ -106,8 +106,99 @@
     return [cx - bw / 2, cy - bh / 2 - bh * 0.04, bw, bh];
   }
 
+  /* ───────── 지도 확대·이동(kangbj70-cell/Loc 지도 확대 기능) ───────── */
+  const ZMAX = 16;
+  const baseVB = () => (S.view === 'region' && RM[S.rid] ? fitBox(RM[S.rid].bbox) : VB0);
+  const zoomLevel = () => baseVB()[2] / vb[2];
+  function showZoom() {
+    const z = zoomLevel(), out = $('zoomv'); if (!out) return;
+    out.textContent = Math.round(z * 100) + '%';
+    document.querySelector('[data-zoom="out"]').disabled = z <= 1.001;
+    document.querySelector('[data-zoom="in"]').disabled = z >= ZMAX - 0.001;
+    wrap.classList.toggle('zoomed-in', z > 1.001);
+  }
+  // 화면 좌표 → 지도 좌표
+  function svgPt(cx, cy) { const m = svg.getScreenCTM(); if (!m) return [vb[0] + vb[2] / 2, vb[1] + vb[3] / 2]; const p = new DOMPoint(cx, cy).matrixTransform(m.inverse()); return [p.x, p.y]; }
+  // 지도가 화면 밖으로 사라지지 않게: 보이는 가운데가 기준 지도 안에 있게 한다
+  function clampVB(v) {
+    const b = baseVB(), cx = Math.max(b[0], Math.min(b[0] + b[2], v[0] + v[2] / 2)), cy = Math.max(b[1], Math.min(b[1] + b[3], v[1] + v[3] / 2));
+    return [cx - v[2] / 2, cy - v[3] / 2, v[2], v[3]];
+  }
+  // 화면의 (cx, cy) 지점을 그대로 둔 채 factor 배 확대(1보다 작으면 축소). 기준 크기보다 작게는 줄이지 않는다
+  function zoomAt(factor, cx, cy, animate) {
+    const r = wrap.getBoundingClientRect(); if (cx == null) { cx = r.left + r.width / 2; cy = r.top + r.height / 2; }
+    const z = zoomLevel(), nz = Math.max(1, Math.min(ZMAX, z * factor)), f = nz / z;
+    if (Math.abs(f - 1) < 1e-4) return;
+    let to;
+    if (nz <= 1.0005) to = baseVB().slice(); // 원래 크기로 돌아오면 처음 자리로
+    else { const [ax, ay] = svgPt(cx, cy); to = clampVB([ax - (ax - vb[0]) / f, ay - (ay - vb[1]) / f, vb[2] / f, vb[3] / f]); }
+    if (animate) animateVB(to, 260); else { stopZoom(); stopIntro(); setVB(to); }
+  }
+  function panBy(dx, dy) {
+    const s = Math.min(wrap.clientWidth / vb[2], wrap.clientHeight / vb[3]);
+    stopZoom(); setVB(clampVB([vb[0] - dx / s, vb[1] - dy / s, vb[2], vb[3]]));
+  }
+  // 휠: Ctrl(트랙패드 오므리기 포함)은 확대·축소, 확대한 상태의 일반 휠은 이동
+  wrap.addEventListener('wheel', (e) => {
+    if (e.target.closest('.pop, .map-top')) return;
+    const unit = e.deltaMode === 1 ? 16 : e.deltaMode === 2 ? wrap.clientHeight : 1;
+    if (e.ctrlKey || e.metaKey) { e.preventDefault(); zoomAt(Math.exp(-Math.max(-180, Math.min(180, e.deltaY * unit)) * 0.0025), e.clientX, e.clientY); return; }
+    if (zoomLevel() > 1.001) { e.preventDefault(); panBy(-e.deltaX * unit, -e.deltaY * unit); }
+  }, { passive: false });
+  // 끌어서 이동: 확대한 상태에서 마우스로 끌거나, 스페이스바를 누른 채 끌기. 손가락은 한 손가락 이동 · 두 손가락 확대
+  let spaceHeld = false, pointerOnMap = false;
+  const touches = new Map(); let pan = null, pinch = null, panMoved = false;
+  addEventListener('keydown', (e) => {
+    if (e.code !== 'Space' || !pointerOnMap || e.ctrlKey || e.metaKey || e.altKey || e.target.closest?.('input, textarea, select, [contenteditable="true"], button, a')) return;
+    e.preventDefault(); spaceHeld = true; wrap.classList.add('pan-ready');
+  });
+  addEventListener('keyup', (e) => { if (e.code === 'Space') { spaceHeld = false; wrap.classList.remove('pan-ready'); } });
+  addEventListener('blur', () => { spaceHeld = false; wrap.classList.remove('pan-ready'); });
+  wrap.addEventListener('pointerenter', () => { pointerOnMap = true; });
+  wrap.addEventListener('pointerleave', () => { pointerOnMap = false; });
+  wrap.addEventListener('pointerdown', (e) => {
+    panMoved = false;
+    // 버튼·장소 핀·팝업에서 시작하면 그쪽 기능(누르기·장바구니로 끌기)에 맡긴다
+    if (!spaceHeld && e.target.closest('button, a, .hit, .pop, .map-top, .map-zoom, input')) return;
+    if (e.pointerType === 'touch') {
+      touches.set(e.pointerId, [e.clientX, e.clientY]);
+      if (touches.size === 2) { const [a, b] = [...touches.values()]; pinch = { d: Math.hypot(a[0] - b[0], a[1] - b[1]) }; pan = null; }
+      else if (touches.size === 1 && zoomLevel() > 1.001) pan = { id: e.pointerId, x: e.clientX, y: e.clientY };
+      return;
+    }
+    if (e.button !== 0 || !(spaceHeld || zoomLevel() > 1.001)) return;
+    pan = { id: e.pointerId, x: e.clientX, y: e.clientY };
+    if (spaceHeld) e.preventDefault();
+  }, true);
+  wrap.addEventListener('pointermove', (e) => {
+    if (touches.has(e.pointerId)) touches.set(e.pointerId, [e.clientX, e.clientY]);
+    if (pinch && touches.size === 2) {
+      const [a, b] = [...touches.values()], d = Math.hypot(a[0] - b[0], a[1] - b[1]);
+      if (pinch.d > 0 && Math.abs(d - pinch.d) > 1) { zoomAt(d / pinch.d, (a[0] + b[0]) / 2, (a[1] + b[1]) / 2); pinch.d = d; panMoved = true; }
+      return;
+    }
+    if (!pan || pan.id !== e.pointerId) return;
+    const dx = e.clientX - pan.x, dy = e.clientY - pan.y;
+    if (!panMoved && Math.hypot(dx, dy) < 5) return;
+    if (!panMoved) { panMoved = true; wrap.classList.add('panning'); try { wrap.setPointerCapture(e.pointerId); } catch (_) { /* 일부 브라우저 */ } }
+    panBy(dx, dy); pan.x = e.clientX; pan.y = e.clientY;
+  });
+  const endPan = (e) => {
+    touches.delete(e.pointerId);
+    if (touches.size < 2) pinch = null;
+    if (pan && pan.id === e.pointerId) { pan = null; wrap.classList.remove('panning'); }
+  };
+  ['pointerup', 'pointercancel', 'lostpointercapture'].forEach((t) => wrap.addEventListener(t, endPan));
+  // 끌어서 옮긴 뒤 따라오는 클릭(지역 열기)은 무시
+  wrap.addEventListener('click', (e) => { if (panMoved) { panMoved = false; e.stopPropagation(); e.preventDefault(); } }, true);
+  document.addEventListener('click', (e) => {
+    const b = e.target.closest('[data-zoom]'); if (!b) return;
+    const z = b.dataset.zoom;
+    if (z === 'fit') animateVB(baseVB().slice(), 320); else zoomAt(z === 'in' ? 1.5 : 1 / 1.5, null, null, true);
+  });
+
   /* ───────── 지도 위 HTML(핀·라벨·마커) ───────── */
-  let pinOffsets = {}; // 전국 화면 라벨 겹침 해소 결과 (px)
+  let pinOffsets = {}, pinMini = new Set(), pinW = {}; // 전국 화면 라벨 위치(px) · 점으로 접은 라벨 · 라벨 너비
   function renderOverlay() {
     let h = '<svg class="leaders" id="leaders"></svg>';
     if (S.view === 'all') {
@@ -131,29 +222,48 @@
       if (S.pid) h += popHTML(PM[S.pid]);
     }
     overlay.innerHTML = h;
-    if (S.view === 'all') layoutPins();
+    if (S.view === 'all') overlay.querySelectorAll('.pin').forEach((b) => { pinW[b.dataset.r] = b.offsetWidth; });
     placeOverlay();
   }
-  // 라벨끼리 겹치지 않게 밀어내고, 많이 움직인 라벨은 지시선을 그린다
+  // 라벨끼리 겹치지 않게 배치한다(지금 보이는 확대 상태 기준).
+  // 넓은 화면: 밀어내고 많이 움직인 라벨은 지시선. 휴대폰: 제자리 근처에 자리가 없으면 점(작은 버튼)으로 접고, 확대하면 다시 펼친다
+  const PIN_RANK = { open: 0, soon: 1, closed: 2 };
   function layoutPins() {
-    const W = wrap.clientWidth, H = wrap.clientHeight, proj = projection(VB0, W, H);
-    const items = [...overlay.querySelectorAll('.pin')].map((b) => {
-      const r = RM[b.dataset.r]; const [x, y] = proj(r.cx, r.cy);
-      return { id: r.id, ax: x, ay: y, x, y: y - 16, w: b.offsetWidth + 4, h: b.offsetHeight + 4 };
+    const W = wrap.clientWidth, H = wrap.clientHeight, proj = projection(vb, W, H);
+    const ids = [...overlay.querySelectorAll('.pin')].map((b) => b.dataset.r);
+    const top = mobile() ? 64 : 60, bottom = H - (mobile() ? 12 : 40);
+    pinMini = new Set(); pinOffsets = {};
+    if (mobile()) {
+      const boxes = [], hit = (a) => a.x - a.w / 2 < 4 || a.x + a.w / 2 > W - 4 || a.y - a.h / 2 < top || a.y + a.h / 2 > bottom
+        || boxes.some((b) => Math.abs(a.x - b.x) < (a.w + b.w) / 2 && Math.abs(a.y - b.y) < (a.h + b.h) / 2);
+      // 점 자리도 미리 막아 둔다(라벨이 다른 지역 점을 덮지 않게)
+      R.forEach((r) => { const [x, y] = proj(r.cx, r.cy); boxes.push({ x, y, w: 10, h: 10 }); });
+      ids.map((id) => RM[id]).sort((a, b) => PIN_RANK[a.status] - PIN_RANK[b.status] || a.cy - b.cy).forEach((r) => {
+        const [ax, ay] = proj(r.cx, r.cy), w = (pinW[r.id] || 50) + 2, h = 22;
+        const cand = [[0, -15], [0, 15], [w / 2 + 7, 0], [-(w / 2 + 7), 0], [w / 2 + 3, -13], [-(w / 2 + 3), -13], [w / 2 + 3, 13], [-(w / 2 + 3), 13]];
+        const ok = cand.find(([dx, dy]) => !hit({ x: ax + dx, y: ay + dy, w, h }));
+        if (ok) { boxes.push({ x: ax + ok[0], y: ay + ok[1], w, h }); pinOffsets[r.id] = ok; }
+        else { pinMini.add(r.id); pinOffsets[r.id] = [0, 0]; }
+      });
+      return;
+    }
+    const items = ids.map((id) => {
+      const r = RM[id]; const [x, y] = proj(r.cx, r.cy);
+      return { id, ax: x, ay: y, x, y: y - 16, w: (pinW[id] || 50) + 4, h: 28 };
     });
     for (let it = 0; it < 140; it++) {
       for (let i = 0; i < items.length; i++) for (let j = i + 1; j < items.length; j++) {
         const a = items[i], b = items[j];
         const ox = (a.w + b.w) / 2 - Math.abs(a.x - b.x), oy = (a.h + b.h) / 2 - Math.abs(a.y - b.y);
         if (ox > 0 && oy > 0) {
-          if (ox < oy * 1.6) { const s = (a.x < b.x ? -1 : 1) * ox / 2; a.x += s; b.x -= s; }
-          else { const s = (a.y < b.y ? -1 : 1) * oy / 2; a.y += s; b.y -= s; }
+          if (ox < oy * 1.6) { const d = (a.x < b.x ? -1 : 1) * ox / 2; a.x += d; b.x -= d; }
+          else { const d = (a.y < b.y ? -1 : 1) * oy / 2; a.y += d; b.y -= d; }
         }
       }
       items.forEach((a) => { a.x += (a.ax - a.x) * 0.03; a.y += (a.ay - 16 - a.y) * 0.03;
-        a.x = Math.max(a.w / 2 + 6, Math.min(W - a.w / 2 - 6, a.x)); a.y = Math.max(60, Math.min(H - 40, a.y)); });
+        a.x = Math.max(a.w / 2 + 6, Math.min(W - a.w / 2 - 6, a.x)); a.y = Math.max(top, Math.min(bottom, a.y)); });
     }
-    pinOffsets = Object.fromEntries(items.map((a) => [a.id, [a.x - a.ax, a.y - a.ay]]));
+    items.forEach((a) => { pinOffsets[a.id] = [a.x - a.ax, a.y - a.ay]; });
   }
   function placeOverlay() {
     // DOM 읽기를 위치 쓰기보다 먼저 끝낸다(지역명 약 250개 + 장소 마커 약 180개).
@@ -161,10 +271,12 @@
     const pop = overlay.querySelector('.pop');
     const showPop = pop && !mobile(), pw = showPop ? pop.offsetWidth : 0, ph = showPop ? pop.offsetHeight : 0;
     const L = overlay.querySelector('#leaders'); let lines = '';
+    if (S.view === 'all') layoutPins();
     overlay.querySelectorAll('.pdot').forEach((e) => { const r = RM[e.dataset.r]; const [x, y] = proj(r.cx, r.cy); e.style.left = x + 'px'; e.style.top = y + 'px'; });
     overlay.querySelectorAll('.pin').forEach((e) => {
       const r = RM[e.dataset.r]; const [x, y] = proj(r.cx, r.cy); const o = pinOffsets[r.id] || [0, -16];
       e.style.left = x + o[0] + 'px'; e.style.top = y + o[1] + 'px';
+      const mini = pinMini.has(r.id); if (e.classList.contains('mini') !== mini) e.classList.toggle('mini', mini);
       if (Math.hypot(o[0], o[1]) > 20) lines += `<line x1="${x}" y1="${y}" x2="${x + o[0]}" y2="${y + o[1]}"/>`;
     });
     if (L && L.innerHTML !== lines) L.innerHTML = lines;
@@ -1273,7 +1385,7 @@
     // 지역 선택으로 시트가 나타날 때의 크기는 이미 줌에 반영됐다. 중간에 목적지로 순간 이동하지 않는다.
     if (anim !== null && zoomSize[0] === wrap.clientWidth && zoomSize[1] === wrap.clientHeight) return;
     stopZoom();
-    if (S.view === 'all') { layoutPins(); setVB(VB0.slice()); }
+    if (S.view === 'all') setVB(VB0.slice());
     else setVB(fitBox(RM[S.rid].bbox));
   }).observe(wrap);
 

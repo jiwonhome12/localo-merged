@@ -16,7 +16,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;600;700&display=swap">
 <link rel="stylesheet" href="calendar.css?v=20261126a">
-<link rel="stylesheet" href="styles.css?v=20261126g">
+<link rel="stylesheet" href="styles.css?v=20261126i">
 </head>
 <body>
 <script>document.body.dataset.sheet="peek"</script>
@@ -60,8 +60,16 @@
     <div class="map-top" id="maptop"></div>
     <div class="map-foot">
             <div class="grow"></div>
+      <span class="map-tip"><span class="mouse-tip">Ctrl + 휠로 확대·축소 · 확대 후 끌거나 휠로 이동 · 스페이스바를 누른 채 끌어도 이동</span><span class="touch-tip">두 손가락으로 확대·축소 · 확대한 지도를 밀어서 이동</span></span>
       <span class="credit">경계: 통계청 센서스용 행정구역경계</span>
     </div>
+    <!-- 지도 확대(kangbj70-cell/Loc): −/+ 버튼, 가운데 숫자를 누르면 원래 크기 -->
+    <div class="map-zoom" role="group" aria-label="지도 크기 조절">
+      <button type="button" data-zoom="out" aria-label="지도 축소">−</button>
+      <button type="button" class="zv" data-zoom="fit" aria-label="지도 원래 크기로" title="원래 크기로"><output id="zoomv" aria-live="off">100%</output></button>
+      <button type="button" data-zoom="in" aria-label="지도 확대">+</button>
+    </div>
+    <div class="compass" aria-hidden="true"><span>N</span><span class="compass-needle"></span></div>
   </section>
 
   <!-- 장바구니: kangbj70-cell/Loc 의 여행 일정표 형태(여러 장바구니 · 방문 순서 · 접히는 경비 · 1인당 부담금).
@@ -133,6 +141,6 @@
 <script src="cloud.js?v=20261117i"></script>
 <script src="region-photos.js?v=20261126a"></script>
 <script src="calendar.js?v=20261126c"></script>
-<script src="app.js?v=20261126h"></script>
+<script src="app.js?v=20261126i"></script>
 </body>
 </html>
