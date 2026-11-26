@@ -118,7 +118,7 @@
     document.querySelector('[data-zoom="out"]').disabled = z <= 1.001;
     document.querySelector('[data-zoom="in"]').disabled = z >= ZMAX - 0.001;
     wrap.classList.toggle('zoomed-in', z > 1.001);
-    wrap.classList.toggle('deep', S.view === 'region' && z >= 2.4); // 사진 미리보기는 충분히 확대했을 때만
+
   }
   // 화면 좌표 → 지도 좌표
   function svgPt(cx, cy) { const m = svg.getScreenCTM(); if (!m) return [vb[0] + vb[2] / 2, vb[1] + vb[3] / 2]; const p = new DOMPoint(cx, cy).matrixTransform(m.inverse()); return [p.x, p.y]; }
@@ -315,7 +315,7 @@
       const p = PM[e.dataset.p]; const [x, y] = proj(p.x, p.y);
       const must = e.classList.contains('on') || e.classList.contains('in-cart') || !!e.querySelector('.ord');
       // 확대해서 사진 미리보기가 뜨는 장소는 사진 크기만큼 위쪽 자리도 차지한다
-      const prev = deepNow && e.querySelector('.place-preview'), pw2 = mobile() ? 40 : 52, ph2 = mobile() ? 86 : 110;
+      const prev = false, pw2 = mobile() ? 40 : 52, ph2 = mobile() ? 86 : 110;
       const half = Math.max(prev ? pw2 : 11, (markW[p.id] || 40) / 2 + 2), box = [x - half, y - (prev ? ph2 : 11), x + half, y + 27];
       const inView = x > -60 && x < w + 60 && y > -40 && y < h + 40;
       const show = must || (inView && !hitBox(box));

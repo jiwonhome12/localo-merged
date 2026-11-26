@@ -1,6 +1,6 @@
 {
  "updated": "2026-11-26",
- "count": 120,
+ "count": 119,
  "photos": {
   "51089876101a6bf8": {
    "src": "https://tong.visitkorea.or.kr/cms/resource/50/2784650_image2_1.jpg",
@@ -89,17 +89,6 @@
    "source": "https://korean.visitkorea.or.kr/detail/ms_detail.do?cotid=2840068",
    "via": "tourapi",
    "distance_m": 4
-  },
-  "kakao-1027383641": {
-   "src": "https://tong.visitkorea.or.kr/cms/resource/36/2844036_image2_1.jpg",
-   "thumb": "https://tong.visitkorea.or.kr/cms/resource/36/2844036_image3_1.jpg",
-   "title": "완도어반",
-   "credit": "한국관광공사",
-   "license": "공공누리 제3유형(출처표시·변경금지)",
-   "licenseUrl": "https://www.kogl.or.kr/info/licenseType3.do",
-   "source": "https://korean.visitkorea.or.kr/detail/ms_detail.do?cotid=2844045",
-   "via": "tourapi",
-   "distance_m": 13
   },
   "kakao-10341007": {
    "src": "https://tong.visitkorea.or.kr/cms/resource/29/2790929_image2_1.jpg",

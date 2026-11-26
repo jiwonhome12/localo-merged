@@ -199,7 +199,8 @@ def commons_info(titles):
 NOT_PHOTO = re.compile(r'우표|stamp|가이드맵|안내도|지도|map|포스터|poster|로고|logo|도면|svg', re.I)
 # 사람이 검토해서 틀린 연결로 판단한 것: {장소 이름: 이유}
 REJECT = {'가은산': '다른 유적(가혜성) 사진',
-          '상주은모래비치': '해수욕장에 캠핑장 사진', '소등섬민박': '숙소에 섬 사진'}
+          '상주은모래비치': '해수욕장에 캠핑장 사진', '소등섬민박': '숙소에 섬 사진',
+          '어반커피': '다른 가게(완도어반, 생선구이집) 사진'}
 
 
 def record(src, title, lic, lic_url, credit, source, via):
