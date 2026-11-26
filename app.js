@@ -205,7 +205,7 @@
   });
 
   /* ───────── 지도 위 HTML(핀·라벨·마커) ───────── */
-  let pinOffsets = {}, pinMini = new Set(), pinW = {}; // 전국 화면 라벨 위치(px) · 점으로 접은 라벨 · 라벨 너비
+  let pinOffsets = {}, pinMini = new Set(), pinW = {}, markW = {}; // 전국 화면 라벨 위치(px) · 점으로 접은 라벨 · 라벨 너비
   function renderOverlay() {
     let h = '<svg class="leaders" id="leaders"></svg>';
     if (S.view === 'all') {
@@ -234,6 +234,7 @@
     }
     overlay.innerHTML = h;
     if (S.view === 'all') overlay.querySelectorAll('.pin').forEach((b) => { pinW[b.dataset.r] = b.offsetWidth; });
+    else overlay.querySelectorAll('.marker').forEach((b) => { if (!(b.dataset.p in markW)) markW[b.dataset.p] = b.offsetWidth; });
     placeOverlay();
   }
   // 라벨끼리 겹치지 않게 배치한다(지금 보이는 확대 상태 기준).
@@ -296,27 +297,22 @@
       if (e.hidden !== outside) e.hidden = outside;
       if (!outside) { e.style.left = x + 'px'; e.style.top = y + 'px'; }
     });
-    // 확대할수록 더 많이: 화면에서 서로 gap(px)보다 가까운 장소는 덜 중요한 쪽을 숨긴다. 이름은 충분히 확대했고 둘레에 자리가 있을 때만
-    const z = S.view === 'region' ? zoomLevel() : 1, gap = z >= 4 ? 0 : z >= 2.4 ? 18 : z >= 1.5 ? 28 : 40;
-    const shown = []; let total = 0, visible = 0;
+    // 지도 앱처럼: 장소는 아이콘 + 이름. 중요한 장소부터 '아이콘+이름' 상자를 놓고, 이미 놓인 상자와 겹치면 숨긴다.
+    // 확대할수록 장소 사이가 벌어지니 자연스럽게 더 많이 보인다(고른 곳·담은 곳·코스는 항상)
+    const boxes = []; let total = 0, visible = 0;
+    const hitBox = (a) => boxes.some((b) => a[0] < b[2] && b[0] < a[2] && a[1] < b[3] && b[1] < a[3]);
     overlay.querySelectorAll('.marker').forEach((e) => {
-      const p = PM[e.dataset.p]; const [x, y] = proj(p.x, p.y); total++;
+      const p = PM[e.dataset.p]; const [x, y] = proj(p.x, p.y);
       const must = e.classList.contains('on') || e.classList.contains('in-cart') || !!e.querySelector('.ord');
-      const inView = x > -30 && x < w + 30 && y > -30 && y < h + 30;
-      const show = must || gap === 0 || shown.every((q) => Math.hypot(q[0] - x, q[1] - y) >= gap);
-      if (show && inView) shown.push([x, y]);
-      if (show) visible++;
+      const half = Math.max(11, (markW[p.id] || 40) / 2 + 2), box = [x - half, y - 11, x + half, y + 27];
+      const inView = x > -60 && x < w + 60 && y > -40 && y < h + 40;
+      const show = must || (inView && !hitBox(box));
+      if (inView) { total++; if (show) { visible++; boxes.push(box); } }
       if (e.classList.contains('lod-hide') === show) e.classList.toggle('lod-hide', !show);
-      e.style.left = x + 'px'; e.style.top = y + 'px';
+      if (show) { e.style.left = x + 'px'; e.style.top = y + 'px'; }
     });
-    if (z >= 2.4) overlay.querySelectorAll('.marker:not(.lod-hide)').forEach((e) => {
-      const x = parseFloat(e.style.left), y = parseFloat(e.style.top);
-      const room = shown.every((q) => (q[0] === x && q[1] === y) || Math.abs(q[0] - x) > 64 || Math.abs(q[1] - y) > 30);
-      if (e.classList.contains('show-label') !== room) e.classList.toggle('show-label', room);
-    });
-    else overlay.querySelectorAll('.marker.show-label').forEach((e) => e.classList.remove('show-label'));
     const note = $('lod-note');
-    if (note) { const more = S.view === 'region' && visible < total; note.hidden = !more; if (more) note.textContent = `확대하면 장소가 더 보여요 · ${visible}/${total}곳`; }
+    if (note) { const more = S.view === 'region' && visible < total && zoomLevel() < ZMAX - 0.01; note.hidden = !more; if (more) note.textContent = `이 화면 ${total}곳 중 ${visible}곳 · 확대하면 더 보여요`; }
     if (pop) {
       const p = PM[pop.dataset.p]; const [x, y] = proj(p.x, p.y);
       const below = y - ph - 30 < (mobile() ? 100 : 60) && y + ph + 30 < h;
