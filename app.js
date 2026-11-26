@@ -228,7 +228,7 @@
       matching.forEach((p) => {
         const inCart = S.cart.some((c) => c.pid === p.id);
         const ord = S.route ? S.route.indexOf(p.id) : -1;
-        h += `<button type="button" class="marker hit${S.pid === p.id ? ' on' : ''}${inCart ? ' in-cart' : ''}" data-p="${p.id}" aria-label="${esc(p.name)}">${ord >= 0 ? `<span class="ord">${ord + 1}</span>` : ''}<span class="mk" style="background:${CAT[p.category].c}"><i>${CAT[p.category].k}</i></span><span class="ml">${esc(p.name.replace(r.short + ' ', ''))}</span>${placePhoto(p.id) && S.pid !== p.id ? `<span class="place-preview${placePhoto(p.id).nomod ? ' nomod' : ''}" data-drag-place="${p.id}"><img src="${esc(placePhoto(p.id).src)}" alt="" draggable="false" loading="lazy"><span>${esc(p.name.replace(r.short + ' ', ''))}</span></span>` : ''}</button>`;
+        h += `<button type="button" class="marker hit${S.pid === p.id ? ' on' : ''}${inCart ? ' in-cart' : ''}" data-p="${p.id}" aria-label="${esc(p.name)}">${ord >= 0 ? `<span class="ord">${ord + 1}</span>` : ''}<span class="mk" style="background:${CAT[p.category].c}"><i>${CAT[p.category].k}</i></span><span class="ml">${esc(p.name.replace(r.short + ' ', ''))}</span>${placePhoto(p.id) && S.pid !== p.id ? `<span class="place-preview" data-drag-place="${p.id}"><img src="${esc(placePhoto(p.id).src)}" alt="" draggable="false" loading="lazy"><span>${esc(p.name.replace(r.short + ' ', ''))}</span></span>` : ''}</button>`;
       });
       if (S.pid) h += popHTML(PM[S.pid]);
     }
@@ -277,6 +277,16 @@
     }
     items.forEach((a) => { pinOffsets[a.id] = [a.x - a.ax, a.y - a.ay]; });
   }
+  // 카드가 지도 위쪽 칩(전국 › 지역, 업종) 줄을 덮지 않게: 그 아래부터 쓴다
+  function cardTop() { const t = $('maptop'); return t && t.offsetHeight ? t.offsetTop + t.offsetHeight + 8 : 60; }
+  // 장소 카드를 열면 카드가 화면 안(칩 줄 아래)에 들어오도록 지도를 살짝 옮긴다
+  function fitCard() {
+    const pop = overlay.querySelector('.pop'); if (!pop) return;
+    const wr = wrap.getBoundingClientRect(), r = pop.getBoundingClientRect(), top = wr.top + cardTop(), bottom = wr.bottom - 8;
+    let dy = 0;
+    if (r.top < top) dy = top - r.top; else if (r.bottom > bottom) dy = bottom - r.bottom;
+    if (Math.abs(dy) > 2) panBy(0, dy);
+  }
   function placeOverlay() {
     // DOM 읽기를 위치 쓰기보다 먼저 끝낸다(지역명 약 250개 + 장소 마커 약 180개).
     const w = wrap.clientWidth, h = wrap.clientHeight, proj = projection(vb, w, h);
@@ -299,12 +309,14 @@
     });
     // 지도 앱처럼: 장소는 아이콘 + 이름. 중요한 장소부터 '아이콘+이름' 상자를 놓고, 이미 놓인 상자와 겹치면 숨긴다.
     // 확대할수록 장소 사이가 벌어지니 자연스럽게 더 많이 보인다(고른 곳·담은 곳·코스는 항상)
-    const boxes = []; let total = 0, visible = 0;
+    const boxes = []; let total = 0, visible = 0; const deepNow = S.view === 'region' && zoomLevel() >= 2.4; if (wrap.classList.contains('deep') !== deepNow) wrap.classList.toggle('deep', deepNow);
     const hitBox = (a) => boxes.some((b) => a[0] < b[2] && b[0] < a[2] && a[1] < b[3] && b[1] < a[3]);
     overlay.querySelectorAll('.marker').forEach((e) => {
       const p = PM[e.dataset.p]; const [x, y] = proj(p.x, p.y);
       const must = e.classList.contains('on') || e.classList.contains('in-cart') || !!e.querySelector('.ord');
-      const half = Math.max(11, (markW[p.id] || 40) / 2 + 2), box = [x - half, y - 11, x + half, y + 27];
+      // 확대해서 사진 미리보기가 뜨는 장소는 사진 크기만큼 위쪽 자리도 차지한다
+      const prev = deepNow && e.querySelector('.place-preview'), pw2 = mobile() ? 40 : 52, ph2 = mobile() ? 86 : 110;
+      const half = Math.max(prev ? pw2 : 11, (markW[p.id] || 40) / 2 + 2), box = [x - half, y - (prev ? ph2 : 11), x + half, y + 27];
       const inView = x > -60 && x < w + 60 && y > -40 && y < h + 40;
       const show = must || (inView && !hitBox(box));
       if (inView) { total++; if (show) { visible++; boxes.push(box); } }
@@ -315,7 +327,7 @@
     if (note) { const more = S.view === 'region' && visible < total && zoomLevel() < ZMAX - 0.01; note.hidden = !more; if (more) note.textContent = `이 화면 ${total}곳 중 ${visible}곳 · 확대하면 더 보여요`; }
     if (pop) {
       const p = PM[pop.dataset.p]; const [x, y] = proj(p.x, p.y);
-      const below = y - ph - 30 < (mobile() ? 100 : 60) && y + ph + 30 < h;
+      const below = y - ph - 30 < cardTop() && y + ph + 30 < h;
       const cx = Math.max(pw / 2 + 8, Math.min(w - pw / 2 - 8, x));
       pop.style.left = x + 'px'; pop.style.top = y + 'px';
       pop.style.setProperty('--balloon-shift', (cx - x) + 'px');
@@ -355,24 +367,29 @@
     const town = String(p.address || '').split(/\s+/).find((w) => /[읍면동]$/.test(w)) || '';
     const link = safeUrl(p.kakao_url);
     const cartIcon = inCart ? '<path d="m14 5 2 2 4-4"/>' : '<path d="M17 2v6m-3-3h6"/>';
-    return `<div class="pop place-balloon" data-p="${p.id}" data-drag-place="${p.id}" role="dialog" aria-label="${name} 사진과 위치" style="--category:${CAT[p.category].c}" title="사진을 장바구니로 끌어다 놓으면 담겨요">
+    const credit = ph ? `<a class="balloon-credit-line" href="${safeUrl(ph.source) || safeUrl(ph.licenseUrl) || '#'}" target="_blank" rel="noopener noreferrer" title="사진 출처·라이선스">사진 ${esc(ph.credit)} · ${esc(ph.license)}</a>` : '';
+    // 네모난 카드: 사진은 원래 비율 그대로(자르지 않음), 버튼과 글자는 사진 밖에
+    return `<div class="pop place-balloon card${ph ? '' : ' no-photo'}" data-p="${p.id}" data-drag-place="${p.id}" role="dialog" aria-label="${name} 사진과 위치" style="--category:${CAT[p.category].c}" title="사진을 장바구니로 끌어다 놓으면 담겨요">
       <div class="balloon-bubble${opening ? ' opening' : ''}">
-        <div class="balloon-face${ph && ph.nomod ? ' nomod' : ''}">
-          ${ph ? `<img src="${esc(ph.src)}" alt="${esc(ph.alt)}" draggable="false">` : `<div class="balloon-art" aria-hidden="true">${catIcon(p.category)}<span>${CAT[p.category].n}</span></div>`}
-          <div class="balloon-caption"><strong>${name}</strong><span class="balloon-address">${esc([r.name, town].filter(Boolean).join(' '))}${p.approx ? ' · 대략 위치' : ''}</span>
-            <span class="balloon-price">${p.price == null ? '가격 확인 필요' : esc(p.price_text || '')}</span>${ph && ph.nomod ? `<a class="balloon-credit-line" href="${safeUrl(ph.source) || safeUrl(ph.licenseUrl) || '#'}" target="_blank" rel="noopener noreferrer">사진 ${esc(ph.credit)} · ${esc(ph.license)}</a>` : ''}</div>
+        <div class="card-bar"><span class="card-cat"><i style="background:${CAT[p.category].c}"></i>${CAT[p.category].n}</span>
+          ${link ? `<a class="card-link" href="${link}" target="_blank" rel="noopener noreferrer" aria-label="${name} 카카오맵에서 보기" title="카카오맵에서 장소 확인">카카오맵 ↗</a>` : ''}
+          <button type="button" class="card-close" data-close aria-label="닫기">×</button></div>
+        ${ph ? `<div class="balloon-photo"><img src="${esc(ph.src)}" alt="${esc(ph.alt)}" draggable="false"></div>` : ''}
+        <div class="card-body">
+          ${ph ? '' : `<span class="card-icon" aria-hidden="true">${catIcon(p.category)}</span>`}
+          <div class="card-text"><strong>${name}</strong><span class="balloon-address">${esc([r.name, town].filter(Boolean).join(' '))}${p.approx ? ' · 대략 위치' : ''}</span>
+            <span class="balloon-price">${p.price == null ? '가격 확인 필요' : esc(p.price_text || '')}</span></div>
+          <button type="button" class="balloon-add" data-add="${p.id}" ${inCart ? 'disabled' : ''} aria-label="${name} ${inCart ? '장바구니에 담김' : '장바구니에 담기'}">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 4h3l2.2 10.7a2 2 0 0 0 2 1.6h8a2 2 0 0 0 1.9-1.4l1.8-5.6M6 8h5"/><circle cx="9.4" cy="20" r="1.25"/><circle cx="17.1" cy="20" r="1.25"/>${cartIcon}</svg>
+            <span>${inCart ? '담음' : '담기'}</span>
+          </button>
         </div>
-        <button type="button" class="balloon-close" data-close aria-label="닫기">×</button>
-        ${link ? `<a class="balloon-link" href="${link}" target="_blank" rel="noopener noreferrer" aria-label="${name} 카카오맵에서 보기" title="카카오맵에서 장소 확인">지도</a>` : ''}
-        <button type="button" class="balloon-add" data-add="${p.id}" ${inCart ? 'disabled' : ''} aria-label="${name} ${inCart ? '장바구니에 담김' : '장바구니에 담기'}">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 4h3l2.2 10.7a2 2 0 0 0 2 1.6h8a2 2 0 0 0 1.9-1.4l1.8-5.6M6 8h5"/><circle cx="9.4" cy="20" r="1.25"/><circle cx="17.1" cy="20" r="1.25"/>${cartIcon}</svg>
-          <span>${inCart ? '담음' : '담기'}</span>
-        </button>
-        ${ph && !ph.nomod ? `<a class="balloon-credit" href="${safeUrl(ph.source) || safeUrl(ph.licenseUrl) || '#'}" target="_blank" rel="noopener noreferrer" title="사진 출처·라이선스">사진 ${esc(ph.credit)} · ${esc(ph.license)}</a>` : ''}
+        ${credit}
       </div>
     </div>`;
   }
 
+  overlay.addEventListener('load', (e) => { if (e.target.closest && e.target.closest('.pop')) { placeOverlay(); fitCard(); } }, true);
   /* ───────── 지도 상단 ───────── */
   function renderTop() {
     const t = $('maptop');
@@ -1268,7 +1285,7 @@
       if (pd || e.button !== 0 || !e.isPrimary) return;
       const src = e.target.closest('.place-preview, [data-drag-place], .marker[data-p]'); if (!src || src.closest('#trip')) return;
       // 손가락은 목록을 스크롤해야 하므로 사진과 지도 핀에서만 끌기를 시작한다
-      if (e.pointerType !== 'mouse' && !e.target.closest('img, .marker, .balloon-face')) return;
+      if (e.pointerType !== 'mouse' && !e.target.closest('img, .marker, .balloon-photo')) return;
       if (e.target.closest('.pop button, .pop a')) return;
       pd = { id: src.dataset.dragPlace || src.dataset.p, src, x: e.clientX, y: e.clientY, pointerId: e.pointerId, preview: null };
       if (src.closest('.pop')) e.preventDefault(); // 말풍선 글자 선택 대신 끌기
@@ -1382,7 +1399,7 @@
     if (d.alarm) return toggleAlarm(d.alarm);
     if (d.cat) { S.cat = d.cat; S.pid = null; renderTop(); renderLeft(); renderOverlay(); return record(); }
     if (d.placeExpand) { const y = $('left').scrollTop; expandedPlace = expandedPlace === d.placeExpand ? null : d.placeExpand; renderLeft(); $('left').scrollTop = y; return; }
-    if (d.p) { S.pid = d.p; if (mobile()) setSheet('peek'); renderLeft(); renderOverlay(); return record(); }
+    if (d.p) { S.pid = d.p; if (mobile()) setSheet('peek'); renderLeft(); renderOverlay(); requestAnimationFrame(fitCard); return record(); }
     if (t.hasAttribute('data-close')) { S.pid = null; renderLeft(); renderOverlay(); return record(); }
     if (d.add) return toggleCart(d.add);
     if (d.rm) return toggleCart(d.rm);
