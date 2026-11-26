@@ -13,6 +13,8 @@
   const [GEO, REG, PLACES] = await Promise.all(
     ['data/geo.json', 'data/regions.json', 'data/places.json'].map((u) => fetch(u).then((r) => r.json()))
   );
+  // 장소 대표 사진(scripts/collect_photos.py: TourAPI 공공누리 · 위키미디어 공용). 없으면 사진 없이 동작
+  const PHOTOS = await fetch('data/place-photos.json').then((r) => (r.ok ? r.json() : {})).then((d) => d.photos || {}).catch(() => ({}));
 
   const STL = { open: '신청접수중', soon: '준비중', closed: '마감' };
   const CAT = {
@@ -218,7 +220,11 @@
       const r = RM[S.rid];
       GEO.munis.forEach((m) => { if (m.code !== r.code) h += `<span class="nlabel" data-x="${m.cx}" data-y="${m.cy}">${m.name}</span>`; });
       h += `<span class="rlabel" data-x="${r.cx}" data-y="${r.cy}">${r.short}</span>`;
-      const matching = placesOf(r.id).filter((p) => S.cat === 'all' || p.category === S.cat);
+      // 중요한 장소부터 그린다(겹치면 먼저 그린 장소가 남는다): 고른 곳 · 담은 곳 · 코스 · 사진 · 관광지 · 가격 확인된 곳
+      const CAT_PRI = { spot: 15, stay: 10, food: 5, cafe: 0 };
+      const pri = (p) => (S.pid === p.id ? 1000 : 0) + (S.cart.some((c) => c.pid === p.id) ? 500 : 0) + (S.route && S.route.includes(p.id) ? 400 : 0)
+        + (placePhoto(p.id) ? 60 : 0) + (p.price != null ? 20 : 0) + CAT_PRI[p.category] + (p.approx ? -30 : 0);
+      const matching = placesOf(r.id).filter((p) => S.cat === 'all' || p.category === S.cat).sort((a, b) => pri(b) - pri(a));
       matching.forEach((p) => {
         const inCart = S.cart.some((c) => c.pid === p.id);
         const ord = S.route ? S.route.indexOf(p.id) : -1;
@@ -290,7 +296,27 @@
       if (e.hidden !== outside) e.hidden = outside;
       if (!outside) { e.style.left = x + 'px'; e.style.top = y + 'px'; }
     });
-    overlay.querySelectorAll('.marker').forEach((e) => { const p = PM[e.dataset.p]; const [x, y] = proj(p.x, p.y); e.style.left = x + 'px'; e.style.top = y + 'px'; });
+    // 확대할수록 더 많이: 화면에서 서로 gap(px)보다 가까운 장소는 덜 중요한 쪽을 숨긴다. 이름은 충분히 확대했고 둘레에 자리가 있을 때만
+    const z = S.view === 'region' ? zoomLevel() : 1, gap = z >= 4 ? 0 : z >= 2.4 ? 18 : z >= 1.5 ? 28 : 40;
+    const shown = []; let total = 0, visible = 0;
+    overlay.querySelectorAll('.marker').forEach((e) => {
+      const p = PM[e.dataset.p]; const [x, y] = proj(p.x, p.y); total++;
+      const must = e.classList.contains('on') || e.classList.contains('in-cart') || !!e.querySelector('.ord');
+      const inView = x > -30 && x < w + 30 && y > -30 && y < h + 30;
+      const show = must || gap === 0 || shown.every((q) => Math.hypot(q[0] - x, q[1] - y) >= gap);
+      if (show && inView) shown.push([x, y]);
+      if (show) visible++;
+      if (e.classList.contains('lod-hide') === show) e.classList.toggle('lod-hide', !show);
+      e.style.left = x + 'px'; e.style.top = y + 'px';
+    });
+    if (z >= 2.4) overlay.querySelectorAll('.marker:not(.lod-hide)').forEach((e) => {
+      const x = parseFloat(e.style.left), y = parseFloat(e.style.top);
+      const room = shown.every((q) => (q[0] === x && q[1] === y) || Math.abs(q[0] - x) > 64 || Math.abs(q[1] - y) > 30);
+      if (e.classList.contains('show-label') !== room) e.classList.toggle('show-label', room);
+    });
+    else overlay.querySelectorAll('.marker.show-label').forEach((e) => e.classList.remove('show-label'));
+    const note = $('lod-note');
+    if (note) { const more = S.view === 'region' && visible < total; note.hidden = !more; if (more) note.textContent = `확대하면 장소가 더 보여요 · ${visible}/${total}곳`; }
     if (pop) {
       const p = PM[pop.dataset.p]; const [x, y] = proj(p.x, p.y);
       const below = y - ph - 30 < (mobile() ? 100 : 60) && y + ph + 30 < h;
@@ -312,6 +338,8 @@
         if (ph.isExample || !RM[rid]) return; const pl = photoPlace(rid, ph); if (pl && !photoOfPlace[pl.id]) photoOfPlace[pl.id] = ph;
       }));
     }
+    const got = PHOTOS[pid];
+    if (got && /^https:\/\//.test(got.src)) return { src: got.src, alt: `${(PM[pid] || {}).name || ''} 대표 사진`, credit: got.credit, license: got.license, licenseUrl: got.licenseUrl, source: got.source };
     return photoOfPlace[pid] || null;
   }
   // Loc 업종 아이콘(사진이 없는 장소의 말풍선 얼굴)
@@ -342,7 +370,7 @@
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 4h3l2.2 10.7a2 2 0 0 0 2 1.6h8a2 2 0 0 0 1.9-1.4l1.8-5.6M6 8h5"/><circle cx="9.4" cy="20" r="1.25"/><circle cx="17.1" cy="20" r="1.25"/>${cartIcon}</svg>
           <span>${inCart ? '담음' : '담기'}</span>
         </button>
-        ${ph ? `<small class="balloon-credit">사진 ${esc(ph.credit)} · ${esc(ph.license)}</small>` : ''}
+        ${ph ? `<a class="balloon-credit" href="${safeUrl(ph.source) || safeUrl(ph.licenseUrl) || '#'}" target="_blank" rel="noopener noreferrer" title="사진 출처·라이선스">사진 ${esc(ph.credit)} · ${esc(ph.license)}</a>` : ''}
       </div>
     </div>`;
   }
@@ -429,7 +457,7 @@
       <div class="tabs" role="tablist">${cats.map(([k, n]) => `<button type="button" class="tab" role="tab" data-cat="${k}" aria-selected="${S.cat === k}">${n}</button>`).join('')}</div></div>
       ${S.cat === 'all' || S.cat === 'spot' ? photoStrip(r) : ''}
       <p class="ex">${ps.length}곳 · 겹친 장소는 목록에서 선택할 수 있어요.</p>
-      <div>${ps.length ? ps.map((p) => { const open = expandedPlace === p.id, inCart = S.cart.some((c) => c.pid === p.id), url = safeUrl(p.kakao_url); return `<div class="place-row"><div class="place-row-head" data-drag-place="${esc(p.id)}"><button type="button" class="pitem${open ? ' on' : ''}" data-place-expand="${esc(p.id)}" aria-expanded="${open}"><span class="pic" style="background:${CAT[p.category].c}">${CAT[p.category].k}</span><span><span class="nm">${esc(p.name.replace(r.short + ' ', ''))}</span><span class="sub">${esc(p.price_text)} · ${esc(p.access_text)}</span></span><span class="place-chevron" aria-hidden="true">⌄</span></button><button type="button" class="place-cart${inCart ? ' on' : ''}" data-add="${esc(p.id)}" aria-label="${esc(p.name)} ${inCart ? '장바구니에서 빼기' : '장바구니에 담기'}" aria-pressed="${inCart}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M5 8h14l-1 11H6L5 8Z"/><path d="M9 8V6a3 3 0 0 1 6 0v2"/></svg></button></div>${open ? `<div class="place-details"><p><b>주소</b> ${esc(p.address || p.access_text || '확인 필요')}</p>${p.price == null ? '<p>가격 확인 필요 · 예상 경비에서 제외</p>' : ''}${url ? `<a href="${url}" target="_blank" rel="noopener noreferrer">카카오맵에서 장소 확인 ↗</a>` : ''}</div>` : ''}</div>`; }).join('') : '<p class="empty">등록된 장소가 없습니다.</p>'}</div>`;
+      <div>${ps.length ? ps.map((p) => { const open = expandedPlace === p.id, inCart = S.cart.some((c) => c.pid === p.id), url = safeUrl(p.kakao_url); return `<div class="place-row"><div class="place-row-head" data-drag-place="${esc(p.id)}"><button type="button" class="pitem${open ? ' on' : ''}" data-place-expand="${esc(p.id)}" aria-expanded="${open}">${placePhoto(p.id) ? `<img class="pic pic-photo" src="${esc(placePhoto(p.id).src)}" alt="" loading="lazy" draggable="false">` : `<span class="pic" style="background:${CAT[p.category].c}">${CAT[p.category].k}</span>`}<span><span class="nm">${esc(p.name.replace(r.short + ' ', ''))}</span><span class="sub">${esc(p.price_text)} · ${esc(p.access_text)}</span></span><span class="place-chevron" aria-hidden="true">⌄</span></button><button type="button" class="place-cart${inCart ? ' on' : ''}" data-add="${esc(p.id)}" aria-label="${esc(p.name)} ${inCart ? '장바구니에서 빼기' : '장바구니에 담기'}" aria-pressed="${inCart}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M5 8h14l-1 11H6L5 8Z"/><path d="M9 8V6a3 3 0 0 1 6 0v2"/></svg></button></div>${open ? `<div class="place-details"><p><b>주소</b> ${esc(p.address || p.access_text || '확인 필요')}</p>${p.price == null ? '<p>가격 확인 필요 · 예상 경비에서 제외</p>' : ''}${url ? `<a href="${url}" target="_blank" rel="noopener noreferrer">카카오맵에서 장소 확인 ↗</a>` : ''}</div>` : ''}</div>`; }).join('') : '<p class="empty">등록된 장소가 없습니다.</p>'}</div>`;
   }
 
   /* ───────── 신청 알림: 알림을 켠 지역이 '신청접수중'이 되면 알려 준다 ───────── */

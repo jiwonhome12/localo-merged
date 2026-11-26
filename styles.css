@@ -825,7 +825,8 @@ body.cart-dragging,body.cart-dragging *{cursor:grabbing!important;user-select:no
 .balloon-close{top:10%;right:10%;width:27px;height:27px;padding:0;border:1px solid #ffffffa8;font:600 16px/1 system-ui,sans-serif}
 .balloon-link{top:10%;left:10%;height:24px;padding:0 8px;border:1px solid #ffffffa8;font-size:11px;font-weight:700}
 .balloon-credit{position:absolute;left:11%;bottom:calc(100% - var(--photo-cut) + 4px);max-width:52%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
-  font-size:8.5px;color:#fff;text-shadow:0 1px 2px #0008;pointer-events:none}
+  font-size:8.5px;color:#fff;text-shadow:0 1px 2px #0008;text-decoration:none}
+.pic-photo{object-fit:cover;padding:0;background:var(--soft)}
 @container (max-width:200px){.balloon-bubble{--photo-cut:58%}.balloon-caption{padding-top:3px}.balloon-close{width:25px;height:25px}.balloon-add{right:7%;min-height:24px;padding:2px 6px 2px 4px}}
 
 /* 확대하면 사진 있는 장소 핀 위에 동그란 사진 미리보기 */
@@ -836,3 +837,9 @@ body.cart-dragging,body.cart-dragging *{cursor:grabbing!important;user-select:no
 .mapwrap.deep .place-preview{display:block}
 .mapwrap.deep .marker:has(.place-preview) .ml{opacity:0}
 @media (max-width:1023px){.pop.place-balloon{width:clamp(180px,52vw,220px)}.place-preview{width:64px}}
+
+/* 지역 지도: 확대할수록 장소를 더 보여 준다 */
+.marker.lod-hide{display:none}
+.marker.show-label .ml{display:block}
+.lod-note{position:absolute;z-index:4;left:50%;bottom:36px;transform:translateX(-50%);margin:0;padding:5px 11px;border-radius:999px;background:rgba(255,253,250,.94);border:1px solid var(--line);color:var(--muted);font-size:11.5px;white-space:nowrap;pointer-events:none;box-shadow:0 1px 4px rgba(29,39,37,.08)}
+@media (max-width:1023px){.lod-note{bottom:14px;left:12px;transform:none;font-size:11px}}
