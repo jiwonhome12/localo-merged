@@ -238,7 +238,7 @@
       matching.forEach((p) => {
         const inCart = S.cart.some((c) => c.pid === p.id);
         const ord = S.route ? S.route.indexOf(p.id) : -1;
-        h += `<button type="button" class="marker hit${S.pid === p.id ? ' on' : ''}${inCart ? ' in-cart' : ''}" data-p="${p.id}" aria-label="${esc(p.name)}">${ord >= 0 ? `<span class="ord">${ord + 1}</span>` : ''}<span class="mk" style="background:${CAT[p.category].c}" title="${CAT[p.category].n}">${catIcon(p.category)}</span><span class="ml">${esc(p.name.replace(r.short + ' ', ''))}</span>${placePhoto(p.id) && S.pid !== p.id ? `<span class="place-preview" data-drag-place="${p.id}"><img src="${esc(placePhoto(p.id).src)}" alt="" draggable="false" loading="lazy"><span>${esc(p.name.replace(r.short + ' ', ''))}</span></span>` : ''}</button>`;
+        h += `<button type="button" class="marker hit${S.pid === p.id ? ' on' : ''}${inCart ? ' in-cart' : ''}" data-p="${p.id}" aria-label="${esc(p.name)}">${ord >= 0 ? `<span class="ord">${ord + 1}</span>` : ''}<span class="mk" style="color:${CAT[p.category].c}" title="${CAT[p.category].n}">${catIcon(p.category)}</span><span class="ml">${esc(p.name.replace(r.short + ' ', ''))}</span>${placePhoto(p.id) && S.pid !== p.id ? `<span class="place-preview" data-drag-place="${p.id}"><img src="${esc(placePhoto(p.id).src)}" alt="" draggable="false" loading="lazy"><span>${esc(p.name.replace(r.short + ' ', ''))}</span></span>` : ''}</button>`;
       });
       if (S.pid) h += popHTML(PM[S.pid]);
     }
@@ -661,13 +661,16 @@
             <label>시작 시각<input type="time" data-visit-field="start" value="${esc(c.start || '')}" aria-label="${name} 방문 시작 시각"></label>
             <label>종료 시각<input type="time" data-visit-field="end" value="${esc(c.end || '')}" aria-label="${name} 방문 종료 시각"></label>
           </div>
-          <div class="stop-quantity"><small class="num">${l.f}</small><span class="mini">
-            <button type="button" data-qty="${esc(p.id)}" data-d="-1" aria-label="${name} 수량 줄이기" ${c.qty <= 1 ? 'disabled' : ''}>−</button><span class="num">${c.qty}${UNIT[p.category]}</span><button type="button" data-qty="${esc(p.id)}" data-d="1" aria-label="${name} 수량 늘리기" ${c.qty >= 99 ? 'disabled' : ''}>+</button>
-          </span><button type="button" class="delete-item" data-rm="${esc(p.id)}" aria-label="${name} 삭제">삭제</button></div>
           ${count > 1 ? `<div class="stop-order-actions" role="group" aria-label="${name} 방문 순서"><button type="button" data-move="-1" ${i === 0 ? 'disabled' : ''}>↑ 위로</button><button type="button" data-move="1" ${i === count - 1 ? 'disabled' : ''}>↓ 아래로</button></div>` : ''}
           ${link ? `<a class="stop-link" href="${link}" target="_blank" rel="noopener noreferrer">카카오맵에서 장소 확인 ↗</a>` : ''}
         </div>
       </details>
+      <div class="cart-quantity-controls">
+        <div class="stop-quantity"><small class="num">${l.f}</small><span class="mini">
+            <button type="button" data-qty="${esc(p.id)}" data-d="-1" aria-label="${name} 수량 줄이기" ${c.qty <= 1 ? 'disabled' : ''}>−</button><span class="num">${c.qty}${UNIT[p.category]}</span><button type="button" data-qty="${esc(p.id)}" data-d="1" aria-label="${name} 수량 늘리기" ${c.qty >= 99 ? 'disabled' : ''}>+</button>
+          </span><button type="button" class="delete-item" data-rm="${esc(p.id)}" aria-label="${name} 삭제">삭제</button></div>
+        ${p.category !== 'stay' ? `<div class="cart-people-choice" role="group" aria-label="${name} 이용 인원"><button type="button" data-who="${esc(p.id)}" data-who-mode="all" aria-pressed="${c.qty === S.people}">다 같이 ${S.people}명</button><button type="button" data-who="${esc(p.id)}" data-who-mode="some" aria-pressed="${c.qty !== S.people}">일부만</button></div>` : ''}
+      </div>
     </li>`;
   }
   function renderStack() {
@@ -701,7 +704,7 @@
       <div><dt>경비 합계</dt><dd class="num">${won(total)}</dd></div>${rows}
       <div class="total-row"><dt>예상 부담액 합계</dt><dd class="num">${won(total - refund)}</dd></div></dl>
       <p class="fine-print">지자체 공고의 환급 규칙(수집 시트)으로 계산했어요. 환급은 가맹점 결제만 인정되고, 장소별 가맹점 여부는 아직 확인되지 않았어요.</p>`;
-    $('split-count').textContent = `${scope}${S.people}명 균등 분할 · 부담 합계 ${won(total - refund)}`;
+    $('split-count').textContent = `${scope}경비 ${won(total)} · 환급 예상 ${won(refund)} · 부담 합계 ${won(total - refund)}`;
     $('split-estimate').textContent = won(Math.round((total - refund) / S.people));
     $('save-trip').disabled = !S.cart.length;
     renderBadge(); saveBaskets();
@@ -854,7 +857,7 @@
     const box = $('my');
     if (!DB.user) {
       box.innerHTML = `<div class="login">
-        <div class="login-mark"><svg viewBox="40 20 370 490" aria-hidden="true"><path d="M48 38H212V272H92V458H232V502H48V228H168V82H48Z" fill="#2f5d50"/><path d="M208 28H402V482H358V262H228V218H358V72H208Z" fill="#7fa597"/></svg></div>
+        <div class="login-mark"><svg viewBox="40 20 370 490" aria-hidden="true"><path d="M48 38H212V272H92V458H232V502H48V228H168V82H48Z" fill="#965d7a"/><path d="M208 28H402V482H358V262H228V218H358V72H208Z" fill="#965d7a"/></svg></div>
         <h3>로그인하고 여행을 이어 가세요</h3>
         <p>신청 알림, 지난 여행 다시 보기, 커뮤니티 글쓰기는 로그인 후 쓸 수 있어요.</p>
         ${!CLOUD ? `<label class="fld"><span>닉네임</span><input id="loginName" maxlength="12" placeholder="예: 거창여행자" autocomplete="nickname"></label>
@@ -1140,34 +1143,24 @@
   }
 
   /* ───────── 축제 캘린더(kangbj70-cell/Loc): 신청·여행 기간은 regions.json 글에서 읽고, 저장한 여행을 함께 표시 ───────── */
-  // '2026-05-01 ~ 10-31', '신청 10/29 ~ 11/13', '2차 신청 2026-10-22 ~ 11-26' 같은 시트 문장에서 날짜 구간을 뽑는다
-  const ymd = (y, m, d) => `${y}-${String(m).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
-  function spanOf(text, year) {
-    const m = String(text || '').match(/(?:(\d{4})[-./])?(\d{1,2})[-./](\d{1,2})\s*~\s*(?:(\d{4})[-./])?(\d{1,2})[-./](\d{1,2})/);
-    if (!m) return null;
-    const y1 = +(m[1] || year), y2 = +(m[4] || y1);
-    const start = ymd(y1, m[2], m[3]), end = ymd(y2, m[5], m[6]);
-    return start <= end ? { start, end } : null;
-  }
+  // 공식 안내에서 신청 시작·마감 시각을 확인한 차수만 사용한다.
+  // 선착순 마감 가능성이 있어 확인한 날이 지나면 다시 검증할 때까지 숨긴다.
   function calendarPeriods() {
-    const out = [];
-    R.forEach((r) => {
-      const year = (String(r.period || '').match(/\d{4}/) || [String(new Date().getFullYear())])[0];
-      const round = String(r.round || ''), apply = round.match(/신청[^~]{0,4}?((?:\d{4}[-./])?\d{1,2}[-./]\d{1,2}\s*~\s*(?:\d{4}[-./])?\d{1,2}[-./]\d{1,2})/);
-      const a = apply && spanOf(apply[1], year);
-      if (a) out.push({ region: r.id, type: 'application', ...a });
-      // 여행 가능 기간: 이번 차수 여행기간이 적혀 있으면 그것, 없으면 사업 기간
-      const tripText = round.replace(apply ? apply[0] : '', '');
-      const t = spanOf(tripText, year) || spanOf(r.period, year);
-      if (t) out.push({ region: r.id, type: 'travel', ...t });
-    });
-    return out;
+    const checkedOn = '2026-11-26';
+    const now = new Date();
+    const koreaToday = new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Seoul', year: 'numeric', month: '2-digit', day: '2-digit' }).format(now);
+    if (koreaToday !== checkedOn) return [];
+    const verified = [
+      { region: 'jangheung', type: 'application', name: '장흥 반값여행 3차', start: '2026-10-20', end: '2026-11-27', closingTime: '18:00', opensAt: '2026-10-20T10:00:00+09:00', closesAt: '2026-11-27T18:00:00+09:00' },
+      { region: 'jangheung', type: 'application', name: '장흥 반값여행 4차', start: '2026-11-26', end: '2026-12-11', closingTime: '18:00', opensAt: '2026-11-26T10:00:00+09:00', closesAt: '2026-12-11T18:00:00+09:00' },
+    ];
+    return verified.filter((item) => now >= new Date(item.opensAt) && now < new Date(item.closesAt));
   }
   const PLAN_COLORS = ['#cbb6df', '#f4c7a8', '#b9d7c9', '#f1d58a', '#b8cbe9', '#e8b4c4'];
   function mountCalendar() {
     if (!window.festivalCalendar) return;
     window.festivalCalendar.mount($('calendar'), {
-      regions: R.map((r) => ({ id: r.id, name: r.name, shortName: r.short, province: r.sido })),
+      regions: R.map((r) => ({ id: r.id, name: r.name, shortName: r.short, province: r.sido, site: r.site })),
       provinces: SIDO_ORDER.filter((sd) => R.some((r) => r.sido === sd)),
       periods: calendarPeriods(),
       plans: () => DB.trips.filter((t) => t.d1 && t.d2 && t.d1 <= t.d2).map((t, i) => ({
@@ -1443,6 +1436,7 @@
     if (t.hasAttribute('data-close')) { S.pid = null; renderLeft(); renderOverlay(); return record(); }
     if (d.add) return toggleCart(d.add);
     if (d.rm) return toggleCart(d.rm);
+    if (d.who) { const c = S.cart.find((item) => item.pid === d.who); if (c) { c.qty = d.whoMode === 'all' ? S.people : Math.max(1, S.people - 1); renderStack(); } return; }
     if (d.qty) { const c = S.cart.find((c) => c.pid === d.qty); c.qty = Math.max(1, Math.min(99, c.qty + +d.d)); renderStack(); return; }
     if (d.move) return; // 일정 순서 버튼은 위 끌기 모듈이 처리
     if (t.hasAttribute('data-autosort')) { const rid = courseRid(); setCourse(rid, shortestOrder(courseIds(rid))); if (S.route) S.route = courseIds(rid); drawRoute(); renderStack(); renderRoute(); renderOverlay(); return toast('가까운 순으로 정렬했어요'); }
@@ -1563,7 +1557,7 @@
     if (reduce || !window.flubber) { morph.setAttribute('d', ''); layers.forEach((l) => (l.style.opacity = 1)); wrap.classList.remove('intro'); return; }
     const [gR, gK] = glyphs();
     const interp = flubber.combine([gR, gK], GEO.mainland, { single: true, maxSegmentLength: 5 });
-    const ACC = [47, 93, 80], LAND = [255, 255, 255];
+    const ACC = [150, 93, 122], LAND = [255, 255, 255];
     const mix = (k) => 'rgb(' + ACC.map((v, i) => Math.round(v + (LAND[i] - v) * k)).join(',') + ')';
     // 부드러운 움직임: 살짝 지나쳤다 돌아오는 도착(back-out), 사인 곡선 변형
     const backOut = (k) => { const c = 1.35; return 1 + (c + 1) * Math.pow(k - 1, 3) + c * Math.pow(k - 1, 2); };

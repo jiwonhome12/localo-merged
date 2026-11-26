@@ -20,22 +20,6 @@ const festivalCalendar = (() => {
     event: '<path d="m3 21 4.3-13 8.7 8.7-13 4.3ZM12 7l1-4m3 6 3-4m-1 8 4-1M5.7 13l5.3 5.3"/><circle cx="18.5" cy="2.5" r=".65"/><circle cx="21" cy="8" r=".65"/>',
   };
 
-  // 행사는 Loc 시안의 예시 일정이다(실제 축제 아님). 신청·여행 기간은 수집 시트(data/regions.json)에서 온다.
-  const exampleEvents = [
-    { region: 'andong', type: 'event', start: '2026-11-19', end: '2026-11-22',
-      name: '하회마을 가을 문화제', hours: '11:00–18:00', image: 'assets/calendar-andong.png',
-      imageAlt: '한옥 마당에서 전통 공연을 보는 관객들',
-      description: '하회마을 한옥 마당에서 전통 공연을 즐기는 가을 행사예요.' },
-    { region: 'gochang', type: 'event', start: '2026-11-21', end: '2026-11-22', name: '고창 단풍 산책', hours: '10:00–16:00',
-      image: 'assets/places/gc-trail.jpg', imageAlt: '숲 사이로 이어지는 산책길 예시',
-      description: '울긋불긋 물든 숲길을 따라 고창의 늦가을 풍경을 만나는 산책이에요.' },
-    { region: 'geochang', type: 'event', start: '2026-11-28', end: '2026-11-29', name: '거창 로컬마켓', hours: '11:00–17:00',
-      image: 'assets/events/geochang-market.jpg', imageAlt: '지역 장터의 판매대 예시',
-      description: '거창에서 만든 먹거리와 수공예품을 한자리에서 둘러보는 장터예요.' },
-    { region: 'hamyang', type: 'event', start: '2026-12-05', end: '2026-12-06', name: '함양 겨울 장터',
-      image: 'assets/events/hamyang-market.jpg', imageAlt: '겨울 장터의 풍경 예시',
-      description: '함양의 농산물과 따뜻한 겨울 먹거리를 만나는 계절 장터예요.' },
-  ].map((item) => ({ ...item, example: true }));
   let schedules = [];
 
   let showEvents = false;
@@ -156,9 +140,18 @@ const festivalCalendar = (() => {
     ).join('');
   }
 
+  function applicationSite(item, date) {
+    if (item.type !== 'application' || date < todayInKorea()) return '';
+    try {
+      const url = new URL(regionById.get(item.region)?.site);
+      return ['http:', 'https:'].includes(url.protocol) ? url.href : '';
+    } catch { return ''; }
+  }
+
   function detailItem(item, date) {
     const region = regionById.get(item.region);
     const note = dayNote(item, date);
+    const site = applicationSite(item, date);
     return `<li class="calendar-detail-item ${item.type}${item.image ? ' with-photo' : ''}">
       ${item.image ? `<figure class="calendar-photo">
         <img src="${item.image}" alt="${item.imageAlt}" width="640" height="360" decoding="async">
@@ -168,6 +161,7 @@ const festivalCalendar = (() => {
         ${item.name ? `<p class="calendar-location">${region.province} ${region.name}${item.example ? ' · 예시 행사' : ''}</p>` : ''}
         ${item.description ? `<p class="calendar-description">${item.description}</p>` : ''}
         <p class="calendar-period"><span>${formatPeriod(item)}</span>${item.hours ? `<span>${item.hours}</span>` : ''}</p>
+        ${site ? `<a class="calendar-apply-link" href="${escapeText(site)}">신청 사이트 바로가기 ↗</a>` : ''}
       </div>
     </li>`;
   }
@@ -176,11 +170,11 @@ const festivalCalendar = (() => {
     ({ regions, provinces, periods, placeName } = deps);
     myPlans = { calendarPlans: deps.plans, openInPlanner: deps.openPlan };
     regionById = new Map(regions.map((region) => [region.id, region]));
-    schedules = [...periods, ...exampleEvents.filter((item) => regionById.has(item.region))];
+    schedules = periods.filter((item) => regionById.has(item.region));
     if (selectedRegion !== 'all' && !selectedRegion.startsWith('province:') && !regionById.has(selectedRegion)) selectedRegion = 'all';
     root.innerHTML = `<header class="calendar-intro">
       <h1>축제 캘린더</h1>
-      <p class="calendar-demo">신청·여행 기간: 수집 시트 기준 · 행사: 예시</p>
+      <p class="calendar-demo">신청 중인 공식 확인 일정만 표시 · 확인일 2026.11.26 · 선착순 조기 마감 가능 · <a href="https://korean.visitkorea.or.kr/dgtourcard/tour50.do" target="_blank" rel="noopener noreferrer">한국관광공사 공식 안내 ↗</a></p>
     </header>
     <div class="calendar-layout">
       <section class="calendar-board" aria-labelledby="calendar-year calendar-month-name">
@@ -197,7 +191,7 @@ const festivalCalendar = (() => {
           </div>
           <div class="calendar-filters">
             <label class="calendar-region">지역 <select id="calendar-region">${regionOptions()}</select></label>
-            <button type="button" class="calendar-event-switch" role="switch" aria-checked="${showEvents}">
+            <button hidden type="button" class="calendar-event-switch" role="switch" aria-checked="${showEvents}">
               이벤트<span class="calendar-switch-track" aria-hidden="true"></span>
             </button>
           </div>
@@ -307,7 +301,7 @@ const festivalCalendar = (() => {
       const firstDay = month.getUTCDay();
       const dayCount = new Date(Date.UTC(year, monthIndex + 1, 0)).getUTCDate();
       const today = todayInKorea();
-      const regionSchedules = schedules.filter((item) => matchesRegion(item) && (item.type !== 'event' || showEvents));
+      const regionSchedules = schedules.filter((item) => todayInKorea() === '2026-11-26' && new Date() < new Date(item.closesAt) && matchesRegion(item) && (item.type !== 'event' || showEvents));
       savedPlans = myPlans.calendarPlans().slice().sort((a, b) =>
         a.startDate.localeCompare(b.startDate) || b.endDate.localeCompare(a.endDate) || a.id.localeCompare(b.id));
       days = new Map();
@@ -419,6 +413,11 @@ const festivalCalendar = (() => {
       const button = event.target.closest('[data-day]');
       if (!button) return;
       hideTooltip();
+      const sites = [...new Set((days.get(button.dataset.day) || []).map((item) => applicationSite(item, button.dataset.day)).filter(Boolean))];
+      if (sites.length === 1) {
+        window.location.assign(sites[0]);
+        return;
+      }
       const previous = grid.querySelector('[aria-pressed="true"]');
       previous?.setAttribute('aria-pressed', 'false');
       const tabStop = grid.querySelector('[tabindex="0"]');
