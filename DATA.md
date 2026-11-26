@@ -13,6 +13,7 @@
 | `data/geocode-cache.json` | 브이월드(국토교통부) 주소 검색으로 찾은 식당 좌표 | `scripts/geocode.py` |
 | `data/region-extras.json` | 관광주민증 혜택(★), 상·하반기 구분. 시트에 없는 시제품 값이라 확인 필요 | 직접 수정 |
 | `data/geo.json` | 통계청 행정구역 경계(지도) | — |
+| `data/place-photos.json` | 장소 대표 사진 주소와 출처·라이선스(사진 파일은 저장하지 않음) | `scripts/collect_photos.py` |
 | `data/places.sample.json` | 화면 설계용 예시 데이터(앱에 표시하지 않음) | — |
 
 ## 자동 동기화 (GitHub Actions)
@@ -25,6 +26,7 @@
 | --- | --- | --- |
 | `GOOGLE_SERVICE_ACCOUNT_JSON` | 서비스 계정 JSON 키 파일 내용 전체. 수집 시트를 서비스 계정 이메일에 '뷰어'로 공유 | 시트 읽기를 건너뛰고 지금 `localo.json`으로 만듦 |
 | `VWORLD_API_KEY` | 브이월드 오픈API 인증키(vworld.kr, 검색·지오코더 API) | 식당을 지역 안 근사 위치에 표시 |
+| `TOURAPI_KEY` | 공공데이터포털 '한국관광공사_국문 관광정보 서비스_GW' 일반 인증키(Decoding 아닌 Encoding 키) | 장소 사진을 TourAPI에서 가져오지 않음(위키미디어 공용 사진만) |
 
 ## 직접 실행
 
@@ -37,6 +39,20 @@ python scripts/sync_sheet.py --xlsx 시트.xlsx  # 내려받은 엑셀로 (pytho
 python scripts/geocode.py                     # 선택, VWORLD_API_KEY 필요
 python scripts/collect_kakao_places.py       # 선택, 카카오 REST API 키 필요
 python scripts/build_data.py                  # 화면 데이터 만들기·검증
+```
+
+## 장소 대표 사진
+
+`scripts/collect_photos.py`가 이용 조건이 분명한 공개 사진만 모아 `data/place-photos.json`에 주소와 출처를 적어요. 화면(장소 말풍선, 확대한 지도의 사진 미리보기, 장소 목록)은 사진마다 출처·라이선스를 함께 보여 줘요.
+
+- **한국관광공사 TourAPI 4.0** 대표 이미지 — `TOURAPI_KEY` 필요. 공공누리 1유형(출처표시)·3유형(출처표시·변경금지)만 써요. 3유형은 사진을 고치면 안 되니 자르거나 덧칠하지 말고 원본 그대로 보여 주세요.
+- **위키미디어 공용** — 키 없이 동작. CC0·CC BY·CC BY-SA·퍼블릭 도메인만, 관광지만 조회해요.
+- **카카오·네이버 지도 사진은 쓰지 않아요.** 이용자·업체가 올린 저작물이라 허락 없이 옮길 수 없어요.
+- 엉뚱한 사진을 막으려고 좌표(TourAPI 300m, 공용 150m 안)와 상호 이름이 모두 맞을 때만 연결해요. 맞지 않는 장소는 업종 색 그림으로 보여요.
+
+```sh
+python scripts/collect_photos.py                 # TourAPI(키가 있으면) + 위키미디어 공용
+python scripts/collect_photos.py --only tour     # 매일 동기화에서 쓰는 방식
 ```
 
 ## 변환 규칙
