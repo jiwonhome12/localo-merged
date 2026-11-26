@@ -574,7 +574,8 @@
   const groups = () => { const g = {}; S.cart.forEach((c) => { const rid = PM[c.pid].region_id; (g[rid] = g[rid] || []).push(c); }); return g; };
   function renderBadge() {
     const n = S.cart.length;
-    const b = $('badge'); b.hidden = !n; b.textContent = n;
+    [$('badge'), $('fab-count')].forEach((b) => { b.hidden = !n; b.textContent = n; });
+    $('cart-fab').setAttribute('aria-label', `여행 일정표 ${S.panel === 'trip' ? '닫기' : '열기'}, 담은 장소 ${n}곳`);
   }
   function visitLabel(c) {
     const day = c.date ? c.date.slice(5).replace('-', '.') : '';
@@ -617,21 +618,18 @@
     const items = S.cart.filter((c) => show.includes(PM[c.pid].region_id));
     // 장바구니 탭 · 제목
     $('basket-list').innerHTML = BASKETS.map((b) => `<button type="button" data-basket-id="${esc(b.id)}" ${b === curBasket ? 'aria-current="true"' : ''} title="${esc(b.name)}">${esc(b.name)}${b.cart.length ? ` <span class="c num">${b.cart.length}</span>` : ''}</button>`).join('');
+    const r0 = S.view === 'region' && RM[S.rid];
+    $('trip-destination').hidden = !r0; $('trip-region').textContent = r0 ? r0.name : '';
+    const title = /^\d+$/.test(curBasket.name) ? curBasket.name + '번 일정표' : curBasket.name;
     $('trip-title-group').innerHTML = renaming
       ? `<input id="basket-name" class="basket-name" maxlength="30" value="${esc(curBasket.name)}" aria-label="장바구니 이름"><button type="button" class="rename-basket" data-rename-done aria-label="이름 저장">✓</button>`
-      : `<h2 id="trip-title">${esc(curBasket.name)}</h2><button class="rename-basket" type="button" data-rename-basket aria-label="장바구니 이름 바꾸기" title="장바구니 이름 바꾸기"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="m15 5 4 4M4 20l4-1 12-12a2.8 2.8 0 0 0-4-4L4 15.5z"/></svg></button>${BASKETS.length > 1 ? `<button class="rename-basket" type="button" data-del-basket="${esc(curBasket.id)}" aria-label="이 장바구니 삭제" title="이 장바구니 삭제"><svg viewBox="0 0 16 16" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><path d="m4 4 8 8m0-8-8 8"/></svg></button>` : ''}`;
+      : `<h2 id="trip-title">${esc(title)}</h2><button class="rename-basket" type="button" data-rename-basket aria-label="장바구니 이름 바꾸기" title="장바구니 이름 바꾸기"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="m15 5 4 4M4 20l4-1 12-12a2.8 2.8 0 0 0-4-4L4 15.5z"/></svg></button>${BASKETS.length > 1 ? `<button class="rename-basket" type="button" data-del-basket="${esc(curBasket.id)}" aria-label="이 장바구니 삭제" title="이 장바구니 삭제"><svg viewBox="0 0 16 16" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><path d="m4 4 8 8m0-8-8 8"/></svg></button>` : ''}`;
     $('trip-count').textContent = S.cart.length ? `${rids.length}개 지역 · ${S.cart.length}곳` : '담은 장소 0곳';
     // 일정(방문 순서)
     const tabs = rids.length > 1 ? `<div class="trip-tabs" role="group" aria-label="일정과 경비를 볼 지역"><button type="button" class="btab" data-basket="all" aria-pressed="${S.basket === 'all'}">전체 <span class="c">${S.cart.length}</span></button>${rids.map((rid) => `<button type="button" class="btab" data-basket="${rid}" aria-pressed="${S.basket === rid}"><span class="dot ${RM[rid].status}"></span>${RM[rid].short} <span class="c">${G[rid].length}</span></button>`).join('')}</div>` : '';
-    const groupHTML = (rid) => {
-      const r = RM[rid], list = G[rid], sub = list.reduce((t, c) => t + lineCost(c).amt, 0), rf = refundOf(rid, sub);
-      return `<section class="bgroup" aria-label="${r.name} 바구니"><div class="bg-h"><b>${r.name} 바구니</b><span class="pill ${r.status}">${STL[r.status]}</span><span class="amt num">${won(sub)}</span></div>
-        <ol class="itinerary-list" data-rid="${rid}" aria-label="${r.name} 방문 순서">${list.map((c, i, a) => stopHTML(c, i, a)).join('')}</ol>
-        <div class="bg-f"><span>${r.name} 환급 예상 (${esc(rf.ru.label)}${rf.why ? ' · ' + esc(rf.why) : ''})</span><b class="num">− ${won(rf.v)}</b></div></section>`;
-    };
-    $('trip-items').innerHTML = S.cart.length ? tabs + show.map(groupHTML).join('')
+    $('trip-items').innerHTML = S.cart.length ? `${tabs}<ol class="itinerary-list" aria-label="방문 순서로 정리한 여행 일정">${items.map((c, i, a) => stopHTML(c, i, a)).join('')}</ol>`
       : `<div class="cart-empty"><span class="cart-empty-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"><path d="m6.5 9 4-5.5M17.5 9l-4-5.5M3 9h18l-1.6 9.3a2 2 0 0 1-2 1.7H6.6a2 2 0 0 1-2-1.7L3 9Z"/><path d="M9 12.3v4M15 12.3v4"/></svg></span>
-        <strong>아직 담은 장소가 없어요</strong><p>장소의 가방 버튼을 누르거나, 장소 사진·목록을 여기로 끌어다 놓으세요.<br>가는 지역별 바구니로 쌓이고 경비가 자동으로 계산돼요.</p></div>`;
+        <strong>아직 담은 장소가 없어요</strong><p>지도에서 장소 사진을 여기로 끌어오세요.</p></div>`;
     // 경비(지역 규칙으로 환급)
     const byCat = { food: 0, stay: 0, cafe: 0, spot: 0 }, byR = {}; let total = 0;
     items.forEach((c) => { const p = PM[c.pid], a = lineCost(c).amt; byCat[p.category] += a; byR[p.region_id] = (byR[p.region_id] || 0) + a; total += a; });
@@ -644,8 +642,8 @@
       <div><dt>경비 합계</dt><dd class="num">${won(total)}</dd></div>${rows}
       <div class="total-row"><dt>예상 부담액 합계</dt><dd class="num">${won(total - refund)}</dd></div></dl>
       <p class="fine-print">지자체 공고의 환급 규칙(수집 시트)으로 계산했어요. 환급은 가맹점 결제만 인정되고, 장소별 가맹점 여부는 아직 확인되지 않았어요.</p>`;
-    $('split-count').textContent = `${scope || '전체 · '}1인당 ${won(Math.round((total - refund) / S.people))} · ${S.people}명 균등 분할`;
-    $('pay-total').textContent = won(total - refund);
+    $('split-count').textContent = `${scope}${S.people}명 균등 분할 · 부담 합계 ${won(total - refund)}`;
+    $('split-estimate').textContent = won(Math.round((total - refund) / S.people));
     $('save-trip').disabled = !S.cart.length;
     renderBadge(); saveBaskets();
     renderCompare();
@@ -1136,6 +1134,7 @@
   function openRegion(id) {
     S.view = 'region'; S.rid = id; S.cat = 'all'; S.pid = null;
     if (mobile()) setSheet('peek');
+    else if (!S.panel && !cartClosed) { restoring = true; openPanel('trip'); restoring = false; }
     renderAll(); animateVB(fitBox(RM[id].bbox), 700);
     $('left').scrollTop = 0;
     record();
@@ -1210,12 +1209,14 @@
     addEventListener('pointermove', mouse((e) => move(e.clientX, e.clientY)));
     addEventListener('pointerup', mouse((e) => end(e.clientX, e.clientY, true)));
   }
+  let cartClosed = false; // 일정표를 직접 닫았으면 담거나 지역을 열 때 다시 열지 않는다
   function toggleCart(pid) {
     if (!needLogin('장소 담기')) return;
     const i = S.cart.findIndex((c) => c.pid === pid);
     if (i >= 0) S.cart.splice(i, 1);
     else {
-      S.cart.push({ pid, qty: defaultQty(PM[pid]) }); S.basket = 'all'; toast(`${RM[PM[pid].region_id].name} 바구니에 담았어요 · '${curBasket.name}' ${S.cart.length}곳`);
+      S.cart.push({ pid, qty: defaultQty(PM[pid]) }); S.basket = 'all';
+      if (!mobile() && !S.panel && !cartClosed) openPanel('trip'); toast(`${RM[PM[pid].region_id].name} 바구니에 담았어요 · '${curBasket.name}' ${S.cart.length}곳`);
     }
     S.route = null; drawRoute(); renderBadge(); renderStack(); renderRoute(); renderOverlay(); renderLeft();
   }
@@ -1247,7 +1248,7 @@
     if (name === 'community') { renderCommunity(); loadTop(); }
     const cur = name === 'trip' || !name ? 'map' : name;
     document.querySelectorAll('.tabbar [data-tab], .nav [data-tab]').forEach((b) => b.setAttribute('aria-current', b.dataset.tab === cur ? 'page' : 'false'));
-    if (name === 'trip' && !mobile()) $('trip-scroll').scrollTo({ top: 0, behavior: 'smooth' });
+    $('cart-fab').setAttribute('aria-expanded', String(name === 'trip')); renderBadge();
     record();
   }
   const openTrip = (on) => openPanel(on ? 'trip' : null);
@@ -1257,7 +1258,7 @@
   // 끌어서 담기(Loc 사진 끌기): 장소 사진·장소 목록 줄·지도 핀을 장바구니 칸(휴대폰은 위 가방 버튼)에 놓으면 담긴다
   (() => {
     let pd = null;
-    const dropTargets = () => [$('trip'), document.querySelector('.top .ibtn[data-tab="trip"]')].filter((x) => x && x.getClientRects().length && getComputedStyle(x).visibility !== 'hidden');
+    const dropTargets = () => [$('trip'), $('cart-fab'), document.querySelector('.top .ibtn[data-tab="trip"]')].filter((x) => x && x.getClientRects().length && getComputedStyle(x).visibility !== 'hidden');
     const over = (x, y) => { const hit = document.elementFromPoint(x, y); return dropTargets().find((t) => t.contains(hit)) || null; };
     const clearReady = () => document.querySelectorAll('.drop-ready').forEach((x) => x.classList.remove('drop-ready'));
     function cancel() { if (!pd) return; pd.preview?.remove(); clearReady(); document.body.classList.remove('cart-dragging'); pd = null; }
@@ -1427,6 +1428,9 @@
     if (d.basket) { S.basket = d.basket; S.route = null; drawRoute(); renderStack(); renderRoute(); renderOverlay(); return; }
     if (t.hasAttribute('data-route')) return toggleRoute();
     if (d.tab === 'map' && t.closest('.tabbar')) return goMain();
+    if (d.tab === 'trip' && S.panel === 'trip') { cartClosed = true; return openPanel(null); } // 가방 버튼을 다시 누르면 닫기
+    if (d.tab === 'map' && S.panel === 'trip') cartClosed = true;
+    if (t.hasAttribute('data-trip-region-clear')) { if (mobile()) openPanel(null); return goHome(); }
     if (d.tab) { const was = S.panel; openPanel(d.tab === 'map' ? null : d.tab); if (d.tab === 'map' && was && was !== 'trip' && S.view === 'all') playIntro(); return; }
     if (d.soon) return toast(`${d.soon}은 다음 단계에서 열려요`);
   });

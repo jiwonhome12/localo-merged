@@ -16,7 +16,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;600;700&display=swap">
 <link rel="stylesheet" href="calendar.css?v=20261126a">
-<link rel="stylesheet" href="styles.css?v=20261126n">
+<link rel="stylesheet" href="styles.css?v=20261126p">
 </head>
 <body>
 <script>document.body.dataset.sheet="peek"</script>
@@ -83,14 +83,26 @@
     </nav>
     <header class="trip-title-row">
       <div class="trip-title-text">
-        <div class="trip-title-group" id="trip-title-group"></div>
+        <div class="trip-heading-line">
+          <span class="trip-destination" id="trip-destination" hidden>
+            <span class="trip-region-switch">
+              <button type="button" id="clear-trip-region" data-trip-region-clear aria-label="지역 선택 해제" aria-describedby="trip-region-tip">
+                <svg viewBox="0 0 16 16" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><path d="m4 4 8 8m0-8-8 8"/></svg>
+              </button>
+              <span role="tooltip" id="trip-region-tip">다른 지역은 어떨까?</span>
+            </span>
+            <span id="trip-region"></span>
+          </span>
+          <div class="trip-title-group" id="trip-title-group"></div>
+        </div>
         <p id="trip-count"></p>
       </div>
+      <button type="button" class="trip-close desk" data-tab="map" aria-label="일정표 닫기"><svg viewBox="0 0 16 16" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><path d="m4 4 8 8m0-8-8 8"/></svg></button>
     </header>
     <div class="trip-layout p-scroll" id="trip-scroll">
       <section class="trip-places" aria-label="담은 장소"><div id="trip-items"></div></section>
       <div class="route" id="route"></div>
-      <details class="trip-calculator" id="trip-calculator" open>
+      <details class="trip-calculator" id="trip-calculator">
         <summary>여행 설정과 경비</summary>
         <section class="trip-settings" aria-labelledby="trip-settings-title">
           <h3 id="trip-settings-title">여행 설정</h3>
@@ -114,11 +126,13 @@
       </details>
     </div>
     <footer class="trip-person-total">
-      <div><strong>실제 부담 예상</strong><small id="split-count"></small></div>
-      <output id="pay-total" class="num" aria-live="polite">0원</output>
+      <div><strong>1인당 예상 부담금</strong><small id="split-count"></small></div>
+      <output id="split-estimate" class="num" aria-live="polite">0원</output>
       <button class="save-trip" type="button" id="save-trip" data-save-trip disabled><span aria-hidden="true">♡</span> 찜!</button>
     </footer>
   </aside>
+  <!-- Loc 가방 버튼: 누르면 일정표 서랍이 지도 위로 나온다 -->
+  <button type="button" class="cart-fab" id="cart-fab" data-tab="trip" aria-label="여행 일정표 열기" aria-expanded="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6.5 9 4-5.5M17.5 9l-4-5.5M3 9h18l-1.6 9.3a2 2 0 0 1-2 1.7H6.6a2 2 0 0 1-2-1.7L3 9Z"/><path d="M9 12.3v4M15 12.3v4"/></svg><span class="cart-count num" id="fab-count" hidden>0</span></button>
   <div class="sr-only" id="cart-announcement" role="status"></div>
 
   <!-- 마이·커뮤니티: 휴대폰은 전체 화면, PC는 지도 위 창 -->
@@ -142,6 +156,6 @@
 <script src="cloud.js?v=20261117i"></script>
 <script src="region-photos.js?v=20261126a"></script>
 <script src="calendar.js?v=20261126c"></script>
-<script src="app.js?v=20261126m"></script>
+<script src="app.js?v=20261126o"></script>
 </body>
 </html>
