@@ -228,7 +228,7 @@
       matching.forEach((p) => {
         const inCart = S.cart.some((c) => c.pid === p.id);
         const ord = S.route ? S.route.indexOf(p.id) : -1;
-        h += `<button type="button" class="marker hit${S.pid === p.id ? ' on' : ''}${inCart ? ' in-cart' : ''}" data-p="${p.id}" aria-label="${esc(p.name)}">${ord >= 0 ? `<span class="ord">${ord + 1}</span>` : ''}<span class="mk" style="background:${CAT[p.category].c}"><i>${CAT[p.category].k}</i></span><span class="ml">${esc(p.name.replace(r.short + ' ', ''))}</span>${placePhoto(p.id) && S.pid !== p.id ? `<span class="place-preview" data-drag-place="${p.id}"><img src="${esc(placePhoto(p.id).src)}" alt="" draggable="false" loading="lazy"><span>${esc(p.name.replace(r.short + ' ', ''))}</span></span>` : ''}</button>`;
+        h += `<button type="button" class="marker hit${S.pid === p.id ? ' on' : ''}${inCart ? ' in-cart' : ''}" data-p="${p.id}" aria-label="${esc(p.name)}">${ord >= 0 ? `<span class="ord">${ord + 1}</span>` : ''}<span class="mk" style="background:${CAT[p.category].c}"><i>${CAT[p.category].k}</i></span><span class="ml">${esc(p.name.replace(r.short + ' ', ''))}</span>${placePhoto(p.id) && S.pid !== p.id ? `<span class="place-preview${placePhoto(p.id).nomod ? ' nomod' : ''}" data-drag-place="${p.id}"><img src="${esc(placePhoto(p.id).src)}" alt="" draggable="false" loading="lazy"><span>${esc(p.name.replace(r.short + ' ', ''))}</span></span>` : ''}</button>`;
       });
       if (S.pid) h += popHTML(PM[S.pid]);
     }
@@ -325,6 +325,8 @@
     }
   }
   const safeUrl = (u) => { try { const url = new URL(u); return /^https?:$/.test(url.protocol) && !/(^|\.)matple\.com$/i.test(url.hostname) ? esc(u) : ''; } catch { return ''; } };
+  // 공공누리 3·4유형(변경금지)·CC ND 사진은 자르지 않고 원본 비율 그대로 보여 준다
+  const NOMOD = /변경금지|제[34]유형|(^|[^a-z])ND([^a-z]|$)|-nd/i;
   // 장소 사진: 명소 사진(region-photos.js)과 같은 자리(150m 안)로 이어진 장소만 실제 사진이 있다
   let photoOfPlace = null;
   function placePhoto(pid) {
@@ -335,7 +337,7 @@
       }));
     }
     const got = PHOTOS[pid];
-    if (got && /^https:\/\//.test(got.src)) return { src: got.src, alt: `${(PM[pid] || {}).name || ''} 대표 사진`, credit: got.credit, license: got.license, licenseUrl: got.licenseUrl, source: got.source };
+    if (got && /^https:\/\//.test(got.src)) return { src: got.src, alt: `${(PM[pid] || {}).name || ''} 대표 사진`, credit: got.credit, license: got.license, licenseUrl: got.licenseUrl, source: got.source, nomod: NOMOD.test(got.license || '') };
     return photoOfPlace[pid] || null;
   }
   // Loc 업종 아이콘(사진이 없는 장소의 말풍선 얼굴)
@@ -355,10 +357,10 @@
     const cartIcon = inCart ? '<path d="m14 5 2 2 4-4"/>' : '<path d="M17 2v6m-3-3h6"/>';
     return `<div class="pop place-balloon" data-p="${p.id}" data-drag-place="${p.id}" role="dialog" aria-label="${name} 사진과 위치" style="--category:${CAT[p.category].c}" title="사진을 장바구니로 끌어다 놓으면 담겨요">
       <div class="balloon-bubble${opening ? ' opening' : ''}">
-        <div class="balloon-face">
+        <div class="balloon-face${ph && ph.nomod ? ' nomod' : ''}">
           ${ph ? `<img src="${esc(ph.src)}" alt="${esc(ph.alt)}" draggable="false">` : `<div class="balloon-art" aria-hidden="true">${catIcon(p.category)}<span>${CAT[p.category].n}</span></div>`}
           <div class="balloon-caption"><strong>${name}</strong><span class="balloon-address">${esc([r.name, town].filter(Boolean).join(' '))}${p.approx ? ' · 대략 위치' : ''}</span>
-            <span class="balloon-price">${p.price == null ? '가격 확인 필요' : esc(p.price_text || '')}</span></div>
+            <span class="balloon-price">${p.price == null ? '가격 확인 필요' : esc(p.price_text || '')}</span>${ph && ph.nomod ? `<a class="balloon-credit-line" href="${safeUrl(ph.source) || safeUrl(ph.licenseUrl) || '#'}" target="_blank" rel="noopener noreferrer">사진 ${esc(ph.credit)} · ${esc(ph.license)}</a>` : ''}</div>
         </div>
         <button type="button" class="balloon-close" data-close aria-label="닫기">×</button>
         ${link ? `<a class="balloon-link" href="${link}" target="_blank" rel="noopener noreferrer" aria-label="${name} 카카오맵에서 보기" title="카카오맵에서 장소 확인">지도</a>` : ''}
@@ -366,7 +368,7 @@
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 4h3l2.2 10.7a2 2 0 0 0 2 1.6h8a2 2 0 0 0 1.9-1.4l1.8-5.6M6 8h5"/><circle cx="9.4" cy="20" r="1.25"/><circle cx="17.1" cy="20" r="1.25"/>${cartIcon}</svg>
           <span>${inCart ? '담음' : '담기'}</span>
         </button>
-        ${ph ? `<a class="balloon-credit" href="${safeUrl(ph.source) || safeUrl(ph.licenseUrl) || '#'}" target="_blank" rel="noopener noreferrer" title="사진 출처·라이선스">사진 ${esc(ph.credit)} · ${esc(ph.license)}</a>` : ''}
+        ${ph && !ph.nomod ? `<a class="balloon-credit" href="${safeUrl(ph.source) || safeUrl(ph.licenseUrl) || '#'}" target="_blank" rel="noopener noreferrer" title="사진 출처·라이선스">사진 ${esc(ph.credit)} · ${esc(ph.license)}</a>` : ''}
       </div>
     </div>`;
   }
@@ -453,7 +455,7 @@
       <div class="tabs" role="tablist">${cats.map(([k, n]) => `<button type="button" class="tab" role="tab" data-cat="${k}" aria-selected="${S.cat === k}">${n}</button>`).join('')}</div></div>
       ${S.cat === 'all' || S.cat === 'spot' ? photoStrip(r) : ''}
       <p class="ex">${ps.length}곳 · 겹친 장소는 목록에서 선택할 수 있어요.</p>
-      <div>${ps.length ? ps.map((p) => { const open = expandedPlace === p.id, inCart = S.cart.some((c) => c.pid === p.id), url = safeUrl(p.kakao_url); return `<div class="place-row"><div class="place-row-head" data-drag-place="${esc(p.id)}"><button type="button" class="pitem${open ? ' on' : ''}" data-place-expand="${esc(p.id)}" aria-expanded="${open}">${placePhoto(p.id) ? `<img class="pic pic-photo" src="${esc(placePhoto(p.id).src)}" alt="" loading="lazy" draggable="false">` : `<span class="pic" style="background:${CAT[p.category].c}">${CAT[p.category].k}</span>`}<span><span class="nm">${esc(p.name.replace(r.short + ' ', ''))}</span><span class="sub">${esc(p.price_text)} · ${esc(p.access_text)}</span></span><span class="place-chevron" aria-hidden="true">⌄</span></button><button type="button" class="place-cart${inCart ? ' on' : ''}" data-add="${esc(p.id)}" aria-label="${esc(p.name)} ${inCart ? '장바구니에서 빼기' : '장바구니에 담기'}" aria-pressed="${inCart}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M5 8h14l-1 11H6L5 8Z"/><path d="M9 8V6a3 3 0 0 1 6 0v2"/></svg></button></div>${open ? `<div class="place-details"><p><b>주소</b> ${esc(p.address || p.access_text || '확인 필요')}</p>${p.price == null ? '<p>가격 확인 필요 · 예상 경비에서 제외</p>' : ''}${url ? `<a href="${url}" target="_blank" rel="noopener noreferrer">카카오맵에서 장소 확인 ↗</a>` : ''}</div>` : ''}</div>`; }).join('') : '<p class="empty">등록된 장소가 없습니다.</p>'}</div>`;
+      <div>${ps.length ? ps.map((p) => { const open = expandedPlace === p.id, inCart = S.cart.some((c) => c.pid === p.id), url = safeUrl(p.kakao_url); return `<div class="place-row"><div class="place-row-head" data-drag-place="${esc(p.id)}"><button type="button" class="pitem${open ? ' on' : ''}" data-place-expand="${esc(p.id)}" aria-expanded="${open}">${placePhoto(p.id) ? `<img class="pic pic-photo${placePhoto(p.id).nomod ? ' nomod' : ''}" src="${esc(placePhoto(p.id).src)}" alt="" loading="lazy" draggable="false">` : `<span class="pic" style="background:${CAT[p.category].c}">${CAT[p.category].k}</span>`}<span><span class="nm">${esc(p.name.replace(r.short + ' ', ''))}</span><span class="sub">${esc(p.price_text)} · ${esc(p.access_text)}</span></span><span class="place-chevron" aria-hidden="true">⌄</span></button><button type="button" class="place-cart${inCart ? ' on' : ''}" data-add="${esc(p.id)}" aria-label="${esc(p.name)} ${inCart ? '장바구니에서 빼기' : '장바구니에 담기'}" aria-pressed="${inCart}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M5 8h14l-1 11H6L5 8Z"/><path d="M9 8V6a3 3 0 0 1 6 0v2"/></svg></button></div>${open ? `<div class="place-details"><p><b>주소</b> ${esc(p.address || p.access_text || '확인 필요')}</p>${p.price == null ? '<p>가격 확인 필요 · 예상 경비에서 제외</p>' : ''}${url ? `<a href="${url}" target="_blank" rel="noopener noreferrer">카카오맵에서 장소 확인 ↗</a>` : ''}</div>` : ''}</div>`; }).join('') : '<p class="empty">등록된 장소가 없습니다.</p>'}</div>`;
   }
 
   /* ───────── 신청 알림: 알림을 켠 지역이 '신청접수중'이 되면 알려 준다 ───────── */
@@ -1277,7 +1279,7 @@
       if (!pd.preview) {
         if (Math.hypot(e.clientX - pd.x, e.clientY - pd.y) < 8) return;
         const img = pd.src.querySelector('img');
-        if (img) { pd.preview = img.cloneNode(false); pd.preview.className = 'cart-drag-preview'; pd.preview.removeAttribute('loading'); }
+        if (img) { pd.preview = img.cloneNode(false); pd.preview.className = 'cart-drag-preview' + (img.closest('.nomod') || img.classList.contains('nomod') ? ' nomod' : ''); pd.preview.removeAttribute('loading'); }
         else { pd.preview = document.createElement('div'); pd.preview.className = 'cart-drag-chip'; pd.preview.textContent = PM[pd.id] ? PM[pd.id].name : ''; }
         pd.preview.setAttribute('aria-hidden', 'true'); document.body.append(pd.preview); document.body.classList.add('cart-dragging');
         try { pd.src.setPointerCapture(e.pointerId); } catch (_) { /* 일부 브라우저 */ }

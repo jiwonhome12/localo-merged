@@ -930,3 +930,14 @@ body.zoomed .target.sel{stroke:var(--mulberry);stroke-width:2.2px;filter:drop-sh
   .cart-fab,.trip-close.desk{display:none}
 }
 @media (prefers-reduced-motion:reduce){#trip.trip-panel,.cart-fab{transition:none}}
+
+/* ── 변경금지 사진(공공누리 3유형 등): 자르지 않고 원본 비율 그대로, 사진 위에 글자를 얹지 않는다 */
+.balloon-face.nomod{background:#fbf8fb}
+.balloon-face.nomod>img{width:62%;height:calc(var(--photo-cut) - 18%);margin:14% auto 0;object-fit:contain;background:#f1ebf1;border-radius:4px}
+.balloon-face.nomod .balloon-caption{padding-top:4px}
+.balloon-credit-line{display:block;margin-top:1px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#9a8697;font-size:clamp(8px,3.4cqw,9.5px);text-decoration:none}
+.balloon-credit-line:hover{text-decoration:underline}
+.place-preview.nomod{background:#fbf8fb}
+.place-preview.nomod img{object-fit:contain;padding:17%;border-radius:0;background:none}
+.pic-photo.nomod{object-fit:contain;background:#f1ebf1}
+.cart-drag-preview.nomod{object-fit:contain;background:#fff}
