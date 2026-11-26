@@ -1,14 +1,16 @@
-/* 로컬로 — 흰 배경, 차분한 소나무색 포인트
+/* 로컬로 — 따뜻한 종이색 배경, 차분한 소나무색 포인트
+   (kangbj70-cell/Loc 시안의 웜톤 중성색·장소 색·Gowun Dodum 제목 글꼴을 섞었다)
    데스크톱: 왼쪽 지역/장소 탭 · 가운데 지도 · 오른쪽 경비 스택
    휴대폰(앱 모드): 전체 화면 지도 + 아래 시트 + 하단 탭바 */
 :root{
-  --bg:#ffffff; --ink:#1d2725; --muted:#66726e; --faint:#9aa4a0; --line:#e5e9e7; --soft:#f5f7f6;
+  --bg:#fffdfa; --ink:#2a2622; --muted:#6e645c; --faint:#a1968d; --line:#ece3da; --soft:#f7f2ec;
   --sea:#e6eeeb; --sea-ink:#9fb3ac; --land:#ffffff; --land-dim:#edf2f0; --land-line:#dfe6e3; --land-shadow:#c9d7d1;
   --open-fill:#f7c9a3; --soon-fill:#c3d3f4; --closed-fill:#dde3e0;
   --accent:#2f5d50; --accent-soft:#dfeae6; --accent-mid:#7fa597;
   --open:#d9742a; --open-soft:#fdf1e7; --soon:#4d79d6; --soon-soft:#edf2fc; --closed:#9aa19e; --star:#e0b43a;
-  --c-food:#c4643a; --c-stay:#4d6fb3; --c-cafe:#8a6a45; --c-spot:#3f8a6a;
+  --c-food:#a95131; --c-stay:#4a668e; --c-cafe:#85633f; --c-spot:#377259;
   --font:"IBM Plex Sans KR","Apple SD Gothic Neo","Malgun Gothic",system-ui,sans-serif;
+  --font-display:"Gowun Dodum","IBM Plex Sans KR","Apple SD Gothic Neo",sans-serif;
   --r:12px; --top:60px; --tabbar:0px; --peek:168px;
   color-scheme:light;
 }
@@ -363,10 +365,10 @@ body.zoomed .target.sel{fill:#fff;stroke:var(--accent);stroke-width:2px;filter:d
 .page-head button{border:0;background:var(--soft);border-radius:10px;height:34px;padding:0 12px;font-size:13px}
 .page-body{flex:1;min-height:0;overflow:auto;padding:18px 20px 28px}
 .page-dim{display:none}
-body.my-open #page-my,body.community-open #page-community{display:flex}
+body.my-open #page-my,body.community-open #page-community,body.calendar-open #page-calendar{display:flex}
 @media (min-width:1024px){
   .page{position:fixed;top:calc(var(--top) + 24px);left:50%;transform:translateX(-50%);width:min(560px,calc(100vw - 48px));max-height:calc(100vh - var(--top) - 48px);border-radius:18px;box-shadow:0 24px 60px rgba(29,39,37,.25);overflow:hidden}
-  body.my-open .page-dim,body.community-open .page-dim{display:block;position:fixed;inset:0;background:rgba(29,39,37,.28);z-index:54}
+  body.my-open .page-dim,body.community-open .page-dim,body.calendar-open .page-dim{display:block;position:fixed;inset:0;background:rgba(29,39,37,.28);z-index:54}
 }
 .sec{font-size:14px;margin:22px 0 10px;display:flex;align-items:baseline;gap:6px}
 .sec small{font-size:12px;color:var(--faint);font-weight:500}
@@ -594,3 +596,27 @@ button.cmp-h small+.chev{margin-left:8px}
 .place-details p{margin:0 0 6px}
 .place-details b{display:block;margin-bottom:2px;font-size:11px;color:#829088}
 .place-details a{margin-top:4px;padding:7px 10px;background:#e5efe9;border-radius:9px;text-decoration:none;color:#315f50}
+
+/* ── Loc 시안과 섞은 부분 ───────────────────────────────── */
+/* 제목 글꼴: Gowun Dodum(굵기 1개뿐이라 굵게 합성하지 않는다) */
+.brand,h2,.page-head b,.pt,.bg-h b,.login h3{font-family:var(--font-display);font-weight:400;letter-spacing:-.03em}
+.brand{font-size:21px}
+h2{font-size:21px}
+
+/* 축제 캘린더: 넓은 창. 캘린더 말풍선이 position:fixed 라 transform 을 쓰지 않는다 */
+.page-wide .page-body{padding:0 clamp(12px,1.6vw,28px)}
+.page-wide .secondary.calendar-page{margin-block:18px 28px}
+@media (max-width:1023px){.page-wide .calendar-intro h1{display:none}}
+@media (min-width:1024px){
+  .page.page-wide{left:0;right:0;margin-inline:auto;transform:none;width:min(1320px,calc(100vw - 48px))}
+}
+
+/* 지역 명소 사진 줄(region-photos.js) */
+.rphotos{display:flex;gap:10px;overflow-x:auto;scrollbar-width:thin;scroll-snap-type:x mandatory;margin:8px -4px 6px;padding:2px 4px 8px;overscroll-behavior-x:contain}
+.rphoto{flex:0 0 78%;max-width:240px;margin:0;scroll-snap-align:start;border:1px solid var(--line);border-radius:12px;overflow:hidden;background:var(--bg)}
+.rphoto img{display:block;width:100%;aspect-ratio:3/2;height:auto;object-fit:cover;background:var(--soft)}
+.rphoto figcaption{display:grid;gap:3px;padding:8px 10px 10px;font-size:12px;line-height:1.45}
+.rphoto figcaption b{font-family:var(--font-display);font-weight:400;font-size:14px}
+.rphoto figcaption span{color:var(--muted);display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.rphoto small{color:var(--faint);font-size:10.5px}
+.rphoto small a{color:inherit}

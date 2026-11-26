@@ -1,4 +1,13 @@
-# 로컬로 (Localo)
+# 로컬로 (Localo) · 병합본
+
+> 이 레포(`localo-merged`)는 [jiwonhome12/localo](https://github.com/jiwonhome12/localo)를 바탕으로 [kangbj70-cell/Loc](https://github.com/kangbj70-cell/Loc) 디자인 시안을 병합한 버전입니다. 두 레포의 커밋 히스토리를 모두 보존했습니다.
+>
+> | 영역 | 출처 |
+> | --- | --- |
+> | 화면 뼈대(지도·장바구니·마이·커뮤니티), 데이터(`data/`, `scripts/`), Supabase(`cloud.js`, `supabase/schema.sql`) | localo |
+> | 축제 캘린더(`calendar.js`, `calendar.css`) | Loc → 신청·여행 기간은 `data/regions.json`의 일정 문구에서 읽고, 저장한 여행(지난 여행)을 달력에 표시. 행사는 예시 |
+> | 지역 명소 사진(`region-photos.js`, `assets/landmarks/`) | Loc → 지역 화면 왼쪽 패널에 출처·라이선스와 함께 표시 |
+> | 웜톤 중성색·장소 색, 제목 글꼴 Gowun Dodum, 캘린더 글꼴 Gamja Flower(`assets/fonts/`, OFL) | Loc |
 해당파일 선택 후 python -m http.server 8000
 
 ---

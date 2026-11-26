@@ -235,6 +235,15 @@
       <p class="ex">${esc(r.status_checked_at)} 확인 · 최종 조건은 지자체 공고 기준${r.tour_resident_card ? ' · <span class="star">★</span> 관광주민증 혜택' : ''}</p></details>
       ${safeUrl(r.site) ? `<a href="${safeUrl(r.site)}" target="_blank" rel="noopener">신청 페이지 ›</a>` : ''}</div>`;
   }
+  // 지역 명소 사진(kangbj70-cell/Loc region-photos.js). 사진마다 출처·라이선스를 함께 표시한다
+  function photoStrip(r) {
+    const ps = ((window.regionPhotos || {})[r.id] || []).filter((p) => !p.isExample);
+    if (!ps.length) return '';
+    return `<div class="rphotos" role="list" aria-label="${r.name} 명소 사진">${ps.map((p) => `<figure class="rphoto" role="listitem">
+      <img src="${esc(p.src)}" alt="${esc(p.alt)}" loading="lazy" decoding="async" width="240" height="160">
+      <figcaption><b>${esc(p.caption)}</b>${p.description ? `<span>${esc(p.description)}</span>` : ''}
+      <small>사진 ${esc(p.credit)} · ${safeUrl(p.licenseUrl) ? `<a href="${safeUrl(p.licenseUrl)}" target="_blank" rel="noopener noreferrer">${esc(p.license)}</a>` : esc(p.license)}${safeUrl(p.source) ? ` · <a href="${safeUrl(p.source)}" target="_blank" rel="noopener noreferrer">원본</a>` : ''}</small></figcaption></figure>`).join('')}</div>`;
+  }
   let expandedPlace = null;
   function renderLeft() {
     const L = $('left');
@@ -255,6 +264,7 @@
         <div class="rsub">${r.sido}</div></div></div>
       ${regionInfo(r)}
       <div class="tabs" role="tablist">${cats.map(([k, n]) => `<button type="button" class="tab" role="tab" data-cat="${k}" aria-selected="${S.cat === k}">${n}</button>`).join('')}</div></div>
+      ${S.cat === 'all' || S.cat === 'spot' ? photoStrip(r) : ''}
       <p class="ex">${ps.length}곳 · 겹친 장소는 목록에서 선택할 수 있어요.</p>
       <div>${ps.length ? ps.map((p) => { const open = expandedPlace === p.id, inCart = S.cart.some((c) => c.pid === p.id), url = safeUrl(p.kakao_url); return `<div class="place-row"><div class="place-row-head"><button type="button" class="pitem${open ? ' on' : ''}" data-place-expand="${esc(p.id)}" aria-expanded="${open}"><span class="pic" style="background:${CAT[p.category].c}">${CAT[p.category].k}</span><span><span class="nm">${esc(p.name.replace(r.short + ' ', ''))}</span><span class="sub">${esc(p.price_text)} · ${esc(p.access_text)}</span></span><span class="place-chevron" aria-hidden="true">⌄</span></button><button type="button" class="place-cart${inCart ? ' on' : ''}" data-add="${esc(p.id)}" aria-label="${esc(p.name)} ${inCart ? '장바구니에서 빼기' : '장바구니에 담기'}" aria-pressed="${inCart}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M5 8h14l-1 11H6L5 8Z"/><path d="M9 8V6a3 3 0 0 1 6 0v2"/></svg></button></div>${open ? `<div class="place-details"><p><b>주소</b> ${esc(p.address || p.access_text || '확인 필요')}</p>${p.price == null ? '<p>가격 확인 필요 · 예상 경비에서 제외</p>' : ''}${url ? `<a href="${url}" target="_blank" rel="noopener noreferrer">카카오맵에서 장소 확인 ↗</a>` : ''}</div>` : ''}</div>`; }).join('') : '<p class="empty">등록된 장소가 없습니다.</p>'}</div>`;
   }
@@ -487,7 +497,7 @@
     const refund = Object.keys(G).reduce((s, rid) => s + refundOf(rid, G[rid].reduce((a, c) => a + lineCost(c).amt, 0)).v, 0);
     const trip = { id: uid(), title: tripTitle(S.cart), d1: $('d1').value, d2: $('d2').value, people: S.people, mode: S.mode,
       cart: S.cart.map((c) => ({ ...c })), order: JSON.parse(JSON.stringify(S.order)), total, pay: total - refund, savedAt: today() };
-    DB.trips.unshift(trip); save();
+    DB.trips.unshift(trip); save(); refreshCalendar();
     cloud(async (c) => { trip.id = await c.addTrip(trip); toast('지난 여행에 저장했어요 · 마이에서 다시 불러올 수 있어요'); });
     if (!CLOUD) toast('지난 여행에 저장했어요 · 마이에서 다시 불러올 수 있어요');
   }
@@ -622,6 +632,7 @@
     renderLeft();
     if (DB.user && !DB.user.name && S.panel !== 'my') openPanel('my'); // 첫 로그인: 닉네임 정하기
     if (S.panel === 'my') renderMy();
+    refreshCalendar();
     if (S.panel === 'community' && !writing) renderCommunity(); // 글 쓰는 중이면 입력을 지우지 않게
     if (DB.user && DB.user.name) { checkAlarms(); migrateLocal(); }
   }
@@ -786,6 +797,46 @@
     toast(`${RM[p.rid].name} 바구니에 코스를 담았어요`); openPanel('trip');
   }
 
+  /* ───────── 축제 캘린더(kangbj70-cell/Loc): 신청·여행 기간은 regions.json 글에서 읽고, 저장한 여행을 함께 표시 ───────── */
+  // '2026-05-01 ~ 10-31', '신청 10/29 ~ 11/13', '2차 신청 2026-10-22 ~ 11-26' 같은 시트 문장에서 날짜 구간을 뽑는다
+  const ymd = (y, m, d) => `${y}-${String(m).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+  function spanOf(text, year) {
+    const m = String(text || '').match(/(?:(\d{4})[-./])?(\d{1,2})[-./](\d{1,2})\s*~\s*(?:(\d{4})[-./])?(\d{1,2})[-./](\d{1,2})/);
+    if (!m) return null;
+    const y1 = +(m[1] || year), y2 = +(m[4] || y1);
+    const start = ymd(y1, m[2], m[3]), end = ymd(y2, m[5], m[6]);
+    return start <= end ? { start, end } : null;
+  }
+  function calendarPeriods() {
+    const out = [];
+    R.forEach((r) => {
+      const year = (String(r.period || '').match(/\d{4}/) || [String(new Date().getFullYear())])[0];
+      const round = String(r.round || ''), apply = round.match(/신청[^~]{0,4}?((?:\d{4}[-./])?\d{1,2}[-./]\d{1,2}\s*~\s*(?:\d{4}[-./])?\d{1,2}[-./]\d{1,2})/);
+      const a = apply && spanOf(apply[1], year);
+      if (a) out.push({ region: r.id, type: 'application', ...a });
+      // 여행 가능 기간: 이번 차수 여행기간이 적혀 있으면 그것, 없으면 사업 기간
+      const tripText = round.replace(apply ? apply[0] : '', '');
+      const t = spanOf(tripText, year) || spanOf(r.period, year);
+      if (t) out.push({ region: r.id, type: 'travel', ...t });
+    });
+    return out;
+  }
+  const PLAN_COLORS = ['#cbb6df', '#f4c7a8', '#b9d7c9', '#f1d58a', '#b8cbe9', '#e8b4c4'];
+  function mountCalendar() {
+    if (!window.festivalCalendar) return;
+    window.festivalCalendar.mount($('calendar'), {
+      regions: R.map((r) => ({ id: r.id, name: r.name, shortName: r.short, province: r.sido })),
+      provinces: SIDO_ORDER.filter((sd) => R.some((r) => r.sido === sd)),
+      periods: calendarPeriods(),
+      plans: () => DB.trips.filter((t) => t.d1 && t.d2 && t.d1 <= t.d2).map((t, i) => ({
+        id: t.id, name: t.title, startDate: t.d1, endDate: t.d2, color: PLAN_COLORS[i % PLAN_COLORS.length],
+        stops: (t.cart || []).filter((c) => PM[c.pid]).map((c) => [c.pid, { date: null }]) })),
+      placeName: (id) => (PM[id] ? PM[id].name : '알 수 없는 장소'),
+      openPlan: (id) => loadTrip(id),
+    });
+  }
+  const refreshCalendar = () => { if (S.panel === 'calendar' && window.festivalCalendar) window.festivalCalendar.refresh(); };
+
   /* ───────── 상태 전환 ───────── */
   function paintTargets() {
     if (S.view === 'all') [...R].sort((a, b) => ORDER[a.status] - ORDER[b.status]).forEach((r) => $('g-targets').appendChild(r.el));
@@ -900,11 +951,12 @@
     else setSheet(sheet.offsetHeight > drag.h ? 'full' : 'peek');
     drag = null;
   });
-  // 화면 위에 여는 패널: trip(장바구니) · my(마이) · community(커뮤니티). null = 지도
+  // 화면 위에 여는 패널: trip(장바구니) · my(마이) · community(커뮤니티) · calendar(축제 캘린더). null = 지도
   function openPanel(name) {
     S.panel = name;
-    ['trip', 'my', 'community'].forEach((k) => document.body.classList.toggle(k + '-open', name === k));
+    ['trip', 'my', 'community', 'calendar'].forEach((k) => document.body.classList.toggle(k + '-open', name === k));
     if (name === 'my') renderMy();
+    if (name === 'calendar') mountCalendar();
     if (name === 'community') { renderCommunity(); loadTop(); }
     const cur = name === 'trip' || !name ? 'map' : name;
     document.querySelectorAll('.tabbar [data-tab], .nav [data-tab]').forEach((b) => b.setAttribute('aria-current', b.dataset.tab === cur ? 'page' : 'false'));
@@ -990,7 +1042,7 @@
     if (t.hasAttribute('data-autosort')) { const rid = courseRid(); S.order[rid] = shortestOrder(courseIds(rid)); if (S.route) S.route = courseIds(rid); drawRoute(); renderRoute(); renderOverlay(); return toast('가까운 순으로 정렬했어요'); }
     if (t.hasAttribute('data-save-trip')) return saveTrip();
     if (d.loadTrip) return loadTrip(d.loadTrip);
-    if (d.delTrip) { const id = d.delTrip; DB.trips = DB.trips.filter((x) => x.id !== id); save(); cloud((c) => c.delTrip(id)); return renderMy(); }
+    if (d.delTrip) { const id = d.delTrip; DB.trips = DB.trips.filter((x) => x.id !== id); save(); cloud((c) => c.delTrip(id)); refreshCalendar(); return renderMy(); }
     if (t.hasAttribute('data-email-login')) return emailLogin(t);
     if (t.hasAttribute('data-pw-login')) return pwAuth(t, false);
     if (t.hasAttribute('data-pw-signup')) return pwAuth(t, true);

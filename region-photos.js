@@ -1,3 +1,4 @@
+// kangbj70-cell/Loc 에서 가져온 지역 명소 사진.
 // Keep the photo credit and license with each locally resized landmark image.
 // Heritage site coordinates are from the Korea Heritage Service's designation records
 // (https://www.khs.go.kr/cha/SearchKindOpenapiList.do). For temples and academies
@@ -163,18 +164,5 @@ const regionPhotos = {
   ],
 };
 
-function regionGalleryPhotos(regionId, category) {
-  const landmarks = (regionPhotos[regionId] || []).filter((photo) => photo.category === category && !photo.isExample);
-  const examples = places
-    .filter((place) => place.region === regionId && (place.category === 'stay' ? 'other' : place.category) === category)
-    .map((place) => ({
-      placeId: place.id,
-      category,
-      caption: place.name,
-      description: `${place.locality} · 예시 장소`,
-      src: `assets/places/${place.photo || place.id}.jpg`,
-      alt: `${place.name} 예시 사진`,
-      isExample: true,
-    }));
-  return [...landmarks, ...examples];
-}
+// localo: 지역 화면 왼쪽 패널의 '명소 사진' 줄에 쓴다(예시 사진 isExample 은 제외).
+window.regionPhotos = regionPhotos;

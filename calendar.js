@@ -1,3 +1,7 @@
+/* 축제 캘린더 — kangbj70-cell/Loc 에서 가져온 화면.
+   지역·신청/여행 기간·저장한 여행은 localo(app.js)가 mount(root, deps)로 넘긴다.
+   deps = { regions:[{id,name,shortName,province}], provinces:[...], periods:[{region,type,start,end}],
+            plans():[{id,name,startDate,endDate,color,stops:[[placeId,{date}]]}], placeName(id), openPlan(id) } */
 const festivalCalendar = (() => {
   const types = {
     application: { label: '신청 기간', short: '신청', verb: '개시' },
@@ -6,17 +10,18 @@ const festivalCalendar = (() => {
   };
   const detailOrder = ['event', 'application', 'travel'];
   const weekdays = ['일', '월', '화', '수', '목', '금', '토'];
-  const regionById = new Map(regions.map((region) => [region.id, region]));
+  let regions = [], provinces = [], periods = [];
+  let regionById = new Map();
+  let placeName = (id) => id;
+  let myPlans = { calendarPlans: () => [], openInPlanner() {} };
   const openingIcons = {
     application: '<path d="M9 5H6a1 1 0 0 0-1 1v15h14V6a1 1 0 0 0-1-1h-3"/><rect x="9" y="3" width="6" height="4" rx="1"/><path d="m8.5 14 2.2 2.2 4.8-5"/>',
     travel: '<rect x="3" y="7" width="18" height="13" rx="2.5"/><path d="M9 7V4h6v3M7 8v11m10-11v11"/>',
     event: '<path d="m3 21 4.3-13 8.7 8.7-13 4.3ZM12 7l1-4m3 6 3-4m-1 8 4-1M5.7 13l5.3 5.3"/><circle cx="18.5" cy="2.5" r=".65"/><circle cx="21" cy="8" r=".65"/>',
   };
 
-  // Fictional schedules demonstrate overlap, opening and closing days, and month boundaries.
-  const schedules = [
-    ...applicationPeriods,
-    ...travelPeriods,
+  // 행사는 Loc 시안의 예시 일정이다(실제 축제 아님). 신청·여행 기간은 수집 시트(data/regions.json)에서 온다.
+  const exampleEvents = [
     { region: 'andong', type: 'event', start: '2026-11-19', end: '2026-11-22',
       name: '하회마을 가을 문화제', hours: '11:00–18:00', image: 'assets/calendar-andong.png',
       imageAlt: '한옥 마당에서 전통 공연을 보는 관객들',
@@ -30,7 +35,8 @@ const festivalCalendar = (() => {
     { region: 'hamyang', type: 'event', start: '2026-12-05', end: '2026-12-06', name: '함양 겨울 장터',
       image: 'assets/events/hamyang-market.jpg', imageAlt: '겨울 장터의 풍경 예시',
       description: '함양의 농산물과 따뜻한 겨울 먹거리를 만나는 계절 장터예요.' },
-  ];
+  ].map((item) => ({ ...item, example: true }));
+  let schedules = [];
 
   let showEvents = false;
   let selectedRegion = 'all';
@@ -69,16 +75,16 @@ const festivalCalendar = (() => {
   }
 
   function planDetails(plan, date) {
-    const visits = plan.stops.filter(([, visit]) => visit.date === date);
+    const visits = plan.stops.filter(([, visit]) => !visit.date || visit.date === date);
     const stops = visits.map(([id, visit]) => {
       const times = [visit.start, visit.end].filter(Boolean).join('–');
-      return `<li>${times ? `<span>${escapeText(times)}</span> ` : ''}${escapeText(placeById.get(id).name)}</li>`;
+      return `<li>${times ? `<span>${escapeText(times)}</span> ` : ''}${escapeText(placeName(id))}</li>`;
     }).join('');
     return `<li class="calendar-detail-item calendar-plan-card" style="${planColors(plan)}">
       <div class="calendar-detail-row"><h4>${escapeText(plan.name)}</h4></div>
       <p class="calendar-period">${formatPeriod({ start: plan.startDate, end: plan.endDate })}</p>
       ${stops ? `<ol class="calendar-plan-stops">${stops}</ol>` : ''}
-      <button type="button" class="calendar-plan-edit" data-edit-plan="${escapeText(plan.id)}">플래너에서 수정하기 <span aria-hidden="true">↗</span></button>
+      <button type="button" class="calendar-plan-edit" data-edit-plan="${escapeText(plan.id)}">장바구니로 불러오기 <span aria-hidden="true">↗</span></button>
     </li>`;
   }
 
@@ -119,7 +125,7 @@ const festivalCalendar = (() => {
 
   function matchesRegion(item) {
     return selectedRegion === 'all' || selectedRegion === item.region ||
-      selectedRegion === 'province:' + regionById.get(item.region).province;
+      selectedRegion === 'province:' + regionById.get(item.region)?.province;
   }
 
   function todayInKorea() {
@@ -142,7 +148,7 @@ const festivalCalendar = (() => {
   }
 
   function regionOptions() {
-    return '<option value="all">전체 지역</option>' + Object.keys(regionGroups).map((province) =>
+    return '<option value="all">전체 지역</option>' + provinces.map((province) =>
       `<optgroup label="${province}"><option value="province:${province}">${province} 전체</option>
         ${regions.filter((region) => region.province === province).map((region) =>
           `<option value="${region.id}">${region.name}</option>`,
@@ -156,20 +162,25 @@ const festivalCalendar = (() => {
     return `<li class="calendar-detail-item ${item.type}${item.image ? ' with-photo' : ''}">
       ${item.image ? `<figure class="calendar-photo">
         <img src="${item.image}" alt="${item.imageAlt}" width="640" height="360" decoding="async">
-        <figcaption>시안용 이미지</figcaption></figure>` : ''}
+        <figcaption>예시 이미지</figcaption></figure>` : ''}
       <div class="calendar-detail-copy">
         <div class="calendar-detail-row"><h4>${item.name || region.name}</h4>${note ? `<span class="calendar-phase">${note}</span>` : ''}</div>
-        ${item.name ? `<p class="calendar-location">${region.province} ${region.name}</p>` : ''}
+        ${item.name ? `<p class="calendar-location">${region.province} ${region.name}${item.example ? ' · 예시 행사' : ''}</p>` : ''}
         ${item.description ? `<p class="calendar-description">${item.description}</p>` : ''}
         <p class="calendar-period"><span>${formatPeriod(item)}</span>${item.hours ? `<span>${item.hours}</span>` : ''}</p>
       </div>
     </li>`;
   }
 
-  function mount(root) {
+  function mount(root, deps) {
+    ({ regions, provinces, periods, placeName } = deps);
+    myPlans = { calendarPlans: deps.plans, openInPlanner: deps.openPlan };
+    regionById = new Map(regions.map((region) => [region.id, region]));
+    schedules = [...periods, ...exampleEvents.filter((item) => regionById.has(item.region))];
+    if (selectedRegion !== 'all' && !selectedRegion.startsWith('province:') && !regionById.has(selectedRegion)) selectedRegion = 'all';
     root.innerHTML = `<header class="calendar-intro">
       <h1>축제 캘린더</h1>
-      <p class="calendar-demo">예시 일정</p>
+      <p class="calendar-demo">신청·여행 기간: 수집 시트 기준 · 행사: 예시</p>
     </header>
     <div class="calendar-layout">
       <section class="calendar-board" aria-labelledby="calendar-year calendar-month-name">
@@ -258,7 +269,7 @@ const festivalCalendar = (() => {
     function renderDetails() {
       const list = days.get(selectedDate) || [];
       const plans = savedPlans.filter((plan) => plan.startDate <= selectedDate && selectedDate <= plan.endDate);
-      const personalSection = plans.length ? `<section class="calendar-detail-group calendar-my-plans"><h3>마이 플랜</h3>
+      const personalSection = plans.length ? `<section class="calendar-detail-group calendar-my-plans"><h3>저장한 여행</h3>
         <ul>${plans.map((plan) => planDetails(plan, selectedDate)).join('')}</ul></section>` : '';
       const sections = detailOrder.map((type) => {
         const items = list.filter((item) => item.type === type);
@@ -269,7 +280,7 @@ const festivalCalendar = (() => {
       const date = parseDate(selectedDate);
       sidebar.innerHTML = `<header class="calendar-detail-header">
         <div><h2 id="calendar-detail-title">${shortDate.format(date)}</h2>
-          <p>${weekdays[date.getUTCDay()]}요일${plans.length ? ' · 마이 플랜 ' + plans.length + '개' : ''} · 예시 일정 ${list.length}개</p></div>
+          <p>${weekdays[date.getUTCDay()]}요일${plans.length ? ' · 저장한 여행 ' + plans.length + '개' : ''} · 일정 ${list.length}개</p></div>
         <button type="button" class="calendar-favorite" aria-label="${shortDate.format(date)} 찜하기"
           aria-pressed="${favorites.has(selectedDate)}" title="${favorites.has(selectedDate) ? '찜 해제' : '이 날짜 찜하기'}">${bookmarkIcon}</button>
       </header><div class="calendar-detail-content">${personalSection + sections || '<p class="calendar-empty">선택한 날짜와 조건에 맞는 일정이 없어요.</p>'}</div>
@@ -325,7 +336,7 @@ const festivalCalendar = (() => {
         const labels = [dateLabel.format(parseDate(date)), ...startingNames, ...continuingNames];
         if (canTravel) labels.push('여행 가능');
         if (canApply) labels.push('신청 가능');
-        if (plans.length) labels.push('마이 플랜 ' + plans.map((plan) => plan.name).join(', '));
+        if (plans.length) labels.push('저장한 여행 ' + plans.map((plan) => plan.name).join(', '));
         if (favorite) labels.push('찜한 날');
         const classes = ['calendar-day', outside && 'is-outside', (canApply || canTravel) && 'is-available', canTravel && 'can-travel', events.length && 'has-event'];
         return `<button type="button" class="${classes.filter(Boolean).join(' ')}" data-day="${date}" data-plan-lanes="${laneCount}" tabindex="${date === selectedDate ? 0 : -1}"
@@ -476,5 +487,7 @@ const festivalCalendar = (() => {
     renderMonth();
   }
 
-  return { mount };
+  return { mount, refresh: () => refreshMountedPlans?.() };
 })();
+
+window.festivalCalendar = festivalCalendar;
