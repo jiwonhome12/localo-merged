@@ -999,3 +999,13 @@ body.zoomed .target.sel{stroke:var(--mulberry);stroke-width:2.2px;filter:drop-sh
 .marker:is(:hover,:focus-visible){z-index:4}
 .marker:is(:hover,:focus-visible):has(.place-preview) .ml{opacity:0}
 @media (hover:none){.marker:hover .place-preview{display:none}}
+
+/* 업종 아이콘(식당 포크·나이프, 숙박 침대, 카페 컵, 관광지 산): 지도 핀·장소 목록·업종 칩 */
+.marker .mk{color:#fff}
+.marker .mk svg{width:13px;height:13px;display:block}
+.marker.on .mk svg{width:14px;height:14px}
+.pic svg{width:17px;height:17px;display:block}
+.sw.sw-icon{display:inline-grid;place-items:center;width:18px;height:18px;border-radius:50%;color:#fff}
+.sw.sw-icon svg{width:11px;height:11px;display:block}
+.card-cat i{display:none}
+@media (max-width:1023px){.marker .mk svg{width:12px;height:12px}}

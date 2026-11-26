@@ -228,7 +228,7 @@
       matching.forEach((p) => {
         const inCart = S.cart.some((c) => c.pid === p.id);
         const ord = S.route ? S.route.indexOf(p.id) : -1;
-        h += `<button type="button" class="marker hit${S.pid === p.id ? ' on' : ''}${inCart ? ' in-cart' : ''}" data-p="${p.id}" aria-label="${esc(p.name)}">${ord >= 0 ? `<span class="ord">${ord + 1}</span>` : ''}<span class="mk" style="background:${CAT[p.category].c}"><i>${CAT[p.category].k}</i></span><span class="ml">${esc(p.name.replace(r.short + ' ', ''))}</span>${placePhoto(p.id) && S.pid !== p.id ? `<span class="place-preview" data-drag-place="${p.id}"><img src="${esc(placePhoto(p.id).src)}" alt="" draggable="false" loading="lazy"><span>${esc(p.name.replace(r.short + ' ', ''))}</span></span>` : ''}</button>`;
+        h += `<button type="button" class="marker hit${S.pid === p.id ? ' on' : ''}${inCart ? ' in-cart' : ''}" data-p="${p.id}" aria-label="${esc(p.name)}">${ord >= 0 ? `<span class="ord">${ord + 1}</span>` : ''}<span class="mk" style="background:${CAT[p.category].c}" title="${CAT[p.category].n}">${catIcon(p.category)}</span><span class="ml">${esc(p.name.replace(r.short + ' ', ''))}</span>${placePhoto(p.id) && S.pid !== p.id ? `<span class="place-preview" data-drag-place="${p.id}"><img src="${esc(placePhoto(p.id).src)}" alt="" draggable="false" loading="lazy"><span>${esc(p.name.replace(r.short + ' ', ''))}</span></span>` : ''}</button>`;
       });
       if (S.pid) h += popHTML(PM[S.pid]);
     }
@@ -371,7 +371,7 @@
     // 네모난 카드: 사진은 원래 비율 그대로(자르지 않음), 버튼과 글자는 사진 밖에
     return `<div class="pop place-balloon card${ph ? '' : ' no-photo'}" data-p="${p.id}" data-drag-place="${p.id}" role="dialog" aria-label="${name} 사진과 위치" style="--category:${CAT[p.category].c}" title="사진을 장바구니로 끌어다 놓으면 담겨요">
       <div class="balloon-bubble${opening ? ' opening' : ''}">
-        <div class="card-bar"><span class="card-cat"><i style="background:${CAT[p.category].c}"></i>${CAT[p.category].n}</span>
+        <div class="card-bar"><span class="card-cat"><span class="sw sw-icon" style="background:${CAT[p.category].c}">${catIcon(p.category)}</span>${CAT[p.category].n}</span>
           ${link ? `<a class="card-link" href="${link}" target="_blank" rel="noopener noreferrer" aria-label="${name} 카카오맵에서 보기" title="카카오맵에서 장소 확인">카카오맵 ↗</a>` : ''}
           <button type="button" class="card-close" data-close aria-label="닫기">×</button></div>
         ${ph ? `<div class="balloon-photo"><img src="${esc(ph.src)}" alt="${esc(ph.alt)}" draggable="false"></div>` : ''}
@@ -402,7 +402,7 @@
     const r = RM[S.rid];
     const cats = [['all', '전체'], ...Object.entries(CAT).map(([k, v]) => [k, v.n])];
     t.innerHTML = `<div class="crumb"><button type="button" data-home>전국</button> › <b>${r.sido} ${r.name}</b></div>
-      <div class="cats">${cats.map(([k, n]) => `<button type="button" class="cat" data-cat="${k}" aria-pressed="${S.cat === k}">${k !== 'all' ? `<span class="sw" style="background:${CAT[k].c}"></span>` : ''}${n}</button>`).join('')}</div>`;
+      <div class="cats">${cats.map(([k, n]) => `<button type="button" class="cat" data-cat="${k}" aria-pressed="${S.cat === k}">${k !== 'all' ? `<span class="sw sw-icon" style="background:${CAT[k].c}">${catIcon(k)}</span>` : ''}${n}</button>`).join('')}</div>`;
   }
 
   /* ───────── 왼쪽 탭(휴대폰: 아래 시트) ───────── */
@@ -472,7 +472,7 @@
       <div class="tabs" role="tablist">${cats.map(([k, n]) => `<button type="button" class="tab" role="tab" data-cat="${k}" aria-selected="${S.cat === k}">${n}</button>`).join('')}</div></div>
       ${S.cat === 'all' || S.cat === 'spot' ? photoStrip(r) : ''}
       <p class="ex">${ps.length}곳 · 겹친 장소는 목록에서 선택할 수 있어요.</p>
-      <div>${ps.length ? ps.map((p) => { const open = expandedPlace === p.id, inCart = S.cart.some((c) => c.pid === p.id), url = safeUrl(p.kakao_url); return `<div class="place-row"><div class="place-row-head" data-drag-place="${esc(p.id)}"><button type="button" class="pitem${open ? ' on' : ''}" data-place-expand="${esc(p.id)}" aria-expanded="${open}">${placePhoto(p.id) ? `<img class="pic pic-photo${placePhoto(p.id).nomod ? ' nomod' : ''}" src="${esc(placePhoto(p.id).src)}" alt="" loading="lazy" draggable="false">` : `<span class="pic" style="background:${CAT[p.category].c}">${CAT[p.category].k}</span>`}<span><span class="nm">${esc(p.name.replace(r.short + ' ', ''))}</span><span class="sub">${esc(p.price_text)} · ${esc(p.access_text)}</span></span><span class="place-chevron" aria-hidden="true">⌄</span></button><button type="button" class="place-cart${inCart ? ' on' : ''}" data-add="${esc(p.id)}" aria-label="${esc(p.name)} ${inCart ? '장바구니에서 빼기' : '장바구니에 담기'}" aria-pressed="${inCart}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M5 8h14l-1 11H6L5 8Z"/><path d="M9 8V6a3 3 0 0 1 6 0v2"/></svg></button></div>${open ? `<div class="place-details"><p><b>주소</b> ${esc(p.address || p.access_text || '확인 필요')}</p>${p.price == null ? '<p>가격 확인 필요 · 예상 경비에서 제외</p>' : ''}${url ? `<a href="${url}" target="_blank" rel="noopener noreferrer">카카오맵에서 장소 확인 ↗</a>` : ''}</div>` : ''}</div>`; }).join('') : '<p class="empty">등록된 장소가 없습니다.</p>'}</div>`;
+      <div>${ps.length ? ps.map((p) => { const open = expandedPlace === p.id, inCart = S.cart.some((c) => c.pid === p.id), url = safeUrl(p.kakao_url); return `<div class="place-row"><div class="place-row-head" data-drag-place="${esc(p.id)}"><button type="button" class="pitem${open ? ' on' : ''}" data-place-expand="${esc(p.id)}" aria-expanded="${open}">${placePhoto(p.id) ? `<img class="pic pic-photo${placePhoto(p.id).nomod ? ' nomod' : ''}" src="${esc(placePhoto(p.id).src)}" alt="" loading="lazy" draggable="false">` : `<span class="pic" style="background:${CAT[p.category].c}" title="${CAT[p.category].n}">${catIcon(p.category)}</span>`}<span><span class="nm">${esc(p.name.replace(r.short + ' ', ''))}</span><span class="sub">${esc(p.price_text)} · ${esc(p.access_text)}</span></span><span class="place-chevron" aria-hidden="true">⌄</span></button><button type="button" class="place-cart${inCart ? ' on' : ''}" data-add="${esc(p.id)}" aria-label="${esc(p.name)} ${inCart ? '장바구니에서 빼기' : '장바구니에 담기'}" aria-pressed="${inCart}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M5 8h14l-1 11H6L5 8Z"/><path d="M9 8V6a3 3 0 0 1 6 0v2"/></svg></button></div>${open ? `<div class="place-details"><p><b>주소</b> ${esc(p.address || p.access_text || '확인 필요')}</p>${p.price == null ? '<p>가격 확인 필요 · 예상 경비에서 제외</p>' : ''}${url ? `<a href="${url}" target="_blank" rel="noopener noreferrer">카카오맵에서 장소 확인 ↗</a>` : ''}</div>` : ''}</div>`; }).join('') : '<p class="empty">등록된 장소가 없습니다.</p>'}</div>`;
   }
 
   /* ───────── 신청 알림: 알림을 켠 지역이 '신청접수중'이 되면 알려 준다 ───────── */
