@@ -90,13 +90,13 @@
   function setVB(v) { vb = v; svg.setAttribute('viewBox', v.join(' ')); placeOverlay(); showZoom(); }
   let anim = null, zoomSize = null;
   function stopZoom() { cancelAnimationFrame(anim); anim = null; zoomSize = null; }
-  function animateVB(to, ms = 650) {
+  function animateVB(to, ms = 650, done) {
     stopZoom(); stopIntro();
     const from = vb.slice(), t0 = performance.now();
-    if (matchMedia('(prefers-reduced-motion: reduce)').matches) { setVB(to); return; }
+    if (matchMedia('(prefers-reduced-motion: reduce)').matches) { setVB(to); if (done) done(); return; }
     zoomSize = [wrap.clientWidth, wrap.clientHeight];
     const step = (t) => { let k = Math.min(1, (t - t0) / ms); k = 1 - Math.pow(1 - k, 3);
-      setVB(from.map((f, i) => f + (to[i] - f) * k)); if (k < 1) anim = requestAnimationFrame(step); else { anim = null; zoomSize = null; } };
+      setVB(from.map((f, i) => f + (to[i] - f) * k)); if (k < 1) anim = requestAnimationFrame(step); else { anim = null; zoomSize = null; if (done) done(); } };
     anim = requestAnimationFrame(step);
   }
   // 지역 경계 상자에 맞춰 확대 (화면 비율 유지)
@@ -150,7 +150,7 @@
   }, { passive: false });
   // 끌어서 이동: 확대한 상태에서 마우스로 끌거나, 스페이스바를 누른 채 끌기. 손가락은 한 손가락 이동 · 두 손가락 확대
   let spaceHeld = false, pointerOnMap = false;
-  const touches = new Map(); let pan = null, pinch = null, panMoved = false;
+  const touches = new Map(); let pan = null, pinch = null, panMoved = false, lastTap = null;
   addEventListener('keydown', (e) => {
     if (e.code !== 'Space' || !pointerOnMap || e.ctrlKey || e.metaKey || e.altKey || e.target.closest?.('input, textarea, select, [contenteditable="true"], button, a')) return;
     e.preventDefault(); spaceHeld = true; wrap.classList.add('pan-ready');
@@ -164,6 +164,11 @@
     // 버튼·장소 핀·팝업에서 시작하면 그쪽 기능(누르기·장바구니로 끌기)에 맡긴다
     if (!spaceHeld && e.target.closest('button, a, .hit, .pop, .map-top, .map-zoom, input')) return;
     if (e.pointerType === 'touch') {
+      const now = Date.now();
+      if (S.view === 'region' && touches.size === 0 && lastTap && now - lastTap.t < 300 && Math.hypot(e.clientX - lastTap.x, e.clientY - lastTap.y) < 30) {
+        lastTap = null; zoomAt(2, e.clientX, e.clientY, true); panMoved = true; e.preventDefault(); return;
+      }
+      lastTap = { t: now, x: e.clientX, y: e.clientY };
       touches.set(e.pointerId, [e.clientX, e.clientY]);
       if (touches.size === 2) { const [a, b] = [...touches.values()]; pinch = { d: Math.hypot(a[0] - b[0], a[1] - b[1]) }; pan = null; }
       else if (touches.size === 1 && zoomLevel() > 1.001) pan = { id: e.pointerId, x: e.clientX, y: e.clientY };
@@ -281,11 +286,27 @@
   function cardTop() { const t = $('maptop'); return t && t.offsetHeight ? t.offsetTop + t.offsetHeight + 8 : 60; }
   // 장소 카드를 열면 카드가 화면 안(칩 줄 아래)에 들어오도록 지도를 살짝 옮긴다
   function fitCard() {
-    const pop = overlay.querySelector('.pop'); if (!pop) return;
+    const pop = overlay.querySelector('.pop'); if (!pop || mobile()) return; // 휴대폰 카드는 화면 아래에 붙어 있다
     const wr = wrap.getBoundingClientRect(), r = pop.getBoundingClientRect(), top = wr.top + cardTop(), bottom = wr.bottom - 8;
     let dy = 0;
     if (r.top < top) dy = top - r.top; else if (r.bottom > bottom) dy = bottom - r.bottom;
     if (Math.abs(dy) > 2) panBy(0, dy);
+  }
+  // 고른 장소를 '대략' 가운데로: 이미 가운데 쪽이면 그대로 두고, 가장자리에 있으면 가운데 영역 안쪽까지만 부드럽게 옮긴다
+  function focusPlace(pid) {
+    const p = PM[pid], pop = overlay.querySelector('.pop'); if (!p || S.view !== 'region') return;
+    const W = wrap.clientWidth, H = wrap.clientHeight, s = Math.min(W / vb[2], H / vb[3]), [px, py] = projection(vb, W, H)(p.x, p.y);
+    // 보이는 영역: 위 칩 줄 아래, 데스크톱에서 일정표 서랍이 열려 있으면 그 왼쪽까지
+    let right = W;
+    if (!mobile() && S.panel === 'trip') { const t = $('trip').getBoundingClientRect(), wr = wrap.getBoundingClientRect(); right = Math.max(W * 0.5, Math.min(W, t.left - wr.left - 12)); }
+    const top = cardTop(), bottom = H - 12, ph = pop && !mobile() ? pop.offsetHeight + 30 : 0;
+    // 편한 가운데 영역(보이는 폭·높이의 가운데 약 50%)
+    const zx0 = right * 0.25, zx1 = right * 0.75;
+    const zy0 = top + ph + (bottom - top - ph) * 0.2, zy1 = bottom - (bottom - top - ph) * 0.3;
+    const into = (v, a, b) => (v < a ? a - v : v > b ? b - v : 0);
+    const dx = into(px, zx0, zx1), dy = into(py, Math.min(zy0, zy1), Math.max(zy0, zy1));
+    if (Math.abs(dx) < 4 && Math.abs(dy) < 4) return fitCard();
+    animateVB(clampVB([vb[0] - dx / s, vb[1] - dy / s, vb[2], vb[3]]), 480, fitCard);
   }
   function placeOverlay() {
     // DOM 읽기를 위치 쓰기보다 먼저 끝낸다(지역명 약 250개 + 장소 마커 약 180개).
@@ -389,6 +410,20 @@
     </div>`;
   }
 
+  let cardSwipe = null;
+  overlay.addEventListener('pointerdown', (e) => {
+    const pop = e.target.closest('.pop'); if (!pop || !mobile() || e.target.closest('button, a, img')) return;
+    cardSwipe = { y: e.clientY, id: e.pointerId, pop };
+  });
+  addEventListener('pointermove', (e) => {
+    if (!cardSwipe || e.pointerId !== cardSwipe.id) return;
+    const dy = Math.max(0, e.clientY - cardSwipe.y); cardSwipe.pop.style.setProperty('--swipe', dy + 'px'); cardSwipe.dy = dy;
+  });
+  addEventListener('pointerup', (e) => {
+    if (!cardSwipe || e.pointerId !== cardSwipe.id) return;
+    const { pop, dy } = cardSwipe; cardSwipe = null;
+    if ((dy || 0) > 50) { S.pid = null; renderLeft(); renderOverlay(); record(); } else pop.style.removeProperty('--swipe');
+  });
   overlay.addEventListener('load', (e) => { if (e.target.closest && e.target.closest('.pop')) { placeOverlay(); fitCard(); } }, true);
   /* ───────── 지도 상단 ───────── */
   function renderTop() {
@@ -1399,7 +1434,7 @@
     if (d.alarm) return toggleAlarm(d.alarm);
     if (d.cat) { S.cat = d.cat; S.pid = null; renderTop(); renderLeft(); renderOverlay(); return record(); }
     if (d.placeExpand) { const y = $('left').scrollTop; expandedPlace = expandedPlace === d.placeExpand ? null : d.placeExpand; renderLeft(); $('left').scrollTop = y; return; }
-    if (d.p) { S.pid = d.p; if (mobile()) setSheet('peek'); renderLeft(); renderOverlay(); requestAnimationFrame(fitCard); return record(); }
+    if (d.p) { S.pid = d.p; if (mobile()) setSheet('peek'); renderLeft(); renderOverlay(); focusPlace(d.p); return record(); }
     if (t.hasAttribute('data-close')) { S.pid = null; renderLeft(); renderOverlay(); return record(); }
     if (d.add) return toggleCart(d.add);
     if (d.rm) return toggleCart(d.rm);

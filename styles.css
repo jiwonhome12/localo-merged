@@ -1009,3 +1009,40 @@ body.zoomed .target.sel{stroke:var(--mulberry);stroke-width:2.2px;filter:drop-sh
 .sw.sw-icon svg{width:11px;height:11px;display:block}
 .card-cat i{display:none}
 @media (max-width:1023px){.marker .mk svg{width:12px;height:12px}}
+
+/* ── 휴대폰: 가리는 것 없이 손으로 쓰기 편하게 ─────────────────────────── */
+.card-grip{display:none}
+@media (max-width:1023px){
+  /* 장소 카드는 화면 아래(탭바 위)에 붙는 가로 카드 — 지도 위에 뜨지 않는다. 아래로 밀면 닫힘 */
+  .pop.place-balloon.card{position:fixed;left:8px!important;right:8px;top:auto!important;bottom:calc(var(--tabbar) + env(safe-area-inset-bottom,0px) + 8px);
+    width:auto;z-index:45;transform:translateY(var(--swipe,0px))!important;transition:transform .2s;touch-action:none}
+  .card .balloon-bubble{display:grid;grid-template-columns:auto minmax(0,1fr);grid-template-areas:"bar bar" "photo body" "credit credit";
+    border-radius:16px;box-shadow:0 -2px 18px rgba(77,52,68,.18);padding-top:6px}
+  .card .balloon-bubble::before,.card .balloon-bubble::after{display:none}
+  .card .balloon-bubble::marker{display:none}
+  .card .card-bar{grid-area:bar;padding:0 6px 4px 10px;position:relative}
+  .card .card-bar::before{content:"";position:absolute;left:50%;top:-4px;width:36px;height:4px;margin-left:-18px;border-radius:4px;background:#d9cdd8}
+  .card .balloon-photo{grid-area:photo;margin:0 0 6px 10px;border:0;border-radius:10px;overflow:hidden;align-self:start;background:#f3eef3}
+  .card .balloon-photo img{width:auto;max-width:112px;height:auto;max-height:84px}
+  .card.no-photo .balloon-photo{display:none}
+  .card .card-body{grid-area:body;padding:0 10px 6px}
+  .card.no-photo .card-body{grid-column:1 / -1}
+  .card .balloon-credit-line{grid-area:credit;padding:0 10px 8px}
+  /* 업종 칩은 한 줄로(옆으로 밀어 보기), 줄바꿈해서 지도를 가리지 않게 */
+  .map-top{flex-wrap:nowrap;flex-direction:column;align-items:flex-start;gap:6px;right:0}
+  .cats{flex-wrap:nowrap;overflow-x:auto;max-width:100%;padding:0 14px 2px 0;scrollbar-width:none}
+  .cats::-webkit-scrollbar{display:none}
+  .cat{flex:none;height:32px;padding:0 10px;font-size:12.5px}
+  /* 나침반은 숨기고, 확대 안내는 잠깐 보였다 사라진다 */
+  .compass{display:none}
+  .lod-note{animation:lodfade 4s forwards}
+  @keyframes lodfade{0%,70%{opacity:1}100%{opacity:0;visibility:hidden}}
+}
+/* 터치 화면: +/− 대신 두 손가락·두 번 톡으로 확대. 확대했을 때만 '원래 크기' 칩 */
+@media (max-width:1023px) and (pointer:coarse){
+  .map-zoom [data-zoom="in"],.map-zoom [data-zoom="out"]{display:none}
+  .mapwrap:not(.zoomed-in) .map-zoom{display:none}
+  .map-zoom{padding:0;right:10px;bottom:12px}
+  .map-zoom .zv{min-width:0;padding:0 10px;height:30px}
+  .map-zoom .zv output::after{content:" · 원래대로";font-weight:500;color:#8a7787}
+}
