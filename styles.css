@@ -1046,3 +1046,7 @@ body.zoomed .target.sel{stroke:var(--mulberry);stroke-width:2.2px;filter:drop-sh
   .map-zoom .zv{min-width:0;padding:0 10px;height:30px}
   .map-zoom .zv output::after{content:" · 원래대로";font-weight:500;color:#8a7787}
 }
+
+/* 어느 배율에서나 끌어서 옮길 수 있다 */
+.mapwrap{cursor:grab}
+.map-zoom .zv:disabled{opacity:1;cursor:default}

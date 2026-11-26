@@ -117,14 +117,19 @@
     out.textContent = Math.round(z * 100) + '%';
     document.querySelector('[data-zoom="out"]').disabled = z <= 1.001;
     document.querySelector('[data-zoom="in"]').disabled = z >= ZMAX - 0.001;
-    wrap.classList.toggle('zoomed-in', z > 1.001);
+    // 확대했거나 처음 자리에서 옮겼으면 '원래대로' 버튼이 보이게
+    const b = baseVB(), moved = Math.abs(vb[0] + vb[2] / 2 - (b[0] + b[2] / 2)) > b[2] * 0.02 || Math.abs(vb[1] + vb[3] / 2 - (b[1] + b[3] / 2)) > b[3] * 0.02;
+    wrap.classList.toggle('zoomed-in', z > 1.001 || moved);
+    document.querySelector('[data-zoom="fit"]').disabled = !(z > 1.001 || moved);
 
   }
   // 화면 좌표 → 지도 좌표
   function svgPt(cx, cy) { const m = svg.getScreenCTM(); if (!m) return [vb[0] + vb[2] / 2, vb[1] + vb[3] / 2]; const p = new DOMPoint(cx, cy).matrixTransform(m.inverse()); return [p.x, p.y]; }
   // 지도가 화면 밖으로 사라지지 않게: 보이는 가운데가 기준 지도 안에 있게 한다
+  // 지도를 마음대로 옮기되, 기준 지도가 화면에서 완전히 사라지지는 않게(보이는 크기의 절반만큼 바깥까지 허용)
   function clampVB(v) {
-    const b = baseVB(), cx = Math.max(b[0], Math.min(b[0] + b[2], v[0] + v[2] / 2)), cy = Math.max(b[1], Math.min(b[1] + b[3], v[1] + v[3] / 2));
+    const b = baseVB(), mx = v[2] * 0.5, my = v[3] * 0.5;
+    const cx = Math.max(b[0] - mx, Math.min(b[0] + b[2] + mx, v[0] + v[2] / 2)), cy = Math.max(b[1] - my, Math.min(b[1] + b[3] + my, v[1] + v[3] / 2));
     return [cx - v[2] / 2, cy - v[3] / 2, v[2], v[3]];
   }
   // 화면의 (cx, cy) 지점을 그대로 둔 채 factor 배 확대(1보다 작으면 축소). 기준 크기보다 작게는 줄이지 않는다
@@ -146,7 +151,7 @@
     if (e.target.closest('.pop, .map-top')) return;
     const unit = e.deltaMode === 1 ? 16 : e.deltaMode === 2 ? wrap.clientHeight : 1;
     if (e.ctrlKey || e.metaKey) { e.preventDefault(); zoomAt(Math.exp(-Math.max(-180, Math.min(180, e.deltaY * unit)) * 0.0025), e.clientX, e.clientY); return; }
-    if (zoomLevel() > 1.001) { e.preventDefault(); panBy(-e.deltaX * unit, -e.deltaY * unit); }
+    e.preventDefault(); panBy(-e.deltaX * unit, -e.deltaY * unit); // 휠·트랙패드 두 손가락 = 지도 옮기기(어느 배율에서나)
   }, { passive: false });
   // 끌어서 이동: 확대한 상태에서 마우스로 끌거나, 스페이스바를 누른 채 끌기. 손가락은 한 손가락 이동 · 두 손가락 확대
   let spaceHeld = false, pointerOnMap = false;
@@ -171,10 +176,10 @@
       lastTap = { t: now, x: e.clientX, y: e.clientY };
       touches.set(e.pointerId, [e.clientX, e.clientY]);
       if (touches.size === 2) { const [a, b] = [...touches.values()]; pinch = { d: Math.hypot(a[0] - b[0], a[1] - b[1]) }; pan = null; }
-      else if (touches.size === 1 && zoomLevel() > 1.001) pan = { id: e.pointerId, x: e.clientX, y: e.clientY };
+      else if (touches.size === 1) pan = { id: e.pointerId, x: e.clientX, y: e.clientY }; // 한 손가락으로 어느 배율에서나 옮기기
       return;
     }
-    if (e.button !== 0 || !(spaceHeld || zoomLevel() > 1.001)) return;
+    if (e.button !== 0) return; // 마우스로 끌면 어느 배율에서나 옮기기(5px 넘게 움직였을 때만 — 누르기는 그대로)
     pan = { id: e.pointerId, x: e.clientX, y: e.clientY };
     if (spaceHeld) e.preventDefault();
   }, true);
