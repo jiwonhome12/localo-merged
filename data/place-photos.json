@@ -1,7 +1,117 @@
 {
  "updated": "2026-11-26",
- "count": 16,
+ "count": 120,
  "photos": {
+  "51089876101a6bf8": {
+   "src": "https://tong.visitkorea.or.kr/cms/resource/50/2784650_image2_1.jpg",
+   "thumb": "https://tong.visitkorea.or.kr/cms/resource/50/2784650_image3_1.jpg",
+   "title": "청운식당",
+   "credit": "한국관광공사",
+   "license": "공공누리 제3유형(출처표시·변경금지)",
+   "licenseUrl": "https://www.kogl.or.kr/info/licenseType3.do",
+   "source": "https://korean.visitkorea.or.kr/detail/ms_detail.do?cotid=2784643",
+   "via": "tourapi",
+   "distance_m": 36
+  },
+  "6c1ae125ee8324e8": {
+   "src": "https://tong.visitkorea.or.kr/cms/resource/40/2843640_image2_1.JPG",
+   "thumb": "https://tong.visitkorea.or.kr/cms/resource/40/2843640_image3_1.JPG",
+   "title": "늘봄가든",
+   "credit": "한국관광공사",
+   "license": "공공누리 제3유형(출처표시·변경금지)",
+   "licenseUrl": "https://www.kogl.or.kr/info/licenseType3.do",
+   "source": "https://korean.visitkorea.or.kr/detail/ms_detail.do?cotid=2843646",
+   "via": "tourapi",
+   "distance_m": 4
+  },
+  "78eeeef3cc6872d5": {
+   "src": "https://tong.visitkorea.or.kr/cms/resource/59/2788459_image2_1.jpg",
+   "thumb": "https://tong.visitkorea.or.kr/cms/resource/59/2788459_image3_1.jpg",
+   "title": "과역기사님식당",
+   "credit": "한국관광공사",
+   "license": "공공누리 제3유형(출처표시·변경금지)",
+   "licenseUrl": "https://www.kogl.or.kr/info/licenseType3.do",
+   "source": "https://korean.visitkorea.or.kr/detail/ms_detail.do?cotid=2782693",
+   "via": "tourapi",
+   "distance_m": 14
+  },
+  "8be520b66c10c4ab": {
+   "src": "https://tong.visitkorea.or.kr/cms/resource/50/2795050_image2_1.jpg",
+   "thumb": "https://tong.visitkorea.or.kr/cms/resource/50/2795050_image2_1.jpg",
+   "title": "설봉돼지국밥 본점",
+   "credit": "한국관광공사",
+   "license": "공공누리 제3유형(출처표시·변경금지)",
+   "licenseUrl": "https://www.kogl.or.kr/info/licenseType3.do",
+   "source": "https://korean.visitkorea.or.kr/detail/ms_detail.do?cotid=2792692",
+   "via": "tourapi",
+   "distance_m": 2
+  },
+  "a0da329fbd75f820": {
+   "src": "https://tong.visitkorea.or.kr/cms/resource/37/2843537_image2_1.JPG",
+   "thumb": "https://tong.visitkorea.or.kr/cms/resource/37/2843537_image3_1.JPG",
+   "title": "산청약초식당",
+   "credit": "한국관광공사",
+   "license": "공공누리 제3유형(출처표시·변경금지)",
+   "licenseUrl": "https://www.kogl.or.kr/info/licenseType3.do",
+   "source": "https://korean.visitkorea.or.kr/detail/ms_detail.do?cotid=2843546",
+   "via": "tourapi",
+   "distance_m": 22
+  },
+  "c5d4d7603fd62712": {
+   "src": "https://tong.visitkorea.or.kr/cms/resource/75/2840075_image2_1.jpg",
+   "thumb": "https://tong.visitkorea.or.kr/cms/resource/75/2840075_image3_1.jpg",
+   "title": "상화식당",
+   "credit": "한국관광공사",
+   "license": "공공누리 제3유형(출처표시·변경금지)",
+   "licenseUrl": "https://www.kogl.or.kr/info/licenseType3.do",
+   "source": "https://korean.visitkorea.or.kr/detail/ms_detail.do?cotid=2840079",
+   "via": "tourapi",
+   "distance_m": 8
+  },
+  "dc012d9e4c56327e": {
+   "src": "https://tong.visitkorea.or.kr/cms/resource/17/2783717_image2_1.jpg",
+   "thumb": "https://tong.visitkorea.or.kr/cms/resource/17/2783717_image2_1.jpg",
+   "title": "토담막국수",
+   "credit": "한국관광공사",
+   "license": "공공누리 제3유형(출처표시·변경금지)",
+   "licenseUrl": "https://www.kogl.or.kr/info/licenseType3.do",
+   "source": "https://korean.visitkorea.or.kr/detail/ms_detail.do?cotid=2783736",
+   "via": "tourapi",
+   "distance_m": 3
+  },
+  "fdbf7df1e4ef94cf": {
+   "src": "https://tong.visitkorea.or.kr/cms/resource/64/2840064_image2_1.jpg",
+   "thumb": "https://tong.visitkorea.or.kr/cms/resource/64/2840064_image3_1.jpg",
+   "title": "대성회식당",
+   "credit": "한국관광공사",
+   "license": "공공누리 제3유형(출처표시·변경금지)",
+   "licenseUrl": "https://www.kogl.or.kr/info/licenseType3.do",
+   "source": "https://korean.visitkorea.or.kr/detail/ms_detail.do?cotid=2840068",
+   "via": "tourapi",
+   "distance_m": 4
+  },
+  "kakao-1027383641": {
+   "src": "https://tong.visitkorea.or.kr/cms/resource/36/2844036_image2_1.jpg",
+   "thumb": "https://tong.visitkorea.or.kr/cms/resource/36/2844036_image3_1.jpg",
+   "title": "완도어반",
+   "credit": "한국관광공사",
+   "license": "공공누리 제3유형(출처표시·변경금지)",
+   "licenseUrl": "https://www.kogl.or.kr/info/licenseType3.do",
+   "source": "https://korean.visitkorea.or.kr/detail/ms_detail.do?cotid=2844045",
+   "via": "tourapi",
+   "distance_m": 13
+  },
+  "kakao-10341007": {
+   "src": "https://tong.visitkorea.or.kr/cms/resource/29/2790929_image2_1.jpg",
+   "thumb": "https://tong.visitkorea.or.kr/cms/resource/29/2790929_image3_1.jpg",
+   "title": "만지횟집",
+   "credit": "한국관광공사",
+   "license": "공공누리 제3유형(출처표시·변경금지)",
+   "licenseUrl": "https://www.kogl.or.kr/info/licenseType3.do",
+   "source": "https://korean.visitkorea.or.kr/detail/ms_detail.do?cotid=2788002",
+   "via": "tourapi",
+   "distance_m": 2
+  },
   "kakao-10353978": {
    "src": "https://thumb.wikimedia.org/wikipedia/commons/thumb/7/7e/Maryang_Camellia_Forest_Entrance_in_Winter.jpg/960px-Maryang_Camellia_Forest_Entrance_in_Winter.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
    "title": "Maryang Camellia Forest Entrance in Winter.jpg",
@@ -10,6 +120,17 @@
    "licenseUrl": "https://creativecommons.org/licenses/by-sa/3.0",
    "source": "https://commons.wikimedia.org/wiki/File:Maryang_Camellia_Forest_Entrance_in_Winter.jpg",
    "via": "commons"
+  },
+  "kakao-10398273": {
+   "src": "https://tong.visitkorea.or.kr/cms/resource/43/2801743_image2_1.jpg",
+   "thumb": "https://tong.visitkorea.or.kr/cms/resource/43/2801743_image3_1.jpg",
+   "title": "방림메밀막국수",
+   "credit": "한국관광공사",
+   "license": "공공누리 제3유형(출처표시·변경금지)",
+   "licenseUrl": "https://www.kogl.or.kr/info/licenseType3.do",
+   "source": "https://korean.visitkorea.or.kr/detail/ms_detail.do?cotid=2801751",
+   "via": "tourapi",
+   "distance_m": 8
   },
   "kakao-10584517": {
    "src": "https://thumb.wikimedia.org/wikipedia/commons/thumb/f/fa/%EC%95%88%ED%9D%A5%EC%B0%90%EB%B9%B5%EB%A7%88%EC%9D%84_%EC%B1%85%EC%82%AC%EB%9E%91%EB%B0%A9%28%EA%B0%95%EC%9B%90%EB%8F%84_%ED%9A%A1%EC%84%B1%EA%B5%B0_%EC%95%88%ED%9D%A5%EB%A9%B4_%EC%95%88%ED%9D%A5%EB%A1%9C_27%29IMG_4467.jpg/960px-%EC%95%88%ED%9D%A5%EC%B0%90%EB%B9%B5%EB%A7%88%EC%9D%84_%EC%B1%85%EC%82%AC%EB%9E%91%EB%B0%A9%28%EA%B0%95%EC%9B%90%EB%8F%84_%ED%9A%A1%EC%84%B1%EA%B5%B0_%EC%95%88%ED%9D%A5%EB%A9%B4_%EC%95%88%ED%9D%A5%EB%A1%9C_27%29IMG_4467.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
@@ -20,6 +141,17 @@
    "source": "https://commons.wikimedia.org/wiki/File:%EC%95%88%ED%9D%A5%EC%B0%90%EB%B9%B5%EB%A7%88%EC%9D%84_%EC%B1%85%EC%82%AC%EB%9E%91%EB%B0%A9(%EA%B0%95%EC%9B%90%EB%8F%84_%ED%9A%A1%EC%84%B1%EA%B5%B0_%EC%95%88%ED%9D%A5%EB%A9%B4_%EC%95%88%ED%9D%A5%EB%A1%9C_27)IMG_4467.jpg",
    "via": "commons"
   },
+  "kakao-10851530": {
+   "src": "https://tong.visitkorea.or.kr/cms/resource/16/2784816_image2_1.jpg",
+   "thumb": "https://tong.visitkorea.or.kr/cms/resource/16/2784816_image2_1.jpg",
+   "title": "청자식당",
+   "credit": "한국관광공사",
+   "license": "공공누리 제3유형(출처표시·변경금지)",
+   "licenseUrl": "https://www.kogl.or.kr/info/licenseType3.do",
+   "source": "https://korean.visitkorea.or.kr/detail/ms_detail.do?cotid=2784722",
+   "via": "tourapi",
+   "distance_m": 93
+  },
   "kakao-11110103": {
    "src": "https://thumb.wikimedia.org/wikipedia/commons/thumb/a/a8/MY-Eoreumgol-FZone.jpg/960px-MY-Eoreumgol-FZone.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
    "title": "MY-Eoreumgol-FZone.jpg",
@@ -29,6 +161,83 @@
    "source": "https://commons.wikimedia.org/wiki/File:MY-Eoreumgol-FZone.jpg",
    "via": "kowiki",
    "article": "https://ko.wikipedia.org/wiki/%EB%B0%80%EC%96%91_%EB%82%A8%EB%AA%85%EB%A6%AC_%EC%96%BC%EC%9D%8C%EA%B3%A8"
+  },
+  "kakao-1171657699": {
+   "src": "https://tong.visitkorea.or.kr/cms/resource/61/2735861_image2_1.JPG",
+   "thumb": "https://tong.visitkorea.or.kr/cms/resource/61/2735861_image3_1.JPG",
+   "title": "지리산리조트글램핑",
+   "credit": "한국관광공사",
+   "license": "공공누리 제3유형(출처표시·변경금지)",
+   "licenseUrl": "https://www.kogl.or.kr/info/licenseType3.do",
+   "source": "https://korean.visitkorea.or.kr/detail/ms_detail.do?cotid=2734250",
+   "via": "tourapi",
+   "distance_m": 5
+  },
+  "kakao-11857705": {
+   "src": "https://tong.visitkorea.or.kr/cms/resource/61/2796861_image2_1.JPG",
+   "thumb": "https://tong.visitkorea.or.kr/cms/resource/61/2796861_image2_1.JPG",
+   "title": "바람의언덕",
+   "credit": "한국관광공사",
+   "license": "공공누리 제3유형(출처표시·변경금지)",
+   "licenseUrl": "https://www.kogl.or.kr/info/licenseType3.do",
+   "source": "https://korean.visitkorea.or.kr/detail/ms_detail.do?cotid=2796875",
+   "via": "tourapi",
+   "distance_m": 112
+  },
+  "kakao-1201655501": {
+   "src": "https://tong.visitkorea.or.kr/cms/resource/40/2840040_image2_1.jpg",
+   "thumb": "https://tong.visitkorea.or.kr/cms/resource/40/2840040_image3_1.jpg",
+   "title": "벙커",
+   "credit": "한국관광공사",
+   "license": "공공누리 제3유형(출처표시·변경금지)",
+   "licenseUrl": "https://www.kogl.or.kr/info/licenseType3.do",
+   "source": "https://korean.visitkorea.or.kr/detail/ms_detail.do?cotid=2840042",
+   "via": "tourapi",
+   "distance_m": 3
+  },
+  "kakao-12132918": {
+   "src": "https://tong.visitkorea.or.kr/cms/resource/86/2730686_image2_1.jpg",
+   "thumb": "https://tong.visitkorea.or.kr/cms/resource/86/2730686_image3_1.jpg",
+   "title": "패밀리오토캠핑장",
+   "credit": "한국관광공사",
+   "license": "공공누리 제3유형(출처표시·변경금지)",
+   "licenseUrl": "https://www.kogl.or.kr/info/licenseType3.do",
+   "source": "https://korean.visitkorea.or.kr/detail/ms_detail.do?cotid=2730126",
+   "via": "tourapi",
+   "distance_m": 2
+  },
+  "kakao-12296544": {
+   "src": "https://tong.visitkorea.or.kr/cms/resource/56/2734256_image2_1.JPG",
+   "thumb": "https://tong.visitkorea.or.kr/cms/resource/56/2734256_image3_1.JPG",
+   "title": "계방산오토캠핑장",
+   "credit": "한국관광공사",
+   "license": "공공누리 제3유형(출처표시·변경금지)",
+   "licenseUrl": "https://www.kogl.or.kr/info/licenseType3.do",
+   "source": "https://korean.visitkorea.or.kr/detail/ms_detail.do?cotid=2733990",
+   "via": "tourapi",
+   "distance_m": 231
+  },
+  "kakao-12405524": {
+   "src": "https://tong.visitkorea.or.kr/cms/resource/00/2735100_image2_1.jpg",
+   "thumb": "https://tong.visitkorea.or.kr/cms/resource/00/2735100_image2_1.jpg",
+   "title": "대성식관",
+   "credit": "한국관광공사",
+   "license": "공공누리 제3유형(출처표시·변경금지)",
+   "licenseUrl": "https://www.kogl.or.kr/info/licenseType3.do",
+   "source": "https://korean.visitkorea.or.kr/detail/ms_detail.do?cotid=2734939",
+   "via": "tourapi",
+   "distance_m": 5
+  },
+  "kakao-12611296": {
+   "src": "https://tong.visitkorea.or.kr/cms/resource/48/2745348_image2_1.JPG",
+   "thumb": "https://tong.visitkorea.or.kr/cms/resource/48/2745348_image2_1.JPG",
+   "title": "평화의댐 오토캠핑장",
+   "credit": "한국관광공사",
+   "license": "공공누리 제3유형(출처표시·변경금지)",
+   "licenseUrl": "https://www.kogl.or.kr/info/licenseType3.do",
+   "source": "https://korean.visitkorea.or.kr/detail/ms_detail.do?cotid=2744477",
+   "via": "tourapi",
+   "distance_m": 7
   },
   "kakao-12706081": {
    "src": "https://thumb.wikimedia.org/wikipedia/commons/thumb/e/e6/%EA%B3%A0%EC%B0%BD%EC%9D%8D%EC%84%B1%EC%9D%98_%EB%B4%84.jpg/960px-%EA%B3%A0%EC%B0%BD%EC%9D%8D%EC%84%B1%EC%9D%98_%EB%B4%84.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
@@ -50,6 +259,105 @@
    "via": "kowiki",
    "article": "https://ko.wikipedia.org/wiki/%EC%84%A0%EC%9A%B4%EC%82%AC"
   },
+  "kakao-1274842879": {
+   "src": "https://tong.visitkorea.or.kr/cms/resource/23/2840023_image2_1.jpg",
+   "thumb": "https://tong.visitkorea.or.kr/cms/resource/23/2840023_image3_1.jpg",
+   "title": "다강한정식",
+   "credit": "한국관광공사",
+   "license": "공공누리 제3유형(출처표시·변경금지)",
+   "licenseUrl": "https://www.kogl.or.kr/info/licenseType3.do",
+   "source": "https://korean.visitkorea.or.kr/detail/ms_detail.do?cotid=2840030",
+   "via": "tourapi",
+   "distance_m": 20
+  },
+  "kakao-12882240": {
+   "src": "https://tong.visitkorea.or.kr/cms/resource/09/2844109_image2_1.JPG",
+   "thumb": "https://tong.visitkorea.or.kr/cms/resource/09/2844109_image3_1.JPG",
+   "title": "광덕고개쉼터",
+   "credit": "한국관광공사",
+   "license": "공공누리 제3유형(출처표시·변경금지)",
+   "licenseUrl": "https://www.kogl.or.kr/info/licenseType3.do",
+   "source": "https://korean.visitkorea.or.kr/detail/ms_detail.do?cotid=2844113",
+   "via": "tourapi",
+   "distance_m": 3
+  },
+  "kakao-1311749089": {
+   "src": "https://tong.visitkorea.or.kr/cms/resource/24/2834824_image2_1.jpg",
+   "thumb": "https://tong.visitkorea.or.kr/cms/resource/24/2834824_image3_1.jpg",
+   "title": "서해안식당",
+   "credit": "한국관광공사",
+   "license": "공공누리 제3유형(출처표시·변경금지)",
+   "licenseUrl": "https://www.kogl.or.kr/info/licenseType3.do",
+   "source": "https://korean.visitkorea.or.kr/detail/ms_detail.do?cotid=2834842",
+   "via": "tourapi",
+   "distance_m": 11
+  },
+  "kakao-1376678746": {
+   "src": "https://tong.visitkorea.or.kr/cms/resource/49/3113249_image2_1.jpg",
+   "thumb": "https://tong.visitkorea.or.kr/cms/resource/49/3113249_image3_1.jpg",
+   "title": "미술관아래협동조합",
+   "credit": "한국관광공사",
+   "license": "공공누리 제1유형(출처표시)",
+   "licenseUrl": "https://www.kogl.or.kr/info/licenseType1.do",
+   "source": "https://korean.visitkorea.or.kr/detail/ms_detail.do?cotid=2891349",
+   "via": "tourapi",
+   "distance_m": 41
+  },
+  "kakao-1407552509": {
+   "src": "https://tong.visitkorea.or.kr/cms/resource/01/2782101_image2_1.jpg",
+   "thumb": "https://tong.visitkorea.or.kr/cms/resource/01/2782101_image2_1.jpg",
+   "title": "까페지수인봉평",
+   "credit": "한국관광공사",
+   "license": "공공누리 제3유형(출처표시·변경금지)",
+   "licenseUrl": "https://www.kogl.or.kr/info/licenseType3.do",
+   "source": "https://korean.visitkorea.or.kr/detail/ms_detail.do?cotid=2782130",
+   "via": "tourapi",
+   "distance_m": 9
+  },
+  "kakao-14106497": {
+   "src": "https://tong.visitkorea.or.kr/cms/resource/71/2758771_image2_1.JPG",
+   "thumb": "https://tong.visitkorea.or.kr/cms/resource/71/2758771_image3_1.JPG",
+   "title": "동강오토캠핑장",
+   "credit": "한국관광공사",
+   "license": "공공누리 제3유형(출처표시·변경금지)",
+   "licenseUrl": "https://www.kogl.or.kr/info/licenseType3.do",
+   "source": "https://korean.visitkorea.or.kr/detail/ms_detail.do?cotid=2758001",
+   "via": "tourapi",
+   "distance_m": 74
+  },
+  "kakao-1436520290": {
+   "src": "https://tong.visitkorea.or.kr/cms/resource/76/2793876_image2_1.jpg",
+   "thumb": "https://tong.visitkorea.or.kr/cms/resource/76/2793876_image2_1.jpg",
+   "title": "창대식당",
+   "credit": "한국관광공사",
+   "license": "공공누리 제3유형(출처표시·변경금지)",
+   "licenseUrl": "https://www.kogl.or.kr/info/licenseType3.do",
+   "source": "https://korean.visitkorea.or.kr/detail/ms_detail.do?cotid=2793907",
+   "via": "tourapi",
+   "distance_m": 8
+  },
+  "kakao-1500280037": {
+   "src": "https://tong.visitkorea.or.kr/cms/resource/26/2729126_image2_1.jpg",
+   "thumb": "https://tong.visitkorea.or.kr/cms/resource/26/2729126_image3_1.jpg",
+   "title": "놀터캠핑장",
+   "credit": "한국관광공사",
+   "license": "공공누리 제3유형(출처표시·변경금지)",
+   "licenseUrl": "https://www.kogl.or.kr/info/licenseType3.do",
+   "source": "https://korean.visitkorea.or.kr/detail/ms_detail.do?cotid=2729271",
+   "via": "tourapi",
+   "distance_m": 37
+  },
+  "kakao-15166434": {
+   "src": "https://tong.visitkorea.or.kr/cms/resource/83/3062583_image2_1.JPG",
+   "thumb": "https://tong.visitkorea.or.kr/cms/resource/83/3062583_image3_1.JPG",
+   "title": "비봉산(제천)",
+   "credit": "한국관광공사",
+   "license": "공공누리 제3유형(출처표시·변경금지)",
+   "licenseUrl": "https://www.kogl.or.kr/info/licenseType3.do",
+   "source": "https://korean.visitkorea.or.kr/detail/ms_detail.do?cotid=2610497",
+   "via": "tourapi",
+   "distance_m": 75
+  },
   "kakao-15171097": {
    "src": "https://upload.wikimedia.org/wikipedia/commons/4/46/Hwaaksan_%28Miryang%29.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail_unscaled",
    "title": "Hwaaksan (Miryang).jpg",
@@ -58,6 +366,138 @@
    "licenseUrl": "https://creativecommons.org/licenses/by-sa/3.0",
    "source": "https://commons.wikimedia.org/wiki/File:Hwaaksan_(Miryang).jpg",
    "via": "commons"
+  },
+  "kakao-15189334": {
+   "src": "https://tong.visitkorea.or.kr/cms/resource/94/2793894_image2_1.JPG",
+   "thumb": "https://tong.visitkorea.or.kr/cms/resource/94/2793894_image3_1.JPG",
+   "title": "유명식당",
+   "credit": "한국관광공사",
+   "license": "공공누리 제3유형(출처표시·변경금지)",
+   "licenseUrl": "https://www.kogl.or.kr/info/licenseType3.do",
+   "source": "https://korean.visitkorea.or.kr/detail/ms_detail.do?cotid=2793994",
+   "via": "tourapi",
+   "distance_m": 17
+  },
+  "kakao-15280482": {
+   "src": "https://tong.visitkorea.or.kr/cms/resource/68/2782668_image2_1.jpg",
+   "thumb": "https://tong.visitkorea.or.kr/cms/resource/68/2782668_image3_1.jpg",
+   "title": "봉평차이나",
+   "credit": "한국관광공사",
+   "license": "공공누리 제3유형(출처표시·변경금지)",
+   "licenseUrl": "https://www.kogl.or.kr/info/licenseType3.do",
+   "source": "https://korean.visitkorea.or.kr/detail/ms_detail.do?cotid=2782678",
+   "via": "tourapi",
+   "distance_m": 7
+  },
+  "kakao-156663874": {
+   "src": "https://tong.visitkorea.or.kr/cms/resource/77/2731477_image2_1.jpg",
+   "thumb": "https://tong.visitkorea.or.kr/cms/resource/77/2731477_image2_1.jpg",
+   "title": "완도명사십리오토캠핑장",
+   "credit": "한국관광공사",
+   "license": "공공누리 제3유형(출처표시·변경금지)",
+   "licenseUrl": "https://www.kogl.or.kr/info/licenseType3.do",
+   "source": "https://korean.visitkorea.or.kr/detail/ms_detail.do?cotid=2731143",
+   "via": "tourapi",
+   "distance_m": 8
+  },
+  "kakao-15736585": {
+   "src": "https://tong.visitkorea.or.kr/cms/resource/75/2786275_image2_1.jpg",
+   "thumb": "https://tong.visitkorea.or.kr/cms/resource/75/2786275_image2_1.jpg",
+   "title": "본가",
+   "credit": "한국관광공사",
+   "license": "공공누리 제3유형(출처표시·변경금지)",
+   "licenseUrl": "https://www.kogl.or.kr/info/licenseType3.do",
+   "source": "https://korean.visitkorea.or.kr/detail/ms_detail.do?cotid=2782162",
+   "via": "tourapi",
+   "distance_m": 8
+  },
+  "kakao-15746538": {
+   "src": "https://tong.visitkorea.or.kr/cms/resource/35/2787735_image2_1.jpg",
+   "thumb": "https://tong.visitkorea.or.kr/cms/resource/35/2787735_image2_1.jpg",
+   "title": "달반늘",
+   "credit": "한국관광공사",
+   "license": "공공누리 제3유형(출처표시·변경금지)",
+   "licenseUrl": "https://www.kogl.or.kr/info/licenseType3.do",
+   "source": "https://korean.visitkorea.or.kr/detail/ms_detail.do?cotid=2782789",
+   "via": "tourapi",
+   "distance_m": 14
+  },
+  "kakao-1577115049": {
+   "src": "https://tong.visitkorea.or.kr/cms/resource/51/2706151_image2_1.jpg",
+   "thumb": "https://tong.visitkorea.or.kr/cms/resource/51/2706151_image3_1.jpg",
+   "title": "달빛미소",
+   "credit": "한국관광공사",
+   "license": "공공누리 제3유형(출처표시·변경금지)",
+   "licenseUrl": "https://www.kogl.or.kr/info/licenseType3.do",
+   "source": "https://korean.visitkorea.or.kr/detail/ms_detail.do?cotid=2706641",
+   "via": "tourapi",
+   "distance_m": 4
+  },
+  "kakao-15805067": {
+   "src": "https://tong.visitkorea.or.kr/cms/resource/40/2790040_image2_1.jpg",
+   "thumb": "https://tong.visitkorea.or.kr/cms/resource/40/2790040_image3_1.jpg",
+   "title": "계방산장",
+   "credit": "한국관광공사",
+   "license": "공공누리 제3유형(출처표시·변경금지)",
+   "licenseUrl": "https://www.kogl.or.kr/info/licenseType3.do",
+   "source": "https://korean.visitkorea.or.kr/detail/ms_detail.do?cotid=2790062",
+   "via": "tourapi",
+   "distance_m": 25
+  },
+  "kakao-1581561143": {
+   "src": "https://tong.visitkorea.or.kr/cms/resource/16/2844116_image2_1.JPG",
+   "thumb": "https://tong.visitkorea.or.kr/cms/resource/16/2844116_image3_1.JPG",
+   "title": "광덕 별아래",
+   "credit": "한국관광공사",
+   "license": "공공누리 제3유형(출처표시·변경금지)",
+   "licenseUrl": "https://www.kogl.or.kr/info/licenseType3.do",
+   "source": "https://korean.visitkorea.or.kr/detail/ms_detail.do?cotid=2844119",
+   "via": "tourapi",
+   "distance_m": 6
+  },
+  "kakao-16203019": {
+   "src": "https://tong.visitkorea.or.kr/cms/resource/88/2892988_image2_1.JPG",
+   "thumb": "https://tong.visitkorea.or.kr/cms/resource/88/2892988_image3_1.JPG",
+   "title": "종원식육식당",
+   "credit": "한국관광공사",
+   "license": "공공누리 제3유형(출처표시·변경금지)",
+   "licenseUrl": "https://www.kogl.or.kr/info/licenseType3.do",
+   "source": "https://korean.visitkorea.or.kr/detail/ms_detail.do?cotid=2892989",
+   "via": "tourapi",
+   "distance_m": 15
+  },
+  "kakao-16235812": {
+   "src": "https://tong.visitkorea.or.kr/cms/resource/85/2796785_image2_1.jpg",
+   "thumb": "https://tong.visitkorea.or.kr/cms/resource/85/2796785_image2_1.jpg",
+   "title": "정원약초쌈밥",
+   "credit": "한국관광공사",
+   "license": "공공누리 제3유형(출처표시·변경금지)",
+   "licenseUrl": "https://www.kogl.or.kr/info/licenseType3.do",
+   "source": "https://korean.visitkorea.or.kr/detail/ms_detail.do?cotid=2784745",
+   "via": "tourapi",
+   "distance_m": 6
+  },
+  "kakao-1629306287": {
+   "src": "https://tong.visitkorea.or.kr/cms/resource/79/2926779_image2_1.jpg",
+   "thumb": "https://tong.visitkorea.or.kr/cms/resource/79/2926779_image3_1.jpg",
+   "title": "다원",
+   "credit": "한국관광공사",
+   "license": "공공누리 제3유형(출처표시·변경금지)",
+   "licenseUrl": "https://www.kogl.or.kr/info/licenseType3.do",
+   "source": "https://korean.visitkorea.or.kr/detail/ms_detail.do?cotid=2814576",
+   "via": "tourapi",
+   "distance_m": 6
+  },
+  "kakao-16458382": {
+   "src": "https://tong.visitkorea.or.kr/cms/resource/51/2840051_image2_1.jpg",
+   "thumb": "https://tong.visitkorea.or.kr/cms/resource/51/2840051_image3_1.jpg",
+   "title": "왕성식당",
+   "credit": "한국관광공사",
+   "license": "공공누리 제3유형(출처표시·변경금지)",
+   "licenseUrl": "https://www.kogl.or.kr/info/licenseType3.do",
+   "source": "https://korean.visitkorea.or.kr/detail/ms_detail.do?cotid=2840055",
+   "via": "tourapi",
+   "distance_m": 4
   },
   "kakao-1649579194": {
    "src": "https://thumb.wikimedia.org/wikipedia/commons/thumb/2/22/Wellihillipark_Snow_Park%2C_Hoengseong_County_06.JPG/960px-Wellihillipark_Snow_Park%2C_Hoengseong_County_06.JPG?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
@@ -69,6 +509,270 @@
    "via": "kowiki",
    "article": "https://ko.wikipedia.org/wiki/%EC%9B%B0%EB%A6%AC%ED%9E%90%EB%A6%AC%ED%8C%8C%ED%81%AC"
   },
+  "kakao-1662300123": {
+   "src": "https://tong.visitkorea.or.kr/cms/resource/71/2797871_image2_1.JPG",
+   "thumb": "https://tong.visitkorea.or.kr/cms/resource/71/2797871_image3_1.JPG",
+   "title": "황매산미리내파크",
+   "credit": "한국관광공사",
+   "license": "공공누리 제3유형(출처표시·변경금지)",
+   "licenseUrl": "https://www.kogl.or.kr/info/licenseType3.do",
+   "source": "https://korean.visitkorea.or.kr/detail/ms_detail.do?cotid=2796914",
+   "via": "tourapi",
+   "distance_m": 266
+  },
+  "kakao-1674781285": {
+   "src": "https://tong.visitkorea.or.kr/cms/resource/52/2834952_image2_1.jpg",
+   "thumb": "https://tong.visitkorea.or.kr/cms/resource/52/2834952_image3_1.jpg",
+   "title": "카페화산",
+   "credit": "한국관광공사",
+   "license": "공공누리 제3유형(출처표시·변경금지)",
+   "licenseUrl": "https://www.kogl.or.kr/info/licenseType3.do",
+   "source": "https://korean.visitkorea.or.kr/detail/ms_detail.do?cotid=2834961",
+   "via": "tourapi",
+   "distance_m": 6
+  },
+  "kakao-16809537": {
+   "src": "https://tong.visitkorea.or.kr/cms/resource/88/2371888_image2_1.jpg",
+   "thumb": "https://tong.visitkorea.or.kr/cms/resource/88/2371888_image3_1.jpg",
+   "title": "예향",
+   "credit": "한국관광공사",
+   "license": "공공누리 제3유형(출처표시·변경금지)",
+   "licenseUrl": "https://www.kogl.or.kr/info/licenseType3.do",
+   "source": "https://korean.visitkorea.or.kr/detail/ms_detail.do?cotid=2371879",
+   "via": "tourapi",
+   "distance_m": 4
+  },
+  "kakao-1689185217": {
+   "src": "https://tong.visitkorea.or.kr/cms/resource/37/2789037_image2_1.jpg",
+   "thumb": "https://tong.visitkorea.or.kr/cms/resource/37/2789037_image2_1.jpg",
+   "title": "카페이루아",
+   "credit": "한국관광공사",
+   "license": "공공누리 제3유형(출처표시·변경금지)",
+   "licenseUrl": "https://www.kogl.or.kr/info/licenseType3.do",
+   "source": "https://korean.visitkorea.or.kr/detail/ms_detail.do?cotid=2789087",
+   "via": "tourapi",
+   "distance_m": 10
+  },
+  "kakao-1755664581": {
+   "src": "https://tong.visitkorea.or.kr/cms/resource/50/2831850_image2_1.jpg",
+   "thumb": "https://tong.visitkorea.or.kr/cms/resource/50/2831850_image3_1.jpg",
+   "title": "396커피컴퍼니",
+   "credit": "한국관광공사",
+   "license": "공공누리 제3유형(출처표시·변경금지)",
+   "licenseUrl": "https://www.kogl.or.kr/info/licenseType3.do",
+   "source": "https://korean.visitkorea.or.kr/detail/ms_detail.do?cotid=2831856",
+   "via": "tourapi",
+   "distance_m": 7
+  },
+  "kakao-17583323": {
+   "src": "https://tong.visitkorea.or.kr/cms/resource/42/2704942_image2_1.jpg",
+   "thumb": "https://tong.visitkorea.or.kr/cms/resource/42/2704942_image3_1.jpg",
+   "title": "국립 천관산자연휴양림",
+   "credit": "한국관광공사",
+   "license": "공공누리 제3유형(출처표시·변경금지)",
+   "licenseUrl": "https://www.kogl.or.kr/info/licenseType3.do",
+   "source": "https://korean.visitkorea.or.kr/detail/ms_detail.do?cotid=125419",
+   "via": "tourapi",
+   "distance_m": 226
+  },
+  "kakao-17604794": {
+   "src": "https://tong.visitkorea.or.kr/cms/resource/74/2782174_image2_1.jpg",
+   "thumb": "https://tong.visitkorea.or.kr/cms/resource/74/2782174_image2_1.jpg",
+   "title": "미락",
+   "credit": "한국관광공사",
+   "license": "공공누리 제3유형(출처표시·변경금지)",
+   "licenseUrl": "https://www.kogl.or.kr/info/licenseType3.do",
+   "source": "https://korean.visitkorea.or.kr/detail/ms_detail.do?cotid=2782185",
+   "via": "tourapi",
+   "distance_m": 2
+  },
+  "kakao-17747838": {
+   "src": "https://tong.visitkorea.or.kr/cms/resource/11/2734111_image2_1.JPG",
+   "thumb": "https://tong.visitkorea.or.kr/cms/resource/11/2734111_image2_1.JPG",
+   "title": "지구별캠프",
+   "credit": "한국관광공사",
+   "license": "공공누리 제3유형(출처표시·변경금지)",
+   "licenseUrl": "https://www.kogl.or.kr/info/licenseType3.do",
+   "source": "https://korean.visitkorea.or.kr/detail/ms_detail.do?cotid=2734262",
+   "via": "tourapi",
+   "distance_m": 6
+  },
+  "kakao-18640365": {
+   "src": "https://tong.visitkorea.or.kr/cms/resource/74/2925274_image2_1.jpg",
+   "thumb": "https://tong.visitkorea.or.kr/cms/resource/74/2925274_image3_1.jpg",
+   "title": "횡성축협 한우프라자 본점",
+   "credit": "한국관광공사",
+   "license": "공공누리 제3유형(출처표시·변경금지)",
+   "licenseUrl": "https://www.kogl.or.kr/info/licenseType3.do",
+   "source": "https://korean.visitkorea.or.kr/detail/ms_detail.do?cotid=2925292",
+   "via": "tourapi",
+   "distance_m": 20
+  },
+  "kakao-18996506": {
+   "src": "https://tong.visitkorea.or.kr/cms/resource/70/3303270_image2_1.jpg",
+   "thumb": "https://tong.visitkorea.or.kr/cms/resource/70/3303270_image3_1.jpg",
+   "title": "소등섬",
+   "credit": "한국관광공사",
+   "license": "공공누리 제3유형(출처표시·변경금지)",
+   "licenseUrl": "https://www.kogl.or.kr/info/licenseType3.do",
+   "source": "https://korean.visitkorea.or.kr/detail/ms_detail.do?cotid=2514005",
+   "via": "tourapi",
+   "distance_m": 8
+  },
+  "kakao-1908644002": {
+   "src": "https://tong.visitkorea.or.kr/cms/resource/04/2782204_image2_1.jpg",
+   "thumb": "https://tong.visitkorea.or.kr/cms/resource/04/2782204_image2_1.jpg",
+   "title": "앳모먼츠커피(ATMOMENTS COFFEE)",
+   "credit": "한국관광공사",
+   "license": "공공누리 제3유형(출처표시·변경금지)",
+   "licenseUrl": "https://www.kogl.or.kr/info/licenseType3.do",
+   "source": "https://korean.visitkorea.or.kr/detail/ms_detail.do?cotid=2782224",
+   "via": "tourapi",
+   "distance_m": 9
+  },
+  "kakao-1909748613": {
+   "src": "https://tong.visitkorea.or.kr/cms/resource/22/2837522_image2_1.JPG",
+   "thumb": "https://tong.visitkorea.or.kr/cms/resource/22/2837522_image3_1.JPG",
+   "title": "가조가마솥육개장순두부",
+   "credit": "한국관광공사",
+   "license": "공공누리 제3유형(출처표시·변경금지)",
+   "licenseUrl": "https://www.kogl.or.kr/info/licenseType3.do",
+   "source": "https://korean.visitkorea.or.kr/detail/ms_detail.do?cotid=2837554",
+   "via": "tourapi",
+   "distance_m": 12
+  },
+  "kakao-2012297671": {
+   "src": "https://tong.visitkorea.or.kr/cms/resource/31/2739531_image2_1.JPG",
+   "thumb": "https://tong.visitkorea.or.kr/cms/resource/31/2739531_image3_1.JPG",
+   "title": "영암군국민여가캠핑장",
+   "credit": "한국관광공사",
+   "license": "공공누리 제3유형(출처표시·변경금지)",
+   "licenseUrl": "https://www.kogl.or.kr/info/licenseType3.do",
+   "source": "https://korean.visitkorea.or.kr/detail/ms_detail.do?cotid=2739357",
+   "via": "tourapi",
+   "distance_m": 43
+  },
+  "kakao-20193807": {
+   "src": "https://tong.visitkorea.or.kr/cms/resource/02/2734802_image2_1.JPG",
+   "thumb": "https://tong.visitkorea.or.kr/cms/resource/02/2734802_image3_1.JPG",
+   "title": "흥정계곡캠핑700",
+   "credit": "한국관광공사",
+   "license": "공공누리 제3유형(출처표시·변경금지)",
+   "licenseUrl": "https://www.kogl.or.kr/info/licenseType3.do",
+   "source": "https://korean.visitkorea.or.kr/detail/ms_detail.do?cotid=2734092",
+   "via": "tourapi",
+   "distance_m": 28
+  },
+  "kakao-207258217": {
+   "src": "https://tong.visitkorea.or.kr/cms/resource/20/2730320_image2_1.jpg",
+   "thumb": "https://tong.visitkorea.or.kr/cms/resource/20/2730320_image2_1.jpg",
+   "title": "주작산별소리캠핑장",
+   "credit": "한국관광공사",
+   "license": "공공누리 제3유형(출처표시·변경금지)",
+   "licenseUrl": "https://www.kogl.or.kr/info/licenseType3.do",
+   "source": "https://korean.visitkorea.or.kr/detail/ms_detail.do?cotid=2730232",
+   "via": "tourapi",
+   "distance_m": 78
+  },
+  "kakao-2080420887": {
+   "src": "https://tong.visitkorea.or.kr/cms/resource/01/2709101_image2_1.jpg",
+   "thumb": "https://tong.visitkorea.or.kr/cms/resource/01/2709101_image3_1.jpg",
+   "title": "비브릿지",
+   "credit": "한국관광공사",
+   "license": "공공누리 제3유형(출처표시·변경금지)",
+   "licenseUrl": "https://www.kogl.or.kr/info/licenseType3.do",
+   "source": "https://korean.visitkorea.or.kr/detail/ms_detail.do?cotid=2708661",
+   "via": "tourapi",
+   "distance_m": 6
+  },
+  "kakao-2085221717": {
+   "src": "https://tong.visitkorea.or.kr/cms/resource/45/2799345_image2_1.jpg",
+   "thumb": "https://tong.visitkorea.or.kr/cms/resource/45/2799345_image3_1.jpg",
+   "title": "영천아우노펠리스",
+   "credit": "한국관광공사",
+   "license": "공공누리 제3유형(출처표시·변경금지)",
+   "licenseUrl": "https://www.kogl.or.kr/info/licenseType3.do",
+   "source": "https://korean.visitkorea.or.kr/detail/ms_detail.do?cotid=2734155",
+   "via": "tourapi",
+   "distance_m": 31
+  },
+  "kakao-2101351455": {
+   "src": "https://tong.visitkorea.or.kr/cms/resource/23/2727023_image2_1.jpg",
+   "thumb": "https://tong.visitkorea.or.kr/cms/resource/23/2727023_image2_1.jpg",
+   "title": "경호강캠핑장",
+   "credit": "한국관광공사",
+   "license": "공공누리 제3유형(출처표시·변경금지)",
+   "licenseUrl": "https://www.kogl.or.kr/info/licenseType3.do",
+   "source": "https://korean.visitkorea.or.kr/detail/ms_detail.do?cotid=2726712",
+   "via": "tourapi",
+   "distance_m": 8
+  },
+  "kakao-21054672": {
+   "src": "https://tong.visitkorea.or.kr/cms/resource/19/2728319_image2_1.jpg",
+   "thumb": "https://tong.visitkorea.or.kr/cms/resource/19/2728319_image3_1.jpg",
+   "title": "상주은모래비치캠핑장",
+   "credit": "한국관광공사",
+   "license": "공공누리 제3유형(출처표시·변경금지)",
+   "licenseUrl": "https://www.kogl.or.kr/info/licenseType3.do",
+   "source": "https://korean.visitkorea.or.kr/detail/ms_detail.do?cotid=2728209",
+   "via": "tourapi",
+   "distance_m": 58
+  },
+  "kakao-21184295": {
+   "src": "https://tong.visitkorea.or.kr/cms/resource/16/2831916_image2_1.jpg",
+   "thumb": "https://tong.visitkorea.or.kr/cms/resource/16/2831916_image3_1.jpg",
+   "title": "화평대군 식당",
+   "credit": "한국관광공사",
+   "license": "공공누리 제3유형(출처표시·변경금지)",
+   "licenseUrl": "https://www.kogl.or.kr/info/licenseType3.do",
+   "source": "https://korean.visitkorea.or.kr/detail/ms_detail.do?cotid=2831921",
+   "via": "tourapi",
+   "distance_m": 26
+  },
+  "kakao-21250167": {
+   "src": "https://tong.visitkorea.or.kr/cms/resource/97/2900097_image2_1.jpg",
+   "thumb": "https://tong.visitkorea.or.kr/cms/resource/97/2900097_image3_1.jpg",
+   "title": "한우마을",
+   "credit": "한국관광공사",
+   "license": "공공누리 제3유형(출처표시·변경금지)",
+   "licenseUrl": "https://www.kogl.or.kr/info/licenseType3.do",
+   "source": "https://korean.visitkorea.or.kr/detail/ms_detail.do?cotid=2900107",
+   "via": "tourapi",
+   "distance_m": 40
+  },
+  "kakao-21293820": {
+   "src": "https://tong.visitkorea.or.kr/cms/resource/22/2843622_image2_1.JPG",
+   "thumb": "https://tong.visitkorea.or.kr/cms/resource/22/2843622_image3_1.JPG",
+   "title": "갑을식당",
+   "credit": "한국관광공사",
+   "license": "공공누리 제3유형(출처표시·변경금지)",
+   "licenseUrl": "https://www.kogl.or.kr/info/licenseType3.do",
+   "source": "https://korean.visitkorea.or.kr/detail/ms_detail.do?cotid=2843633",
+   "via": "tourapi",
+   "distance_m": 7
+  },
+  "kakao-21342353": {
+   "src": "https://tong.visitkorea.or.kr/cms/resource/27/2789027_image2_1.jpg",
+   "thumb": "https://tong.visitkorea.or.kr/cms/resource/27/2789027_image2_1.jpg",
+   "title": "솥뚜껑삼겹도령과 낙지낭자",
+   "credit": "한국관광공사",
+   "license": "공공누리 제3유형(출처표시·변경금지)",
+   "licenseUrl": "https://www.kogl.or.kr/info/licenseType3.do",
+   "source": "https://korean.visitkorea.or.kr/detail/ms_detail.do?cotid=2789044",
+   "via": "tourapi",
+   "distance_m": 11
+  },
+  "kakao-21399466": {
+   "src": "https://tong.visitkorea.or.kr/cms/resource/55/2727555_image2_1.jpg",
+   "thumb": "https://tong.visitkorea.or.kr/cms/resource/55/2727555_image3_1.jpg",
+   "title": "구만산장오토캠핑장",
+   "credit": "한국관광공사",
+   "license": "공공누리 제3유형(출처표시·변경금지)",
+   "licenseUrl": "https://www.kogl.or.kr/info/licenseType3.do",
+   "source": "https://korean.visitkorea.or.kr/detail/ms_detail.do?cotid=2727281",
+   "via": "tourapi",
+   "distance_m": 18
+  },
   "kakao-2147457345": {
    "src": "https://thumb.wikimedia.org/wikipedia/commons/thumb/f/f0/Yeongwol_Seondol_2023.jpg/960px-Yeongwol_Seondol_2023.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
    "title": "Yeongwol_Seondol_2023.jpg",
@@ -78,6 +782,17 @@
    "source": "https://commons.wikimedia.org/wiki/File:Yeongwol_Seondol_2023.jpg",
    "via": "kowiki",
    "article": "https://ko.wikipedia.org/wiki/%EC%98%81%EC%9B%94_%EC%84%A0%EB%8F%8C"
+  },
+  "kakao-21755985": {
+   "src": "https://tong.visitkorea.or.kr/cms/resource/15/2735115_image2_1.jpg",
+   "thumb": "https://tong.visitkorea.or.kr/cms/resource/15/2735115_image3_1.jpg",
+   "title": "원조뚝배기식당",
+   "credit": "한국관광공사",
+   "license": "공공누리 제3유형(출처표시·변경금지)",
+   "licenseUrl": "https://www.kogl.or.kr/info/licenseType3.do",
+   "source": "https://korean.visitkorea.or.kr/detail/ms_detail.do?cotid=2734943",
+   "via": "tourapi",
+   "distance_m": 7
   },
   "kakao-21929597": {
    "src": "https://thumb.wikimedia.org/wikipedia/commons/thumb/5/5b/Andong_Culture_Street_20220130_01.jpg/960px-Andong_Culture_Street_20220130_01.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
@@ -96,6 +811,39 @@
    "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0",
    "source": "https://commons.wikimedia.org/wiki/File:%EB%AA%BD%EC%82%B0%ED%8F%AC%ED%95%B4%EC%88%98%EC%9A%95%EC%9E%A5%EC%9D%98_%EC%9D%BC%EB%AA%B0.jpg",
    "via": "commons"
+  },
+  "kakao-245227886": {
+   "src": "https://tong.visitkorea.or.kr/cms/resource/23/2576023_image2_1.PNG",
+   "thumb": "https://tong.visitkorea.or.kr/cms/resource/23/2576023_image2_1.PNG",
+   "title": "월출산 달빛정원",
+   "credit": "한국관광공사",
+   "license": "공공누리 제3유형(출처표시·변경금지)",
+   "licenseUrl": "https://www.kogl.or.kr/info/licenseType3.do",
+   "source": "https://korean.visitkorea.or.kr/detail/ms_detail.do?cotid=2576371",
+   "via": "tourapi",
+   "distance_m": 57
+  },
+  "kakao-25050520": {
+   "src": "https://tong.visitkorea.or.kr/cms/resource/97/3532397_image2_1.JPG",
+   "thumb": "https://tong.visitkorea.or.kr/cms/resource/97/3532397_image3_1.JPG",
+   "title": "중산리계곡",
+   "credit": "한국관광공사",
+   "license": "공공누리 제3유형(출처표시·변경금지)",
+   "licenseUrl": "https://www.kogl.or.kr/info/licenseType3.do",
+   "source": "https://korean.visitkorea.or.kr/detail/ms_detail.do?cotid=127612",
+   "via": "tourapi",
+   "distance_m": 186
+  },
+  "kakao-26306531": {
+   "src": "https://tong.visitkorea.or.kr/cms/resource/07/2789107_image2_1.jpg",
+   "thumb": "https://tong.visitkorea.or.kr/cms/resource/07/2789107_image3_1.jpg",
+   "title": "카페마노",
+   "credit": "한국관광공사",
+   "license": "공공누리 제3유형(출처표시·변경금지)",
+   "licenseUrl": "https://www.kogl.or.kr/info/licenseType3.do",
+   "source": "https://korean.visitkorea.or.kr/detail/ms_detail.do?cotid=2789146",
+   "via": "tourapi",
+   "distance_m": 5
   },
   "kakao-26378807": {
    "src": "https://thumb.wikimedia.org/wikipedia/commons/thumb/a/a8/20210718_Pine_Tree_Dong-Ho_Forest_-01.jpg/960px-20210718_Pine_Tree_Dong-Ho_Forest_-01.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
@@ -116,6 +864,204 @@
    "via": "kowiki",
    "article": "https://ko.wikipedia.org/wiki/%EA%B3%A0%EC%84%B1_%EC%9E%A5%EC%82%B0%EC%88%B2"
   },
+  "kakao-269353545": {
+   "src": "https://tong.visitkorea.or.kr/cms/resource/44/2795444_image2_1.jpg",
+   "thumb": "https://tong.visitkorea.or.kr/cms/resource/44/2795444_image3_1.jpg",
+   "title": "평창보타닉가든",
+   "credit": "한국관광공사",
+   "license": "공공누리 제3유형(출처표시·변경금지)",
+   "licenseUrl": "https://www.kogl.or.kr/info/licenseType3.do",
+   "source": "https://korean.visitkorea.or.kr/detail/ms_detail.do?cotid=2795433",
+   "via": "tourapi",
+   "distance_m": 148
+  },
+  "kakao-27292244": {
+   "src": "https://tong.visitkorea.or.kr/cms/resource/68/2730868_image2_1.jpg",
+   "thumb": "https://tong.visitkorea.or.kr/cms/resource/68/2730868_image3_1.jpg",
+   "title": "장좌리캠핑장",
+   "credit": "한국관광공사",
+   "license": "공공누리 제3유형(출처표시·변경금지)",
+   "licenseUrl": "https://www.kogl.or.kr/info/licenseType3.do",
+   "source": "https://korean.visitkorea.or.kr/detail/ms_detail.do?cotid=2730781",
+   "via": "tourapi",
+   "distance_m": 4
+  },
+  "kakao-27392094": {
+   "src": "https://tong.visitkorea.or.kr/cms/resource/73/2741273_image2_1.jpg",
+   "thumb": "https://tong.visitkorea.or.kr/cms/resource/73/2741273_image2_1.jpg",
+   "title": "가우도카라반펜션",
+   "credit": "한국관광공사",
+   "license": "공공누리 제3유형(출처표시·변경금지)",
+   "licenseUrl": "https://www.kogl.or.kr/info/licenseType3.do",
+   "source": "https://korean.visitkorea.or.kr/detail/ms_detail.do?cotid=2740970",
+   "via": "tourapi",
+   "distance_m": 7
+  },
+  "kakao-31405601": {
+   "src": "https://tong.visitkorea.or.kr/cms/resource/97/2730697_image2_1.jpg",
+   "thumb": "https://tong.visitkorea.or.kr/cms/resource/97/2730697_image3_1.jpg",
+   "title": "장항오토캠핑장",
+   "credit": "한국관광공사",
+   "license": "공공누리 제3유형(출처표시·변경금지)",
+   "licenseUrl": "https://www.kogl.or.kr/info/licenseType3.do",
+   "source": "https://korean.visitkorea.or.kr/detail/ms_detail.do?cotid=2730182",
+   "via": "tourapi",
+   "distance_m": 84
+  },
+  "kakao-336215358": {
+   "src": "https://tong.visitkorea.or.kr/cms/resource/39/2797239_image2_1.jpg",
+   "thumb": "https://tong.visitkorea.or.kr/cms/resource/39/2797239_image2_1.jpg",
+   "title": "만산동국민여가캠핑장",
+   "credit": "한국관광공사",
+   "license": "공공누리 제3유형(출처표시·변경금지)",
+   "licenseUrl": "https://www.kogl.or.kr/info/licenseType3.do",
+   "source": "https://korean.visitkorea.or.kr/detail/ms_detail.do?cotid=2755693",
+   "via": "tourapi",
+   "distance_m": 278
+  },
+  "kakao-420836418": {
+   "src": "https://tong.visitkorea.or.kr/cms/resource/12/2568012_image2_1.jpg",
+   "thumb": "https://tong.visitkorea.or.kr/cms/resource/12/2568012_image2_1.jpg",
+   "title": "장흥 달바위펜션(Full Moon 달바위펜션)",
+   "credit": "한국관광공사",
+   "license": "공공누리 제3유형(출처표시·변경금지)",
+   "licenseUrl": "https://www.kogl.or.kr/info/licenseType3.do",
+   "source": "https://korean.visitkorea.or.kr/detail/ms_detail.do?cotid=2569986",
+   "via": "tourapi",
+   "distance_m": 3
+  },
+  "kakao-437946919": {
+   "src": "https://tong.visitkorea.or.kr/cms/resource/97/2797997_image2_1.jpg",
+   "thumb": "https://tong.visitkorea.or.kr/cms/resource/97/2797997_image2_1.jpg",
+   "title": "만리포글램핑",
+   "credit": "한국관광공사",
+   "license": "공공누리 제3유형(출처표시·변경금지)",
+   "licenseUrl": "https://www.kogl.or.kr/info/licenseType3.do",
+   "source": "https://korean.visitkorea.or.kr/detail/ms_detail.do?cotid=2758015",
+   "via": "tourapi",
+   "distance_m": 18
+  },
+  "kakao-543646632": {
+   "src": "https://tong.visitkorea.or.kr/cms/resource/60/2917560_image2_1.jpg",
+   "thumb": "https://tong.visitkorea.or.kr/cms/resource/60/2917560_image3_1.jpg",
+   "title": "귀애고택",
+   "credit": "한국관광공사",
+   "license": "공공누리 제3유형(출처표시·변경금지)",
+   "licenseUrl": "https://www.kogl.or.kr/info/licenseType3.do",
+   "source": "https://korean.visitkorea.or.kr/detail/ms_detail.do?cotid=1992038",
+   "via": "tourapi",
+   "distance_m": 14
+  },
+  "kakao-579236445": {
+   "src": "https://tong.visitkorea.or.kr/cms/resource/79/3502479_image2_1.jpg",
+   "thumb": "https://tong.visitkorea.or.kr/cms/resource/79/3502479_image3_1.jpg",
+   "title": "힐링파크 쑥섬쑥섬(애도)",
+   "credit": "한국관광공사",
+   "license": "공공누리 제1유형(출처표시)",
+   "licenseUrl": "https://www.kogl.or.kr/info/licenseType1.do",
+   "source": "https://korean.visitkorea.or.kr/detail/ms_detail.do?cotid=2483970",
+   "via": "tourapi",
+   "distance_m": 20
+  },
+  "kakao-615260388": {
+   "src": "https://tong.visitkorea.or.kr/cms/resource/31/2790131_image2_1.JPG",
+   "thumb": "https://tong.visitkorea.or.kr/cms/resource/31/2790131_image3_1.JPG",
+   "title": "코지힐(COZY HILL)",
+   "credit": "한국관광공사",
+   "license": "공공누리 제3유형(출처표시·변경금지)",
+   "licenseUrl": "https://www.kogl.or.kr/info/licenseType3.do",
+   "source": "https://korean.visitkorea.or.kr/detail/ms_detail.do?cotid=2790171",
+   "via": "tourapi",
+   "distance_m": 4
+  },
+  "kakao-63107069": {
+   "src": "https://tong.visitkorea.or.kr/cms/resource/66/2851266_image2_1.jpg",
+   "thumb": "https://tong.visitkorea.or.kr/cms/resource/66/2851266_image3_1.jpg",
+   "title": "미식가",
+   "credit": "한국관광공사",
+   "license": "공공누리 제3유형(출처표시·변경금지)",
+   "licenseUrl": "https://www.kogl.or.kr/info/licenseType3.do",
+   "source": "https://korean.visitkorea.or.kr/detail/ms_detail.do?cotid=2851276",
+   "via": "tourapi",
+   "distance_m": 5
+  },
+  "kakao-669096193": {
+   "src": "https://tong.visitkorea.or.kr/cms/resource/67/2776567_image2_1.jpg",
+   "thumb": "https://tong.visitkorea.or.kr/cms/resource/67/2776567_image2_1.jpg",
+   "title": "대관령한우국밥타운",
+   "credit": "한국관광공사",
+   "license": "공공누리 제3유형(출처표시·변경금지)",
+   "licenseUrl": "https://www.kogl.or.kr/info/licenseType3.do",
+   "source": "https://korean.visitkorea.or.kr/detail/ms_detail.do?cotid=2776574",
+   "via": "tourapi",
+   "distance_m": 11
+  },
+  "kakao-772003979": {
+   "src": "https://tong.visitkorea.or.kr/cms/resource/01/2709101_image2_1.jpg",
+   "thumb": "https://tong.visitkorea.or.kr/cms/resource/01/2709101_image3_1.jpg",
+   "title": "비브릿지",
+   "credit": "한국관광공사",
+   "license": "공공누리 제3유형(출처표시·변경금지)",
+   "licenseUrl": "https://www.kogl.or.kr/info/licenseType3.do",
+   "source": "https://korean.visitkorea.or.kr/detail/ms_detail.do?cotid=2708661",
+   "via": "tourapi",
+   "distance_m": 6
+  },
+  "kakao-7828957": {
+   "src": "https://tong.visitkorea.or.kr/cms/resource/80/3588680_image2_1.jpg",
+   "thumb": "https://tong.visitkorea.or.kr/cms/resource/80/3588680_image3_1.jpg",
+   "title": "대원사(산청)",
+   "credit": "한국관광공사",
+   "license": "공공누리 제1유형(출처표시)",
+   "licenseUrl": "https://www.kogl.or.kr/info/licenseType1.do",
+   "source": "https://korean.visitkorea.or.kr/detail/ms_detail.do?cotid=126183",
+   "via": "tourapi",
+   "distance_m": 105
+  },
+  "kakao-7844247": {
+   "src": "https://tong.visitkorea.or.kr/cms/resource/27/3530827_image2_1.jpg",
+   "thumb": "https://tong.visitkorea.or.kr/cms/resource/27/3530827_image3_1.jpg",
+   "title": "동정호",
+   "credit": "한국관광공사",
+   "license": "공공누리 제1유형(출처표시)",
+   "licenseUrl": "https://www.kogl.or.kr/info/licenseType1.do",
+   "source": "https://korean.visitkorea.or.kr/detail/ms_detail.do?cotid=2746554",
+   "via": "tourapi",
+   "distance_m": 39
+  },
+  "kakao-7859901": {
+   "src": "https://tong.visitkorea.or.kr/cms/resource/70/2875570_image2_1.jpg",
+   "thumb": "https://tong.visitkorea.or.kr/cms/resource/70/2875570_image3_1.jpg",
+   "title": "둔내막국수",
+   "credit": "한국관광공사",
+   "license": "공공누리 제3유형(출처표시·변경금지)",
+   "licenseUrl": "https://www.kogl.or.kr/info/licenseType3.do",
+   "source": "https://korean.visitkorea.or.kr/detail/ms_detail.do?cotid=2875588",
+   "via": "tourapi",
+   "distance_m": 5
+  },
+  "kakao-7912944": {
+   "src": "https://tong.visitkorea.or.kr/cms/resource/05/3514805_image2_1.jpg",
+   "thumb": "https://tong.visitkorea.or.kr/cms/resource/05/3514805_image3_1.jpg",
+   "title": "사명산",
+   "credit": "한국관광공사",
+   "license": "공공누리 제3유형(출처표시·변경금지)",
+   "licenseUrl": "https://www.kogl.or.kr/info/licenseType3.do",
+   "source": "https://korean.visitkorea.or.kr/detail/ms_detail.do?cotid=127580",
+   "via": "tourapi",
+   "distance_m": 193
+  },
+  "kakao-798540773": {
+   "src": "https://tong.visitkorea.or.kr/cms/resource/50/2843950_image2_1.jpg",
+   "thumb": "https://tong.visitkorea.or.kr/cms/resource/50/2843950_image3_1.jpg",
+   "title": "병영서가네",
+   "credit": "한국관광공사",
+   "license": "공공누리 제3유형(출처표시·변경금지)",
+   "licenseUrl": "https://www.kogl.or.kr/info/licenseType3.do",
+   "source": "https://korean.visitkorea.or.kr/detail/ms_detail.do?cotid=2843956",
+   "via": "tourapi",
+   "distance_m": 29
+  },
   "kakao-7989034": {
    "src": "https://thumb.wikimedia.org/wikipedia/commons/thumb/9/9d/Andong_Market_20220130_01.jpg/960px-Andong_Market_20220130_01.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
    "title": "Andong Market 20220130 01.jpg",
@@ -134,6 +1080,28 @@
    "source": "https://commons.wikimedia.org/wiki/File:Korea-Andong-Hahoe.Village-02.jpg",
    "via": "kowiki",
    "article": "https://ko.wikipedia.org/wiki/%EC%95%88%EB%8F%99_%ED%95%98%ED%9A%8C%EB%A7%88%EC%9D%84"
+  },
+  "kakao-8027979": {
+   "src": "https://tong.visitkorea.or.kr/cms/resource/04/2787104_image2_1.jpg",
+   "thumb": "https://tong.visitkorea.or.kr/cms/resource/04/2787104_image3_1.jpg",
+   "title": "운두령",
+   "credit": "한국관광공사",
+   "license": "공공누리 제3유형(출처표시·변경금지)",
+   "licenseUrl": "https://www.kogl.or.kr/info/licenseType3.do",
+   "source": "https://korean.visitkorea.or.kr/detail/ms_detail.do?cotid=2787116",
+   "via": "tourapi",
+   "distance_m": 7
+  },
+  "kakao-8079373": {
+   "src": "https://tong.visitkorea.or.kr/cms/resource/01/3591601_image2_1.jpg",
+   "thumb": "https://tong.visitkorea.or.kr/cms/resource/01/3591601_image3_1.jpg",
+   "title": "지리해수욕장",
+   "credit": "한국관광공사",
+   "license": "공공누리 제1유형(출처표시)",
+   "licenseUrl": "https://www.kogl.or.kr/info/licenseType1.do",
+   "source": "https://korean.visitkorea.or.kr/detail/ms_detail.do?cotid=129544",
+   "via": "tourapi",
+   "distance_m": 135
   },
   "kakao-8081903": {
    "src": "https://thumb.wikimedia.org/wikipedia/commons/thumb/8/85/Korea-Mountain-Jirisan-15.jpg/960px-Korea-Mountain-Jirisan-15.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
@@ -154,6 +1122,182 @@
    "source": "https://commons.wikimedia.org/wiki/File:%EC%B2%9C%EB%A6%AC%ED%8F%AC%EC%88%98%EB%AA%A9%EC%9B%90.jpg",
    "via": "kowiki",
    "article": "https://ko.wikipedia.org/wiki/%EC%B2%9C%EB%A6%AC%ED%8F%AC%EC%88%98%EB%AA%A9%EC%9B%90"
+  },
+  "kakao-8092760": {
+   "src": "https://tong.visitkorea.or.kr/cms/resource/42/2704942_image2_1.jpg",
+   "thumb": "https://tong.visitkorea.or.kr/cms/resource/42/2704942_image3_1.jpg",
+   "title": "국립 천관산자연휴양림",
+   "credit": "한국관광공사",
+   "license": "공공누리 제3유형(출처표시·변경금지)",
+   "licenseUrl": "https://www.kogl.or.kr/info/licenseType3.do",
+   "source": "https://korean.visitkorea.or.kr/detail/ms_detail.do?cotid=125419",
+   "via": "tourapi",
+   "distance_m": 153
+  },
+  "kakao-8107879": {
+   "src": "https://tong.visitkorea.or.kr/cms/resource/14/2786414_image2_1.jpg",
+   "thumb": "https://tong.visitkorea.or.kr/cms/resource/14/2786414_image2_1.jpg",
+   "title": "털보선장횟집",
+   "credit": "한국관광공사",
+   "license": "공공누리 제3유형(출처표시·변경금지)",
+   "licenseUrl": "https://www.kogl.or.kr/info/licenseType3.do",
+   "source": "https://korean.visitkorea.or.kr/detail/ms_detail.do?cotid=2782940",
+   "via": "tourapi",
+   "distance_m": 6
+  },
+  "kakao-8184221": {
+   "src": "https://tong.visitkorea.or.kr/cms/resource/91/2832491_image2_1.JPG",
+   "thumb": "https://tong.visitkorea.or.kr/cms/resource/91/2832491_image3_1.JPG",
+   "title": "관산식당",
+   "credit": "한국관광공사",
+   "license": "공공누리 제3유형(출처표시·변경금지)",
+   "licenseUrl": "https://www.kogl.or.kr/info/licenseType3.do",
+   "source": "https://korean.visitkorea.or.kr/detail/ms_detail.do?cotid=2856320",
+   "via": "tourapi",
+   "distance_m": 5
+  },
+  "kakao-841165179": {
+   "src": "https://tong.visitkorea.or.kr/cms/resource/00/3574600_image2_1.JPG",
+   "thumb": "https://tong.visitkorea.or.kr/cms/resource/00/3574600_image3_1.JPG",
+   "title": "보현산댐 전망대",
+   "credit": "한국관광공사",
+   "license": "공공누리 제1유형(출처표시)",
+   "licenseUrl": "https://www.kogl.or.kr/info/licenseType1.do",
+   "source": "https://korean.visitkorea.or.kr/detail/ms_detail.do?cotid=2753588",
+   "via": "tourapi",
+   "distance_m": 7
+  },
+  "kakao-8526358": {
+   "src": "https://tong.visitkorea.or.kr/cms/resource/75/2793375_image2_1.jpg",
+   "thumb": "https://tong.visitkorea.or.kr/cms/resource/75/2793375_image3_1.jpg",
+   "title": "진태원",
+   "credit": "한국관광공사",
+   "license": "공공누리 제3유형(출처표시·변경금지)",
+   "licenseUrl": "https://www.kogl.or.kr/info/licenseType3.do",
+   "source": "https://korean.visitkorea.or.kr/detail/ms_detail.do?cotid=2793490",
+   "via": "tourapi",
+   "distance_m": 10
+  },
+  "kakao-8560380": {
+   "src": "https://tong.visitkorea.or.kr/cms/resource/44/3327144_image2_1.jpg",
+   "thumb": "https://tong.visitkorea.or.kr/cms/resource/44/3327144_image3_1.jpg",
+   "title": "파로호전망대",
+   "credit": "한국관광공사",
+   "license": "공공누리 제1유형(출처표시)",
+   "licenseUrl": "https://www.kogl.or.kr/info/licenseType1.do",
+   "source": "https://korean.visitkorea.or.kr/detail/ms_detail.do?cotid=2774590",
+   "via": "tourapi",
+   "distance_m": 79
+  },
+  "kakao-88719015": {
+   "src": "https://tong.visitkorea.or.kr/cms/resource/09/2782409_image2_1.jpg",
+   "thumb": "https://tong.visitkorea.or.kr/cms/resource/09/2782409_image3_1.jpg",
+   "title": "딥버거",
+   "credit": "한국관광공사",
+   "license": "공공누리 제3유형(출처표시·변경금지)",
+   "licenseUrl": "https://www.kogl.or.kr/info/licenseType3.do",
+   "source": "https://korean.visitkorea.or.kr/detail/ms_detail.do?cotid=2782445",
+   "via": "tourapi",
+   "distance_m": 32
+  },
+  "kakao-8891473": {
+   "src": "https://tong.visitkorea.or.kr/cms/resource/13/2851313_image2_1.jpg",
+   "thumb": "https://tong.visitkorea.or.kr/cms/resource/13/2851313_image3_1.jpg",
+   "title": "덕수식당",
+   "credit": "한국관광공사",
+   "license": "공공누리 제3유형(출처표시·변경금지)",
+   "licenseUrl": "https://www.kogl.or.kr/info/licenseType3.do",
+   "source": "https://korean.visitkorea.or.kr/detail/ms_detail.do?cotid=2851322",
+   "via": "tourapi",
+   "distance_m": 19
+  },
+  "kakao-9164625": {
+   "src": "https://tong.visitkorea.or.kr/cms/resource/01/2785001_image2_1.jpg",
+   "thumb": "https://tong.visitkorea.or.kr/cms/resource/01/2785001_image3_1.jpg",
+   "title": "선비촌",
+   "credit": "한국관광공사",
+   "license": "공공누리 제3유형(출처표시·변경금지)",
+   "licenseUrl": "https://www.kogl.or.kr/info/licenseType3.do",
+   "source": "https://korean.visitkorea.or.kr/detail/ms_detail.do?cotid=2788970",
+   "via": "tourapi",
+   "distance_m": 21
+  },
+  "kakao-9335105": {
+   "src": "https://tong.visitkorea.or.kr/cms/resource/72/2834872_image2_1.jpg",
+   "thumb": "https://tong.visitkorea.or.kr/cms/resource/72/2834872_image3_1.jpg",
+   "title": "유정식당",
+   "credit": "한국관광공사",
+   "license": "공공누리 제3유형(출처표시·변경금지)",
+   "licenseUrl": "https://www.kogl.or.kr/info/licenseType3.do",
+   "source": "https://korean.visitkorea.or.kr/detail/ms_detail.do?cotid=2834905",
+   "via": "tourapi",
+   "distance_m": 12
+  },
+  "kakao-9399766": {
+   "src": "https://tong.visitkorea.or.kr/cms/resource/54/2843754_image2_1.JPG",
+   "thumb": "https://tong.visitkorea.or.kr/cms/resource/54/2843754_image3_1.JPG",
+   "title": "조샌집",
+   "credit": "한국관광공사",
+   "license": "공공누리 제3유형(출처표시·변경금지)",
+   "licenseUrl": "https://www.kogl.or.kr/info/licenseType3.do",
+   "source": "https://korean.visitkorea.or.kr/detail/ms_detail.do?cotid=2843765",
+   "via": "tourapi",
+   "distance_m": 13
+  },
+  "kakao-9499496": {
+   "src": "https://tong.visitkorea.or.kr/cms/resource/98/2756298_image2_1.JPG",
+   "thumb": "https://tong.visitkorea.or.kr/cms/resource/98/2756298_image3_1.JPG",
+   "title": "청일관광농원",
+   "credit": "한국관광공사",
+   "license": "공공누리 제3유형(출처표시·변경금지)",
+   "licenseUrl": "https://www.kogl.or.kr/info/licenseType3.do",
+   "source": "https://korean.visitkorea.or.kr/detail/ms_detail.do?cotid=2755608",
+   "via": "tourapi",
+   "distance_m": 46
+  },
+  "kakao-9623944": {
+   "src": "https://tong.visitkorea.or.kr/cms/resource/55/2796055_image2_1.jpg",
+   "thumb": "https://tong.visitkorea.or.kr/cms/resource/55/2796055_image2_1.jpg",
+   "title": "화천어죽탕",
+   "credit": "한국관광공사",
+   "license": "공공누리 제3유형(출처표시·변경금지)",
+   "licenseUrl": "https://www.kogl.or.kr/info/licenseType3.do",
+   "source": "https://korean.visitkorea.or.kr/detail/ms_detail.do?cotid=2789510",
+   "via": "tourapi",
+   "distance_m": 11
+  },
+  "kakao-967627840": {
+   "src": "https://tong.visitkorea.or.kr/cms/resource/71/2856971_image2_1.jpg",
+   "thumb": "https://tong.visitkorea.or.kr/cms/resource/71/2856971_image3_1.jpg",
+   "title": "해남고구마빵 피낭시에",
+   "credit": "한국관광공사",
+   "license": "공공누리 제3유형(출처표시·변경금지)",
+   "licenseUrl": "https://www.kogl.or.kr/info/licenseType3.do",
+   "source": "https://korean.visitkorea.or.kr/detail/ms_detail.do?cotid=2856978",
+   "via": "tourapi",
+   "distance_m": 5
+  },
+  "kakao-9732079": {
+   "src": "https://tong.visitkorea.or.kr/cms/resource/73/2926673_image2_1.jpg",
+   "thumb": "https://tong.visitkorea.or.kr/cms/resource/73/2926673_image3_1.jpg",
+   "title": "대관령한우타운",
+   "credit": "한국관광공사",
+   "license": "공공누리 제3유형(출처표시·변경금지)",
+   "licenseUrl": "https://www.kogl.or.kr/info/licenseType3.do",
+   "source": "https://korean.visitkorea.or.kr/detail/ms_detail.do?cotid=2680925",
+   "via": "tourapi",
+   "distance_m": 7
+  },
+  "kakao-9789290": {
+   "src": "https://tong.visitkorea.or.kr/cms/resource/97/2837597_image2_1.JPG",
+   "thumb": "https://tong.visitkorea.or.kr/cms/resource/97/2837597_image3_1.JPG",
+   "title": "돌담",
+   "credit": "한국관광공사",
+   "license": "공공누리 제3유형(출처표시·변경금지)",
+   "licenseUrl": "https://www.kogl.or.kr/info/licenseType3.do",
+   "source": "https://korean.visitkorea.or.kr/detail/ms_detail.do?cotid=2837602",
+   "via": "tourapi",
+   "distance_m": 10
   }
  }
 }

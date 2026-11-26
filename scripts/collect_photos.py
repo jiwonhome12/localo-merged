@@ -198,7 +198,8 @@ def commons_info(titles):
 # 사진이 아닌 그림(우표·안내도·지도·포스터·로고)은 대표 사진으로 쓰지 않는다
 NOT_PHOTO = re.compile(r'우표|stamp|가이드맵|안내도|지도|map|포스터|poster|로고|logo|도면|svg', re.I)
 # 사람이 검토해서 틀린 연결로 판단한 것: {장소 이름: 이유}
-REJECT = {'가은산': '다른 유적(가혜성) 사진'}
+REJECT = {'가은산': '다른 유적(가혜성) 사진',
+          '상주은모래비치': '해수욕장에 캠핑장 사진', '소등섬민박': '숙소에 섬 사진'}
 
 
 def record(src, title, lic, lic_url, credit, source, via):
@@ -272,6 +273,8 @@ def main():
         run_pass('위키미디어 공용 위치 검색', commons_one, found)
     else:
         found.update({k: v for k, v in (old.get('photos') or {}).items() if v.get('via') in ('commons', 'kowiki') and k not in found})
+    names = {p['id']: p['name'] for p in places}
+    found = {k: v for k, v in found.items() if names.get(k) not in REJECT and not NOT_PHOTO.search(v.get('title') or '')}
     OUT.write_text(json.dumps({'updated': date.today().isoformat(), 'count': len(found), 'photos': dict(sorted(found.items()))},
                               ensure_ascii=False, indent=1) + '\n', encoding='utf-8')
     print(f'→ {OUT.relative_to(ROOT)}: 사진 {len(found)}곳')
