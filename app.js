@@ -661,13 +661,16 @@
             <label>시작 시각<input type="time" data-visit-field="start" value="${esc(c.start || '')}" aria-label="${name} 방문 시작 시각"></label>
             <label>종료 시각<input type="time" data-visit-field="end" value="${esc(c.end || '')}" aria-label="${name} 방문 종료 시각"></label>
           </div>
-          <div class="stop-quantity"><small class="num">${l.f}</small><span class="mini">
-            <button type="button" data-qty="${esc(p.id)}" data-d="-1" aria-label="${name} 수량 줄이기" ${c.qty <= 1 ? 'disabled' : ''}>−</button><span class="num">${c.qty}${UNIT[p.category]}</span><button type="button" data-qty="${esc(p.id)}" data-d="1" aria-label="${name} 수량 늘리기" ${c.qty >= 99 ? 'disabled' : ''}>+</button>
-          </span><button type="button" class="delete-item" data-rm="${esc(p.id)}" aria-label="${name} 삭제">삭제</button></div>
           ${count > 1 ? `<div class="stop-order-actions" role="group" aria-label="${name} 방문 순서"><button type="button" data-move="-1" ${i === 0 ? 'disabled' : ''}>↑ 위로</button><button type="button" data-move="1" ${i === count - 1 ? 'disabled' : ''}>↓ 아래로</button></div>` : ''}
           ${link ? `<a class="stop-link" href="${link}" target="_blank" rel="noopener noreferrer">카카오맵에서 장소 확인 ↗</a>` : ''}
         </div>
       </details>
+      <div class="cart-quantity-controls">
+        <div class="stop-quantity"><small class="num">${l.f}</small><span class="mini">
+            <button type="button" data-qty="${esc(p.id)}" data-d="-1" aria-label="${name} 수량 줄이기" ${c.qty <= 1 ? 'disabled' : ''}>−</button><span class="num">${c.qty}${UNIT[p.category]}</span><button type="button" data-qty="${esc(p.id)}" data-d="1" aria-label="${name} 수량 늘리기" ${c.qty >= 99 ? 'disabled' : ''}>+</button>
+          </span><button type="button" class="delete-item" data-rm="${esc(p.id)}" aria-label="${name} 삭제">삭제</button></div>
+        ${p.category !== 'stay' ? `<div class="cart-people-choice" role="group" aria-label="${name} 이용 인원"><button type="button" data-who="${esc(p.id)}" data-who-mode="all" aria-pressed="${c.qty === S.people}">다 같이 ${S.people}명</button><button type="button" data-who="${esc(p.id)}" data-who-mode="some" aria-pressed="${c.qty !== S.people}">일부만</button></div>` : ''}
+      </div>
     </li>`;
   }
   function renderStack() {
@@ -701,7 +704,7 @@
       <div><dt>경비 합계</dt><dd class="num">${won(total)}</dd></div>${rows}
       <div class="total-row"><dt>예상 부담액 합계</dt><dd class="num">${won(total - refund)}</dd></div></dl>
       <p class="fine-print">지자체 공고의 환급 규칙(수집 시트)으로 계산했어요. 환급은 가맹점 결제만 인정되고, 장소별 가맹점 여부는 아직 확인되지 않았어요.</p>`;
-    $('split-count').textContent = `${scope}${S.people}명 균등 분할 · 부담 합계 ${won(total - refund)}`;
+    $('split-count').textContent = `${scope}경비 ${won(total)} · 환급 예상 ${won(refund)} · 부담 합계 ${won(total - refund)}`;
     $('split-estimate').textContent = won(Math.round((total - refund) / S.people));
     $('save-trip').disabled = !S.cart.length;
     renderBadge(); saveBaskets();
@@ -1433,6 +1436,7 @@
     if (t.hasAttribute('data-close')) { S.pid = null; renderLeft(); renderOverlay(); return record(); }
     if (d.add) return toggleCart(d.add);
     if (d.rm) return toggleCart(d.rm);
+    if (d.who) { const c = S.cart.find((item) => item.pid === d.who); if (c) { c.qty = d.whoMode === 'all' ? S.people : Math.max(1, S.people - 1); renderStack(); } return; }
     if (d.qty) { const c = S.cart.find((c) => c.pid === d.qty); c.qty = Math.max(1, Math.min(99, c.qty + +d.d)); renderStack(); return; }
     if (d.move) return; // 일정 순서 버튼은 위 끌기 모듈이 처리
     if (t.hasAttribute('data-autosort')) { const rid = courseRid(); setCourse(rid, shortestOrder(courseIds(rid))); if (S.route) S.route = courseIds(rid); drawRoute(); renderStack(); renderRoute(); renderOverlay(); return toast('가까운 순으로 정렬했어요'); }
