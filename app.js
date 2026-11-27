@@ -24,7 +24,18 @@
   const SIDO_ORDER = ['강원', '충북', '충남', '경북', '경남', '전북', '전남'];
 
   // 지역 = 상태 + 지리 정보
-  const R = REG.map((r) => ({ ...r, ...GEO.regions[r.id], short: r.name.slice(0, -1), name: r.name, sido: r.sido }));
+  // 시트의 신청 상태는 확인한 날 기준이라, 여행 기간이나 이번 차수 신청 기간이 끝났으면 화면에서는 '마감'으로 바꾼다
+  const KST_TODAY = new Date(Date.now() + 9 * 3600e3).toISOString().slice(0, 10);
+  function liveStatus(r) {
+    if (r.status === 'closed') return 'closed';
+    const year = ((r.period || '').match(/(20\d\d)-/) || [])[1] || KST_TODAY.slice(0, 4);
+    const ymd = (m, d) => `${year}-${String(m).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+    const ends = [];
+    const pe = (r.period || '').match(/~\s*(?:20\d\d-)?(\d{1,2})-(\d{1,2})/); if (pe) ends.push(ymd(pe[1], pe[2]));
+    const ae = (r.round || '').match(/신청[^~)]*~\s*(?:20\d\d-)?(\d{1,2})[-/](\d{1,2})/); if (ae) ends.push(ymd(ae[1], ae[2]));
+    return ends.some((e) => KST_TODAY > e) ? 'closed' : r.status;
+  }
+  const R = REG.map((r) => ({ ...r, ...GEO.regions[r.id], status: liveStatus(r), short: r.name.slice(0, -1), name: r.name, sido: r.sido }));
   const RM = Object.fromEntries(R.map((r) => [r.id, r]));
   const PM = Object.fromEntries(PLACES.filter((p) => !p.sample).map((p) => [p.id, p]));
   const placesByRegion = {};
@@ -1135,7 +1146,6 @@
     DB.posts.unshift(post); save(); clearDraft(); writing = false; cFilter = rid; renderCommunity(); toast('글을 올렸어요');
   }
   function takeCourse(id) {
-    if (!needLogin('코스 담기')) return;
     const p = allPosts().find((x) => x.id === id); if (!p) return;
     p.ids.filter((pid) => PM[pid] && !S.cart.some((c) => c.pid === pid)).forEach((pid) => S.cart.push({ pid, qty: defaultQty(PM[pid]) }));
     setCourse(p.rid, p.ids); S.basket = p.rid; S.route = null; renderAll();
@@ -1263,7 +1273,6 @@
   }
   let cartClosed = false; // 일정표를 직접 닫았으면 담거나 지역을 열 때 다시 열지 않는다
   function toggleCart(pid) {
-    if (!needLogin('장소 담기')) return;
     const i = S.cart.findIndex((c) => c.pid === pid);
     if (i >= 0) S.cart.splice(i, 1);
     else {
